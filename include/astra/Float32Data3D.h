@@ -33,7 +33,22 @@ $Id$
 #include "Float32Data.h"
 #include "Float32Data2D.h"
 
+#include "../../cuda/3d/mem3d.h"
+
 namespace astra {
+
+#ifdef ASTRA_CUDA
+
+class _AstraExport CFloat32CustomGPUMemory {
+public:
+	astraCUDA3d::MemHandle3D hnd; // Only required to be valid between allocate/free
+	virtual bool allocateGPUMemory(unsigned int x, unsigned int y, unsigned int z, astraCUDA3d::Mem3DZeroMode zero)=0;
+	virtual bool copyToGPUMemory(const astraCUDA3d::SSubDimensions3D &pos)=0;
+	virtual bool copyFromGPUMemory(const astraCUDA3d::SSubDimensions3D &pos)=0;
+	virtual bool freeGPUMemory()=0;
+};
+
+#endif
 
 /**
  * This class represents a three-dimensional block of float32ing point data.
@@ -57,6 +72,11 @@ protected:
 	static bool _data3DSizesEqual(const CFloat32Data3D * _pA, const CFloat32Data3D * _pB);
 
 public:
+#ifdef ASTRA_CUDA
+	// HACK: Don't keep this public
+	CFloat32CustomGPUMemory *m_pCustomGPUMemory;
+#endif
+
 
 	typedef enum {BASE, PROJECTION, VOLUME} EDataType;
 

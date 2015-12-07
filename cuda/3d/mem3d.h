@@ -79,6 +79,8 @@ enum Mem3DZeroMode {
 
 size_t availableGPUMemory();
 
+MemHandle3D wrapHandle(float *D_ptr, unsigned int x, unsigned int y, unsigned int z, unsigned int pitch);
+
 MemHandle3D allocateGPUMemory(unsigned int x, unsigned int y, unsigned int z, Mem3DZeroMode zero);
 
 bool copyToGPUMemory(const float *src, MemHandle3D dst, const SSubDimensions3D &pos);
@@ -87,11 +89,11 @@ bool copyFromGPUMemory(float *dst, MemHandle3D src, const SSubDimensions3D &pos)
 
 bool freeGPUMemory(MemHandle3D handle);
 
-
 bool FP(const astra::CProjectionGeometry3D* pProjGeom, MemHandle3D projData, const astra::CVolumeGeometry3D* pVolGeom, MemHandle3D volData, int iDetectorSuperSampling, astra::Cuda3DProjectionKernel projKernel);
 
 bool BP(const astra::CProjectionGeometry3D* pProjGeom, MemHandle3D projData, const astra::CVolumeGeometry3D* pVolGeom, MemHandle3D volData, int iVoxelSuperSampling);
 
+bool zeroGPUMemory(MemHandle3D handle, unsigned int x, unsigned int y, unsigned int z);
 
 
 }

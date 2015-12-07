@@ -77,6 +77,39 @@ namespace astra {
 
 
 
+
+
+
+
+
+
+class CFloat32DefaultGPUMemory : public astra::CFloat32CustomGPUMemory {
+public:
+	CFloat32DefaultGPUMemory(CFloat32Data3DMemory* d) {
+		ptr = d->getData();
+	}
+	virtual bool allocateGPUMemory(unsigned int x, unsigned int y, unsigned int z, astraCUDA3d::Mem3DZeroMode zero) {
+		hnd = astraCUDA3d::allocateGPUMemory(x, y, z, zero);
+		return (bool)hnd;
+	}
+	virtual bool copyToGPUMemory(const astraCUDA3d::SSubDimensions3D &pos) {
+		return astraCUDA3d::copyToGPUMemory(ptr, hnd, pos);
+	}
+	virtual bool copyFromGPUMemory(const astraCUDA3d::SSubDimensions3D &pos) {
+		return astraCUDA3d::copyFromGPUMemory(ptr, hnd, pos);
+	}
+	virtual bool freeGPUMemory() {
+		return astraCUDA3d::freeGPUMemory(hnd);
+	}
+
+protected:
+	float *ptr;
+};
+
+
+
+
+
 bool CCompositeGeometryManager::splitJobs(TJobSet &jobs, size_t maxSize, int div, TJobSet &split)
 {
 	split.clear();
@@ -838,6 +871,8 @@ bool CCompositeGeometryManager::doBP(CProjector3D *pProjector, const std::vector
 
 bool CCompositeGeometryManager::doJobs(TJobList &jobs)
 {
+	// TODO: Proper clean up if substeps fail (Or as proper as possible)
+
 	ASTRA_DEBUG("CCompositeGeometryManager::doJobs");
 
 	// Sort job list into job set by output part
@@ -909,10 +944,14 @@ bool CCompositeGeometryManager::doJobs(TJobList &jobs)
 		dstdims.subx = output->subX;
 		dstdims.suby = output->subY;
 		dstdims.subz = output->subZ;
-		float *dst = output->pData->getData();
 
-		astraCUDA3d::MemHandle3D outputMem = astraCUDA3d::allocateGPUMemory(outx, outy, outz, zero ? astraCUDA3d::INIT_ZERO : astraCUDA3d::INIT_NO);
-		bool ok = outputMem;
+		CFloat32CustomGPUMemory * dstMem = output->pData->m_pCustomGPUMemory;
+		if (!dstMem) {
+			dstMem = new CFloat32DefaultGPUMemory(output->pData);
+		}
+
+		bool ok = dstMem->allocateGPUMemory(outx, outy, outz, zero ? astraCUDA3d::INIT_ZERO : astraCUDA3d::INIT_NO);
+		if (!ok) ASTRA_ERROR("Error allocating GPU memory");
 
 		for (TJobList::iterator i = L.begin(); i != L.end(); ++i) {
 			SJob &j = *i;
@@ -931,7 +970,11 @@ bool CCompositeGeometryManager::doJobs(TJobList &jobs)
 
 			size_t inx, iny, inz;
 			j.pInput->getDims(inx, iny, inz);
-			astraCUDA3d::MemHandle3D inputMem = astraCUDA3d::allocateGPUMemory(inx, iny, inz, astraCUDA3d::INIT_NO);
+
+			CFloat32CustomGPUMemory * srcMem = j.pInput->pData->m_pCustomGPUMemory;
+			if (!srcMem) {
+				srcMem = new CFloat32DefaultGPUMemory(j.pInput->pData);
+			}
 
 			astraCUDA3d::SSubDimensions3D srcdims;
 			srcdims.nx = j.pInput->pData->getWidth();
@@ -944,9 +987,8 @@ bool CCompositeGeometryManager::doJobs(TJobList &jobs)
 			srcdims.subx = j.pInput->subX;
 			srcdims.suby = j.pInput->subY;
 			srcdims.subz = j.pInput->subZ;
-			const float *src = j.pInput->pData->getDataConst();
 
-			ok = astraCUDA3d::copyToGPUMemory(src, inputMem, srcdims);
+			ok = srcMem->copyToGPUMemory(srcdims);
 			if (!ok) ASTRA_ERROR("Error copying input data to GPU");
 
 			if (j.eType == SJob::JOB_FP) {
@@ -955,7 +997,7 @@ bool CCompositeGeometryManager::doJobs(TJobList &jobs)
 
 				ASTRA_DEBUG("CCompositeGeometryManager::doJobs: doing FP");
 
-				ok = astraCUDA3d::FP(((CProjectionPart*)j.pOutput.get())->pGeom, outputMem, ((CVolumePart*)j.pInput.get())->pGeom, inputMem, detectorSuperSampling, projKernel);
+				ok = astraCUDA3d::FP(((CProjectionPart*)j.pOutput.get())->pGeom, dstMem->hnd, ((CVolumePart*)j.pInput.get())->pGeom, srcMem->hnd, detectorSuperSampling, projKernel);
 				if (!ok) ASTRA_ERROR("Error performing sub-FP");
 				ASTRA_DEBUG("CCompositeGeometryManager::doJobs: FP done");
 			} else if (j.eType == SJob::JOB_BP) {
@@ -964,23 +1006,28 @@ bool CCompositeGeometryManager::doJobs(TJobList &jobs)
 
 				ASTRA_DEBUG("CCompositeGeometryManager::doJobs: doing BP");
 
-				ok = astraCUDA3d::BP(((CProjectionPart*)j.pInput.get())->pGeom, inputMem, ((CVolumePart*)j.pOutput.get())->pGeom, outputMem, voxelSuperSampling);
+				ok = astraCUDA3d::BP(((CProjectionPart*)j.pInput.get())->pGeom, srcMem->hnd, ((CVolumePart*)j.pOutput.get())->pGeom, dstMem->hnd, voxelSuperSampling);
 				if (!ok) ASTRA_ERROR("Error performing sub-BP");
 				ASTRA_DEBUG("CCompositeGeometryManager::doJobs: BP done");
 			} else {
 				assert(false);
 			}
 
-			ok = astraCUDA3d::freeGPUMemory(inputMem);
+			ok = srcMem->freeGPUMemory();
 			if (!ok) ASTRA_ERROR("Error freeing GPU memory");
 
+			if (!j.pInput->pData->m_pCustomGPUMemory)
+				delete srcMem;
 		}
 
-		ok = astraCUDA3d::copyFromGPUMemory(dst, outputMem, dstdims);
+		ok = dstMem->copyFromGPUMemory(dstdims);
 		if (!ok) ASTRA_ERROR("Error copying output data from GPU");
 		
-		ok = astraCUDA3d::freeGPUMemory(outputMem);
+		ok = dstMem->freeGPUMemory();
 		if (!ok) ASTRA_ERROR("Error freeing GPU memory");
+
+		if (!output->pData->m_pCustomGPUMemory)
+			delete dstMem;
 	}
 
 	return true;

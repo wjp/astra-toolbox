@@ -38,6 +38,9 @@ namespace astra {
 CFloat32Data3D::CFloat32Data3D()
 {
 	m_bInitialized = false;
+#ifdef ASTRA_CUDA
+	m_pCustomGPUMemory = 0;
+#endif
 }
 
 //----------------------------------------------------------------------------------------

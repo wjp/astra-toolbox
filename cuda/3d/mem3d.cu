@@ -99,6 +99,13 @@ MemHandle3D allocateGPUMemory(unsigned int x, unsigned int y, unsigned int z, Me
 	return ret;
 }
 
+bool zeroGPUMemory(MemHandle3D handle, unsigned int x, unsigned int y, unsigned int z)
+{
+	SMemHandle3D_internal& hnd = *handle.d.get();
+	cudaError_t err = cudaMemset3D(hnd.ptr, 0, make_cudaExtent(sizeof(float)*x, y, z));
+	return err == cudaSuccess;
+}
+
 bool freeGPUMemory(MemHandle3D handle)
 {
 	size_t free = availableGPUMemory();
@@ -264,7 +271,86 @@ bool BP(const astra::CProjectionGeometry3D* pProjGeom, MemHandle3D projData, con
 
 }
 
+MemHandle3D wrapHandle(float *D_ptr, unsigned int x, unsigned int y, unsigned int z, unsigned int pitch)
+{
+	cudaPitchedPtr ptr;
+	ptr.ptr = D_ptr;
+	ptr.xsize = sizeof(float) * x;
+	ptr.pitch = sizeof(float) * pitch;
+	ptr.ysize = y;
+
+	SMemHandle3D_internal h;
+	h.ptr = ptr;
+
+	MemHandle3D hnd;
+	hnd.d = boost::shared_ptr<SMemHandle3D_internal>(new SMemHandle3D_internal);
+	*hnd.d = h;
+
+	return hnd;
+}
 
 
+
+#if 0
+// TODO: Move
+
+class CFloat32ExistingGPUMemory : public astra::CFloat32CustomGPUMemory {
+public:
+	CFloat32ExistingGPUMemory(unsigned int x_, unsigned int y_, unsigned int z_, unsigned int pitch, float *D_ptr) : x(x_), y(y_), z(z_) {
+		hnd = astraCUDA3d::wrapHandle(D_ptr, x, y, z, pitch);
+	}
+	virtual bool allocateGPUMemory(unsigned int x, unsigned int y, unsigned int z, astraCUDA3d::Mem3DZeroMode zero) {
+		assert(x == this->x);
+		assert(y == this->y);
+		assert(z == this->z);
+
+		if (zero == INIT_ZERO)
+			return astraCUDA3d::zeroGPUMemory(hnd, x, y, z);
+		else
+			return true;
+	}
+	virtual bool copyToGPUMemory(const astraCUDA3d::SSubDimensions3D &pos) {
+		assert(pos.nx == x);
+		assert(pos.ny == y);
+		assert(pos.nz == z);
+		assert(pos.pitch == x);
+		assert(pos.subx == 0);
+		assert(pos.suby == 0);
+		assert(pos.subnx == x);
+		assert(pos.subny == y);
+
+		// These are less necessary than x/y, but allowing access to
+		// subvolumes needs an interface change
+		assert(pos.subz == 0);
+		assert(pos.subnz == z);
+
+		return true;
+	}
+	virtual bool copyFromGPUMemory(const astraCUDA3d::SSubDimensions3D &pos) {
+		assert(pos.nx == x);
+		assert(pos.ny == y);
+		assert(pos.nz == z);
+		assert(pos.pitch == x);
+		assert(pos.subx == 0);
+		assert(pos.suby == 0);
+		assert(pos.subnx == x);
+		assert(pos.subny == y);
+
+		// These are less necessary than x/y, but allowing access to
+		// subvolumes needs an interface change
+		assert(pos.subz == 0);
+		assert(pos.subnz == z);
+
+		return true;
+	}
+	virtual bool freeGPUMemory() {
+		return true;
+	}
+
+protected:
+	unsigned int x, y, z;
+};
+
+#endif
 
 }
