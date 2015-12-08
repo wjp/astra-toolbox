@@ -47,7 +47,7 @@ class AstraSIRT3d_internal;
 using astraCUDA3d::Cuda3DProjectionKernel;
 using astraCUDA3d::ker3d_default;
 using astraCUDA3d::ker3d_sum_square_weights;
-
+using astraCUDA3d::ker3d_line;
 
 class _AstraExport AstraSIRT3d {
 public:

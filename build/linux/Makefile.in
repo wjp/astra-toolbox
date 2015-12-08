@@ -226,6 +226,7 @@ CUDA_OBJECTS=\
 	cuda/3d/darthelper3d.lo \
 	cuda/3d/algo3d.lo \
 	cuda/3d/cgls3d.lo \
+	cuda/3d/cone_line.lo \
 	cuda/3d/cone_fp.lo \
 	cuda/3d/cone_bp.lo \
 	cuda/3d/fdk.lo \

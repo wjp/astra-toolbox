@@ -61,6 +61,9 @@
     <CudaCompile Include="cuda\3d\cone_fp.cu">
       <Filter>CUDA\cuda source</Filter>
     </CudaCompile>
+    <CudaCompile Include="cuda\3d\cone_line.cu">
+      <Filter>CUDA\cuda source</Filter>
+    </CudaCompile>
     <CudaCompile Include="cuda\3d\darthelper3d.cu">
       <Filter>CUDA\cuda source</Filter>
     </CudaCompile>
@@ -663,6 +666,9 @@
       <Filter>CUDA\cuda headers</Filter>
     </ClInclude>
     <ClInclude Include="cuda\3d\cone_fp.h">
+      <Filter>CUDA\cuda headers</Filter>
+    </ClInclude>
+    <ClInclude Include="cuda\3d\cone_line.h">
       <Filter>CUDA\cuda headers</Filter>
     </ClInclude>
     <ClInclude Include="cuda\3d\darthelper3d.h">

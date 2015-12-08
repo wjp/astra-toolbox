@@ -35,6 +35,7 @@ along with the ASTRA Toolbox. If not, see <http://www.gnu.org/licenses/>.
 #include "astra3d.h"
 #include "cone_fp.h"
 #include "cone_bp.h"
+#include "cone_line.h"
 #include "par3d_fp.h"
 #include "par3d_bp.h"
 #include "fdk.h"
@@ -248,6 +249,9 @@ bool FP(const astra::CProjectionGeometry3D* pProjGeom, MemHandle3D projData, con
 		case astra::ker3d_default:
 			ok &= ConeFP(volData.d->ptr, projData.d->ptr, dims, pConeProjs, params);
 			break;
+		case astra::ker3d_line:
+			ok &= ConeLineFP(volData.d->ptr, projData.d->ptr, dims, pConeProjs, params);
+			break;
 		default:
 			ok = false;
 		}
@@ -259,7 +263,7 @@ bool FP(const astra::CProjectionGeometry3D* pProjGeom, MemHandle3D projData, con
 	return ok;
 }
 
-bool BP(const astra::CProjectionGeometry3D* pProjGeom, MemHandle3D projData, const astra::CVolumeGeometry3D* pVolGeom, MemHandle3D volData, int iVoxelSuperSampling, bool bFDKWeighting)
+bool BP(const astra::CProjectionGeometry3D* pProjGeom, MemHandle3D projData, const astra::CVolumeGeometry3D* pVolGeom, MemHandle3D volData, int iVoxelSuperSampling, bool bFDKWeighting, astra::Cuda3DProjectionKernel projKernel)
 {
 	SDimensions3D dims;
 	SProjectorParams3D params;
@@ -283,8 +287,18 @@ bool BP(const astra::CProjectionGeometry3D* pProjGeom, MemHandle3D projData, con
 
 	if (pParProjs)
 		ok &= Par3DBP(volData.d->ptr, projData.d->ptr, dims, pParProjs, params);
-	else
-		ok &= ConeBP(volData.d->ptr, projData.d->ptr, dims, pConeProjs, params);
+	else {
+		switch (projKernel) {
+		case astra::ker3d_default:
+			ok &= ConeBP(volData.d->ptr, projData.d->ptr, dims, pConeProjs, params);
+			break;
+		case astra::ker3d_line:
+			ok &= ConeLineBP(volData.d->ptr, projData.d->ptr, dims, pConeProjs, params);
+			break;
+		default:
+			ok = false;
+		}
+	}
 
 	delete[] pParProjs;
 	delete[] pConeProjs;

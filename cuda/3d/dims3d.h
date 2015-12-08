@@ -39,7 +39,8 @@ using astra::SPar3DProjection;
 
 enum Cuda3DProjectionKernel {
 	ker3d_default = 0,
-	ker3d_sum_square_weights
+	ker3d_sum_square_weights,
+	ker3d_line
 };
 
 

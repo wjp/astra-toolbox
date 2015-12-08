@@ -1446,7 +1446,7 @@ static bool doJob(const CCompositeGeometryManager::TJobSet::const_iterator& iter
 
 			ASTRA_DEBUG("CCompositeGeometryManager::doJobs: doing BP");
 
-			ok = astraCUDA3d::BP(((CCompositeGeometryManager::CProjectionPart*)j.pInput.get())->pGeom, srcMem->hnd, ((CCompositeGeometryManager::CVolumePart*)j.pOutput.get())->pGeom, dstMem->hnd, voxelSuperSampling, densityWeighting);
+			ok = astraCUDA3d::BP(((CCompositeGeometryManager::CProjectionPart*)j.pInput.get())->pGeom, srcMem->hnd, ((CCompositeGeometryManager::CVolumePart*)j.pOutput.get())->pGeom, dstMem->hnd, voxelSuperSampling, densityWeighting, projKernel);
 			if (!ok) ASTRA_ERROR("Error performing sub-BP");
 			ASTRA_DEBUG("CCompositeGeometryManager::doJobs: BP done");
 		}

@@ -120,6 +120,8 @@ bool CCudaProjector3D::initialize(const Config& _cfg)
 
 		} else if (sProjKernel == "sum_square_weights") {
 			m_projectionKernel = ker3d_sum_square_weights;
+		} else if (sProjKernel == "line") {
+			m_projectionKernel = ker3d_line;
 		} else {
 			return false;
 		}
