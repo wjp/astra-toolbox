@@ -327,6 +327,11 @@ inline float32 CFloat32Data3DMemory::getGlobalMax() const
 inline float32* CFloat32Data3DMemory::getData()
 {
 	ASTRA_ASSERT(m_bInitialized);
+
+#ifdef ASTRA_CUDA
+	ASTRA_ASSERT(!m_pCustomGPUMemory); // HACK...
+#endif
+
 	return m_pfData;
 }
 
@@ -335,6 +340,11 @@ inline float32* CFloat32Data3DMemory::getData()
 inline const float32* CFloat32Data3DMemory::getDataConst() const
 {
 	ASTRA_ASSERT(m_bInitialized);
+
+#ifdef ASTRA_CUDA
+	ASTRA_ASSERT(!m_pCustomGPUMemory); // HACK...
+#endif
+
 	return (const float32*)m_pfData;
 }
 
