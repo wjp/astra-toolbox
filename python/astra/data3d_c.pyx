@@ -52,6 +52,11 @@ import operator
 from six.moves import reduce
 
 
+# ODL
+
+import odl
+
+
 cdef CData3DManager * man3d = <CData3DManager * >PyData3DManager.getSingletonPtr()
 
 cdef extern from *:
@@ -67,10 +72,16 @@ def create(datatype,geometry,data=None, link=False):
     cdef CProjectionGeometry3D * ppGeometry
     cdef CFloat32Data3DMemory * pDataObject3D
     cdef CConeProjectionGeometry3D* pppGeometry
-    cdef CFloat32CustomMemory * pCustom
+    cdef CFloat32CustomMemory * pCustom = 0
+    cdef CFloat32CustomGPUMemory * pCustomGPU = 0
 
-    if link and data.shape!=geom_size(geometry):
-        raise Exception("The dimensions of the data do not match those specified in the geometry.")
+    if link:
+        if isinstance(data, odl.space.cu_ntuples.CudaRnVector):
+            s = geom_size(geometry)
+            if data.size != s[0] * s[1] * s[2]:
+                raise Exception("The dimensions of the data do not match those specified in the geometry.")
+        elif data.shape!=geom_size(geometry):
+            raise Exception("The dimensions of the data do not match those specified in the geometry.")
 
     if datatype == '-vol':
         cfg = utils.dictToConfig(six.b('VolumeGeometry'), geometry)
@@ -80,7 +91,11 @@ def create(datatype,geometry,data=None, link=False):
             del pGeometry
             raise Exception('Geometry class not initialized.')
         if link:
-            pCustom = <CFloat32CustomMemory*> new CFloat32CustomPython(data)
+            if isinstance(data, odl.space.cu_ntuples.CudaRnVector):
+                s = geom_size(geometry)
+                pCustomGPU = <CFloat32CustomGPUMemory*> new CFloat32ExistingGPUMemory(s[2],s[1],s[0],s[2],<float*>data.data_ptr)
+            else:
+                pCustom = <CFloat32CustomMemory*> new CFloat32CustomPython(data)
             pDataObject3D = <CFloat32Data3DMemory * > new CFloat32VolumeData3DMemory(pGeometry, pCustom)
         else:
             pDataObject3D = <CFloat32Data3DMemory * > new CFloat32VolumeData3DMemory(pGeometry)
@@ -105,8 +120,12 @@ def create(datatype,geometry,data=None, link=False):
             del ppGeometry
             raise Exception('Geometry class not initialized.')
         if link:
-            pCustom = <CFloat32CustomMemory*> new CFloat32CustomPython(data)
-            pDataObject3D = <CFloat32Data3DMemory * > new CFloat32ProjectionData3DMemory(ppGeometry, pCustom)
+            if isinstance(data, odl.space.cu_ntuples.CudaRnVector):
+                s = geom_size(geometry)
+                pCustomGPU = <CFloat32CustomGPUMemory*> new CFloat32ExistingGPUMemory(s[2],s[1],s[0],s[2],<float*>data.data_ptr)
+            else:
+                pCustom = <CFloat32CustomMemory*> new CFloat32CustomPython(data)
+            pDataObject3D = <CFloat32Data3DMemory * > new CFloat32ProjectionData3DMemory(ppGeometry, pCustom, pCustomGPU)
         else:
             pDataObject3D = <CFloat32Data3DMemory * > new CFloat32ProjectionData3DMemory(ppGeometry)
         del ppGeometry
@@ -120,7 +139,7 @@ def create(datatype,geometry,data=None, link=False):
             raise Exception('Geometry class not initialized.')
         if link:
             pCustom = <CFloat32CustomMemory*> new CFloat32CustomPython(data)
-            pDataObject3D = <CFloat32Data3DMemory * > new CFloat32ProjectionData3DMemory(pppGeometry, pCustom)
+            pDataObject3D = <CFloat32Data3DMemory * > new CFloat32ProjectionData3DMemory(pppGeometry, pCustom, pCustomGPU)
         else:
             pDataObject3D = <CFloat32Data3DMemory * > new CFloat32ProjectionData3DMemory(pppGeometry)
     else:

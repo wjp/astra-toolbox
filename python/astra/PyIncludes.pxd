@@ -184,6 +184,12 @@ cdef extern from "astra/SparseMatrix.h" namespace "astra":
 		unsigned int* m_piColIndices
 		unsigned long* m_plRowStarts
 
+cdef extern from "astra/Float32Data3D.h" namespace "astra":
+	cdef cppclass CFloat32CustomGPUMemory:
+		pass
+	cdef cppclass CFloat32ExistingGPUMemory:
+		CFloat32ExistingGPUMemory(unsigned int,unsigned int,unsigned int,unsigned int,float*)
+
 cdef extern from "astra/Float32Data3DMemory.h" namespace "astra":
 	cdef cppclass CFloat32Data3DMemory:
 		CFloat32Data3DMemory()
@@ -220,7 +226,7 @@ cdef extern from "astra/ProjectionGeometry3D.h" namespace "astra":
 cdef extern from "astra/Float32VolumeData3DMemory.h" namespace "astra":
 	cdef cppclass CFloat32VolumeData3DMemory:
 		CFloat32VolumeData3DMemory(CVolumeGeometry3D*)
-		CFloat32VolumeData3DMemory(CVolumeGeometry3D*, CFloat32CustomMemory*)
+		CFloat32VolumeData3DMemory(CVolumeGeometry3D*, CFloat32CustomMemory*, CCFloat32CustomGPUMemory*)
 		CVolumeGeometry3D* getGeometry()
 		void changeGeometry(CVolumeGeometry3D*)
 		int getRowCount()
@@ -251,8 +257,8 @@ cdef extern from "astra/Float32ProjectionData3DMemory.h" namespace "astra":
 	cdef cppclass CFloat32ProjectionData3DMemory:
 		CFloat32ProjectionData3DMemory(CProjectionGeometry3D*)
 		CFloat32ProjectionData3DMemory(CConeProjectionGeometry3D*)
-		CFloat32ProjectionData3DMemory(CProjectionGeometry3D*, CFloat32CustomMemory*)
-		CFloat32ProjectionData3DMemory(CConeProjectionGeometry3D*, CFloat32CustomMemory*)
+		CFloat32ProjectionData3DMemory(CProjectionGeometry3D*, CFloat32CustomMemory*, CFloat32CustomGPUMemory*)
+		CFloat32ProjectionData3DMemory(CConeProjectionGeometry3D*, CFloat32CustomMemory*, CFloat32CustomGPUMemory*)
 		CProjectionGeometry3D* getGeometry()
 		void changeGeometry(CProjectionGeometry3D*)
 		int getDetectorColCount()
