@@ -52,6 +52,9 @@ import operator
 from six.moves import reduce
 
 
+cdef extern from "Python.h":
+    void* PyLong_AsVoidPtr(object)
+
 # ODL
 
 import odl
@@ -72,8 +75,8 @@ def create(datatype,geometry,data=None, link=False):
     cdef CProjectionGeometry3D * ppGeometry
     cdef CFloat32Data3DMemory * pDataObject3D
     cdef CConeProjectionGeometry3D* pppGeometry
-    cdef CFloat32CustomMemory * pCustom = 0
-    cdef CFloat32CustomGPUMemory * pCustomGPU = 0
+    cdef CFloat32CustomMemory * pCustom = NULL
+    cdef CFloat32CustomGPUMemory * pCustomGPU = NULL
 
     if link:
         if isinstance(data, odl.space.cu_ntuples.CudaRnVector):
@@ -93,10 +96,10 @@ def create(datatype,geometry,data=None, link=False):
         if link:
             if isinstance(data, odl.space.cu_ntuples.CudaRnVector):
                 s = geom_size(geometry)
-                pCustomGPU = <CFloat32CustomGPUMemory*> new CFloat32ExistingGPUMemory(s[2],s[1],s[0],s[2],<float*>data.data_ptr)
+                pCustomGPU = <CFloat32CustomGPUMemory*> new CFloat32ExistingGPUMemory(s[2],s[1],s[0],s[2],<float*>PyLong_AsVoidPtr(data.data_ptr))
             else:
                 pCustom = <CFloat32CustomMemory*> new CFloat32CustomPython(data)
-            pDataObject3D = <CFloat32Data3DMemory * > new CFloat32VolumeData3DMemory(pGeometry, pCustom)
+            pDataObject3D = <CFloat32Data3DMemory * > new CFloat32VolumeData3DMemory(pGeometry, pCustom, pCustomGPU)
         else:
             pDataObject3D = <CFloat32Data3DMemory * > new CFloat32VolumeData3DMemory(pGeometry)
         del cfg
@@ -122,7 +125,7 @@ def create(datatype,geometry,data=None, link=False):
         if link:
             if isinstance(data, odl.space.cu_ntuples.CudaRnVector):
                 s = geom_size(geometry)
-                pCustomGPU = <CFloat32CustomGPUMemory*> new CFloat32ExistingGPUMemory(s[2],s[1],s[0],s[2],<float*>data.data_ptr)
+                pCustomGPU = <CFloat32CustomGPUMemory*> new CFloat32ExistingGPUMemory(s[2],s[1],s[0],s[2],<float*>PyLong_AsVoidPtr(data.data_ptr))
             else:
                 pCustom = <CFloat32CustomMemory*> new CFloat32CustomPython(data)
             pDataObject3D = <CFloat32Data3DMemory * > new CFloat32ProjectionData3DMemory(ppGeometry, pCustom, pCustomGPU)

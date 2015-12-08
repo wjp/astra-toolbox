@@ -25,6 +25,7 @@
 #-----------------------------------------------------------------------
 from . import data3d_c as d
 import numpy as np
+import odl
 
 def create(datatype,geometry,data=None):
     """Create a 3D object.
@@ -52,11 +53,11 @@ def link(datatype, geometry, data):
     :returns: :class:`int` -- the ID of the constructed object.
     
     """
-    if not isinstance(data,np.ndarray):
+    if not isinstance(data,np.ndarray) and not isinstance(data,odl.space.cu_ntuples.CudaRnVector):
         raise ValueError("Input should be a numpy array")
     if not data.dtype==np.float32:
         raise ValueError("Numpy array should be float32")
-    if not (data.flags['C_CONTIGUOUS'] and data.flags['ALIGNED']):
+    if not isinstance(data,odl.space.cu_ntuples.CudaRnVector) and not (data.flags['C_CONTIGUOUS'] and data.flags['ALIGNED']):
         raise ValueError("Numpy array should be C_CONTIGUOUS and ALIGNED")
     return d.create(datatype,geometry,data,True)
 

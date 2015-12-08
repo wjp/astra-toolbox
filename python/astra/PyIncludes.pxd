@@ -226,7 +226,7 @@ cdef extern from "astra/ProjectionGeometry3D.h" namespace "astra":
 cdef extern from "astra/Float32VolumeData3DMemory.h" namespace "astra":
 	cdef cppclass CFloat32VolumeData3DMemory:
 		CFloat32VolumeData3DMemory(CVolumeGeometry3D*)
-		CFloat32VolumeData3DMemory(CVolumeGeometry3D*, CFloat32CustomMemory*, CCFloat32CustomGPUMemory*)
+		CFloat32VolumeData3DMemory(CVolumeGeometry3D*, CFloat32CustomMemory*, CFloat32CustomGPUMemory*)
 		CVolumeGeometry3D* getGeometry()
 		void changeGeometry(CVolumeGeometry3D*)
 		int getRowCount()
