@@ -110,6 +110,7 @@ bool CFloat32Data3DMemory::_initialize(int _iWidth, int _iHeight, int _iDepth, c
 	m_ppfDataRowInd = NULL;
 	m_pppfDataSliceInd = NULL;
 	m_pCustomMemory = 0;
+	m_pCustomGPUMemory = 0;
 	_allocateData();
 
 	// fill the data block with a copy of the input data
@@ -147,6 +148,7 @@ bool CFloat32Data3DMemory::_initialize(int _iWidth, int _iHeight, int _iDepth, f
 	m_ppfDataRowInd = NULL;
 	m_pppfDataSliceInd = NULL;
 	m_pCustomMemory = 0;
+	m_pCustomGPUMemory = 0;
 	_allocateData();
 
 	// fill the data block with a copy of the input data
@@ -161,13 +163,13 @@ bool CFloat32Data3DMemory::_initialize(int _iWidth, int _iHeight, int _iDepth, f
 }
 //----------------------------------------------------------------------------------------
 // Initializes an instance of the CFloat32Data3DMemory class with pre-allocated memory
-bool CFloat32Data3DMemory::_initialize(int _iWidth, int _iHeight, int _iDepth, CFloat32CustomMemory* _pCustomMemory)
+bool CFloat32Data3DMemory::_initialize(int _iWidth, int _iHeight, int _iDepth, CFloat32CustomMemory* _pCustomMemory, CFloat32CustomGPUMemory* _pCustomGPUMemory)
 {
 	// basic checks
 	ASTRA_ASSERT(_iWidth > 0);
 	ASTRA_ASSERT(_iHeight > 0);
 	ASTRA_ASSERT(_iDepth > 0);
-	ASTRA_ASSERT(_pCustomMemory != NULL);
+	//ASTRA_ASSERT(_pCustomMemory != NULL);
 
 	if (m_bInitialized) {
 		_unInit();
@@ -181,6 +183,7 @@ bool CFloat32Data3DMemory::_initialize(int _iWidth, int _iHeight, int _iDepth, C
 
 	// allocate memory for the data, but do not fill it
 	m_pCustomMemory = _pCustomMemory;
+	m_pCustomGPUMemory = _pCustomGPUMemory;
 	m_pfData = NULL;
 	m_ppfDataRowInd = NULL;
 	m_pppfDataSliceInd = NULL;
@@ -293,6 +296,8 @@ void CFloat32Data3DMemory::_unInit()
 // Update data statistics, such as minimum and maximum value, after the data has been modified. 
 void CFloat32Data3DMemory::updateStatistics()
 {
+	if (m_pCustomGPUMemory) return; // HACK!!
+
 	_computeGlobalMinMax();
 }
 

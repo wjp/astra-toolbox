@@ -69,10 +69,10 @@ CFloat32VolumeData3DMemory::CFloat32VolumeData3DMemory(CVolumeGeometry3D* _pGeom
 }
 //----------------------------------------------------------------------------------------
 // Create an instance of the CFloat32VolumeData2D class with pre-allocated data
-CFloat32VolumeData3DMemory::CFloat32VolumeData3DMemory(CVolumeGeometry3D* _pGeometry, CFloat32CustomMemory* _pCustomMemory)
+CFloat32VolumeData3DMemory::CFloat32VolumeData3DMemory(CVolumeGeometry3D* _pGeometry, CFloat32CustomMemory* _pCustomMemory, CFloat32CustomGPUMemory* _pCustomGPUMemory)
 {
 	m_bInitialized = false;
-	m_bInitialized = initialize(_pGeometry, _pCustomMemory);
+	m_bInitialized = initialize(_pGeometry, _pCustomMemory, _pCustomGPUMemory);
 }
 
 
@@ -115,10 +115,10 @@ bool CFloat32VolumeData3DMemory::initialize(CVolumeGeometry3D* _pGeometry, float
 }
 //----------------------------------------------------------------------------------------
 // Initialization
-bool CFloat32VolumeData3DMemory::initialize(CVolumeGeometry3D* _pGeometry, CFloat32CustomMemory* _pCustomMemory) 
+bool CFloat32VolumeData3DMemory::initialize(CVolumeGeometry3D* _pGeometry, CFloat32CustomMemory* _pCustomMemory, CFloat32CustomGPUMemory* _pCustomGPUMemory) 
 {
 	m_pGeometry = _pGeometry->clone();
-	m_bInitialized = _initialize(m_pGeometry->getGridColCount(), m_pGeometry->getGridRowCount(), m_pGeometry->getGridSliceCount(), _pCustomMemory);
+	m_bInitialized = _initialize(m_pGeometry->getGridColCount(), m_pGeometry->getGridRowCount(), m_pGeometry->getGridSliceCount(), _pCustomMemory, _pCustomGPUMemory);
 	return m_bInitialized;
 }
 

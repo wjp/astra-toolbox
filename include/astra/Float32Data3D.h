@@ -48,6 +48,20 @@ public:
 	virtual bool freeGPUMemory()=0;
 };
 
+class CFloat32ExistingGPUMemory : public astra::CFloat32CustomGPUMemory {
+public:
+	CFloat32ExistingGPUMemory(unsigned int x_, unsigned int y_, unsigned int z_, unsigned int pitch, float *D_ptr);
+	virtual bool allocateGPUMemory(unsigned int x, unsigned int y, unsigned int z, astraCUDA3d::Mem3DZeroMode zero);
+	virtual bool copyToGPUMemory(const astraCUDA3d::SSubDimensions3D &pos);
+	virtual bool copyFromGPUMemory(const astraCUDA3d::SSubDimensions3D &pos);
+	virtual bool freeGPUMemory();
+
+protected:
+	unsigned int x, y, z;
+};
+
+
+
 #endif
 
 /**

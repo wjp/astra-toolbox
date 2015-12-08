@@ -109,7 +109,7 @@ public:
 	 * @param _pCustomMemory custom memory handle
 	 *
 	 */
-	CFloat32ProjectionData3DMemory(CProjectionGeometry3D* _pGeometry, CFloat32CustomMemory* _pCustomMemory);
+	CFloat32ProjectionData3DMemory(CProjectionGeometry3D* _pGeometry, CFloat32CustomMemory* _pCustomMemory, CFloat32CustomGPUMemory* _pCustomGPUMemory);
 
 	/** 
 	 * Destructor.
@@ -163,7 +163,7 @@ public:
 	 * @param _pCustomMemory custom memory handle
 	 *
 	 */
-	bool initialize(CProjectionGeometry3D* _pGeometry, CFloat32CustomMemory* _pCustomMemory);
+	bool initialize(CProjectionGeometry3D* _pGeometry, CFloat32CustomMemory* _pCustomMemory, CFloat32CustomGPUMemory* _pCustomGPUMemory);
 
 
 

@@ -164,7 +164,7 @@ protected:
 	 * @param _pCustomMemory the custom memory handle
 	 */
 
-	bool _initialize(int _iWidth, int _iHeight, int _iDepth, CFloat32CustomMemory* _pCustomMemory);
+	bool _initialize(int _iWidth, int _iHeight, int _iDepth, CFloat32CustomMemory* _pCustomMemory, CFloat32CustomGPUMemory* _pCustomGPUMemory);
 
 public:
 

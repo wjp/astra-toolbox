@@ -29,6 +29,10 @@ $Id$
 #include "astra/Float32Data3D.h"
 #include <sstream>
 
+#ifdef ASTRA_CUDA
+#include "../../cuda/3d/mem3d.h"
+#endif
+
 using namespace std;
 
 namespace astra {
@@ -66,5 +70,57 @@ std::string CFloat32Data3D::description() const
 }
 //----------------------------------------------------------------------------------------
 
+#ifdef ASTRA_CUDA
+CFloat32ExistingGPUMemory::CFloat32ExistingGPUMemory(unsigned int x_, unsigned int y_, unsigned int z_, unsigned int pitch, float *D_ptr) : x(x_), y(y_), z(z_) {
+	hnd = astraCUDA3d::wrapHandle(D_ptr, x, y, z, pitch);
+}
+bool CFloat32ExistingGPUMemory::allocateGPUMemory(unsigned int x, unsigned int y, unsigned int z, astraCUDA3d::Mem3DZeroMode zero) {
+	assert(x == this->x);
+	assert(y == this->y);
+	assert(z == this->z);
+
+	if (zero == astraCUDA3d::INIT_ZERO)
+		return astraCUDA3d::zeroGPUMemory(hnd, x, y, z);
+	else
+		return true;
+}
+bool CFloat32ExistingGPUMemory::copyToGPUMemory(const astraCUDA3d::SSubDimensions3D &pos) {
+	assert(pos.nx == x);
+	assert(pos.ny == y);
+	assert(pos.nz == z);
+	assert(pos.pitch == x);
+	assert(pos.subx == 0);
+	assert(pos.suby == 0);
+	assert(pos.subnx == x);
+	assert(pos.subny == y);
+
+	// These are less necessary than x/y, but allowing access to
+	// subvolumes needs an interface change
+	assert(pos.subz == 0);
+	assert(pos.subnz == z);
+
+	return true;
+}
+bool CFloat32ExistingGPUMemory::copyFromGPUMemory(const astraCUDA3d::SSubDimensions3D &pos) {
+	assert(pos.nx == x);
+	assert(pos.ny == y);
+	assert(pos.nz == z);
+	assert(pos.pitch == x);
+	assert(pos.subx == 0);
+	assert(pos.suby == 0);
+	assert(pos.subnx == x);
+	assert(pos.subny == y);
+
+	// These are less necessary than x/y, but allowing access to
+	// subvolumes needs an interface change
+	assert(pos.subz == 0);
+	assert(pos.subnz == z);
+
+	return true;
+}
+bool CFloat32ExistingGPUMemory::freeGPUMemory() {
+	return true;
+}
+#endif
 
 } // end namespace astra
