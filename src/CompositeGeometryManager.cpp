@@ -988,6 +988,9 @@ bool CCompositeGeometryManager::doJobs(TJobList &jobs)
 			srcdims.suby = j.pInput->subY;
 			srcdims.subz = j.pInput->subZ;
 
+			ok = srcMem->allocateGPUMemory(inx, iny, inz, astraCUDA3d::INIT_NO);
+			if (!ok) ASTRA_ERROR("Error allocating GPU memory");
+
 			ok = srcMem->copyToGPUMemory(srcdims);
 			if (!ok) ASTRA_ERROR("Error copying input data to GPU");
 
