@@ -235,7 +235,7 @@ bool FP(const astra::CProjectionGeometry3D* pProjGeom, MemHandle3D projData, con
 #endif
 
 		switch (projKernel) {
-		case astra::ker3d_default:
+		case astra::ker3d_default: case astra::ker3d_line: // TODO: Implement line kernel for parallel beam
 			ok &= Par3DFP(volData.d->ptr, projData.d->ptr, dims, pParProjs, params);
 			break;
 		case astra::ker3d_sum_square_weights:
@@ -285,9 +285,10 @@ bool BP(const astra::CProjectionGeometry3D* pProjGeom, MemHandle3D projData, con
 
 	params.bFDKWeighting = bFDKWeighting;
 
-	if (pParProjs)
+	if (pParProjs) {
+		// TODO: Implement line kernel for parallel beam
 		ok &= Par3DBP(volData.d->ptr, projData.d->ptr, dims, pParProjs, params);
-	else {
+	} else {
 		switch (projKernel) {
 		case astra::ker3d_default:
 			ok &= ConeBP(volData.d->ptr, projData.d->ptr, dims, pConeProjs, params);
