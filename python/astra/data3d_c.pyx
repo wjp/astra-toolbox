@@ -45,7 +45,7 @@ from .PyXMLDocument cimport XMLDocument
 cimport utils
 from .utils import wrap_from_bytes
 
-from .pythonutils import geom_size
+from .pythonutils import geom_size, GPULink
 
 import operator
 
@@ -54,10 +54,6 @@ from six.moves import reduce
 
 cdef extern from "Python.h":
     void* PyLong_AsVoidPtr(object)
-
-# ODL
-
-import odl
 
 
 cdef CData3DManager * man3d = <CData3DManager * >PyData3DManager.getSingletonPtr()
@@ -79,9 +75,9 @@ def create(datatype,geometry,data=None, link=False):
     cdef CFloat32CustomGPUMemory * pCustomGPU = NULL
 
     if link:
-        if isinstance(data, odl.space.cu_ntuples.CudaRnVector):
+        if isinstance(data, GPULink):
             s = geom_size(geometry)
-            if data.size != s[0] * s[1] * s[2]:
+            if geom_size(geometry) != ( data.z, data.y, data.x ):
                 raise Exception("The dimensions of the data do not match those specified in the geometry.")
         elif data.shape!=geom_size(geometry):
             raise Exception("The dimensions of the data do not match those specified in the geometry.")
@@ -94,9 +90,13 @@ def create(datatype,geometry,data=None, link=False):
             del pGeometry
             raise Exception('Geometry class not initialized.')
         if link:
-            if isinstance(data, odl.space.cu_ntuples.CudaRnVector):
+            if isinstance(data, GPULink):
                 s = geom_size(geometry)
-                pCustomGPU = <CFloat32CustomGPUMemory*> new CFloat32ExistingGPUMemory(s[2],s[1],s[0],s[2],<float*>PyLong_AsVoidPtr(data.data_ptr))
+                # HACK: We give astra dummy data of size 1, and hope it will
+                # never access it...
+                dummydata = np.zeros([1], dtype=np.float32)
+                pCustom = <CFloat32CustomMemory*> new CFloat32CustomPython(dummydata)
+                pCustomGPU = <CFloat32CustomGPUMemory*> new CFloat32ExistingGPUMemory(data.x,data.y,data.z,data.pitch/4,<float*>PyLong_AsVoidPtr(data.ptr))
             else:
                 pCustom = <CFloat32CustomMemory*> new CFloat32CustomPython(data)
             pDataObject3D = <CFloat32Data3DMemory * > new CFloat32VolumeData3DMemory(pGeometry, pCustom, pCustomGPU)
@@ -123,9 +123,13 @@ def create(datatype,geometry,data=None, link=False):
             del ppGeometry
             raise Exception('Geometry class not initialized.')
         if link:
-            if isinstance(data, odl.space.cu_ntuples.CudaRnVector):
+            if isinstance(data, GPULink):
                 s = geom_size(geometry)
-                pCustomGPU = <CFloat32CustomGPUMemory*> new CFloat32ExistingGPUMemory(s[2],s[1],s[0],s[2],<float*>PyLong_AsVoidPtr(data.data_ptr))
+                # HACK: We give astra dummy data of size 1, and hope it will
+                # never access it...
+                dummydata = np.zeros([1], dtype=np.float32)
+                pCustom = <CFloat32CustomMemory*> new CFloat32CustomPython(dummydata)
+                pCustomGPU = <CFloat32CustomGPUMemory*> new CFloat32ExistingGPUMemory(data.x,data.y,data.z,data.pitch/4,<float*>PyLong_AsVoidPtr(data.ptr))
             else:
                 pCustom = <CFloat32CustomMemory*> new CFloat32CustomPython(data)
             pDataObject3D = <CFloat32Data3DMemory * > new CFloat32ProjectionData3DMemory(ppGeometry, pCustom, pCustomGPU)

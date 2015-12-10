@@ -61,3 +61,12 @@ def geom_size(geom, dim=None):
         s = s[dim]
 
     return s
+
+class GPULink:
+    """Utility class for astra.data3d.link with a CUDA pointer"""
+    def __init__(self, ptr, x, y, z, pitch):
+        self.ptr = ptr
+        self.x = x
+        self.y = y
+        self.z = z
+        self.pitch = pitch
