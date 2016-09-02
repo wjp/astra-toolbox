@@ -281,7 +281,7 @@ This method can be called in a number of ways:
         raise Exception('Error: unknown type ' + intype)
 
 
-def create_backprojection(data, proj_id, returnData=True):
+def create_backprojection(data, proj_id, returnData=True, out=None):
     """Create a backprojection of a sinogram (2D).
 
 :param data: Sinogram data or ID.
@@ -290,6 +290,8 @@ def create_backprojection(data, proj_id, returnData=True):
 :type proj_id: :class:`int`
 :param returnData: If False, only return the ID of the backprojection.
 :type returnData: :class:`bool`
+:param out: Optional ID of existing data object to contain the output
+:type out: :class:`int`
 :returns: :class:`int` or (:class:`int`, :class:`numpy.ndarray`) -- If ``returnData=False``, returns the ID of the backprojection. Otherwise, returns a tuple containing the ID of the backprojection and the backprojection itself, in that order.
 
 """
@@ -299,7 +301,10 @@ def create_backprojection(data, proj_id, returnData=True):
         sino_id = data2d.create('-sino', proj_geom, data)
     else:
         sino_id = data
-    vol_id = data2d.create('-vol', vol_geom, 0)
+    if out is None:
+        vol_id = data2d.create('-vol', vol_geom, 0)
+    else:
+        vol_id = out
 
     if projector.is_cuda(proj_id):
         algString = 'BP_CUDA'
@@ -322,7 +327,7 @@ def create_backprojection(data, proj_id, returnData=True):
     else:
         return vol_id
 
-def create_backprojection3d_gpu(data, proj_geom, vol_geom, returnData=True):
+def create_backprojection3d_gpu(data, proj_geom, vol_geom, returnData=True, out=None):
     """Create a backprojection of a sinogram (3D) using CUDA.
 
 :param data: Sinogram data or ID.
@@ -333,6 +338,8 @@ def create_backprojection3d_gpu(data, proj_geom, vol_geom, returnData=True):
 :type vol_geom: :class:`dict`
 :param returnData: If False, only return the ID of the backprojection.
 :type returnData: :class:`bool`
+:param out: Optional ID of existing data object to contain the output
+:type out: :class:`int`
 :returns: :class:`int` or (:class:`int`, :class:`numpy.ndarray`) -- If ``returnData=False``, returns the ID of the backprojection. Otherwise, returns a tuple containing the ID of the backprojection and the backprojection itself, in that order.
 
 """
@@ -341,7 +348,10 @@ def create_backprojection3d_gpu(data, proj_geom, vol_geom, returnData=True):
     else:
         sino_id = data
 
-    vol_id = data3d.create('-vol', vol_geom, 0)
+    if out is None:
+        vol_id = data3d.create('-vol', vol_geom, 0)
+    else:
+        vol_id = out
 
     cfg = astra_dict('BP3D_CUDA')
     cfg['ProjectionDataId'] = sino_id
@@ -359,7 +369,7 @@ def create_backprojection3d_gpu(data, proj_geom, vol_geom, returnData=True):
         return vol_id
 
 
-def create_sino(data, proj_id, returnData=True, gpuIndex=None):
+def create_sino(data, proj_id, returnData=True, gpuIndex=None, out=None):
     """Create a forward projection of an image (2D).
 
     :param data: Image data or ID.
@@ -370,6 +380,8 @@ def create_sino(data, proj_id, returnData=True, gpuIndex=None):
     :type returnData: :class:`bool`
     :param gpuIndex: Optional GPU index.
     :type gpuIndex: :class:`int`
+    :param out: Optional ID of existing data object to contain the output
+    :type out: :class:`int`
     :returns: :class:`int` or (:class:`int`, :class:`numpy.ndarray`)
 
     If ``returnData=False``, returns the ID of the forward
@@ -384,7 +396,10 @@ def create_sino(data, proj_id, returnData=True, gpuIndex=None):
         volume_id = data2d.create('-vol', vol_geom, data)
     else:
         volume_id = data
-    sino_id = data2d.create('-sino', proj_geom, 0)
+    if out is None:
+        sino_id = data2d.create('-sino', proj_geom, 0)
+    else:
+        sino_id = out
     if projector.is_cuda(proj_id):
         algString = 'FP_CUDA'
     else:
@@ -408,7 +423,7 @@ def create_sino(data, proj_id, returnData=True, gpuIndex=None):
 
 
 
-def create_sino3d_gpu(data, proj_geom, vol_geom, returnData=True, gpuIndex=None):
+def create_sino3d_gpu(data, proj_geom, vol_geom, returnData=True, gpuIndex=None, out=None):
     """Create a forward projection of an image (3D).
 
 :param data: Image data or ID.
@@ -421,6 +436,8 @@ def create_sino3d_gpu(data, proj_geom, vol_geom, returnData=True, gpuIndex=None)
 :type returnData: :class:`bool`
 :param gpuIndex: Optional GPU index.
 :type gpuIndex: :class:`int`
+:param out: Optional ID of existing data object to contain the output
+:type out: :class:`int`
 :returns: :class:`int` or (:class:`int`, :class:`numpy.ndarray`) -- If ``returnData=False``, returns the ID of the forward projection. Otherwise, returns a tuple containing the ID of the forward projection and the forward projection itself, in that order.
 
 """
@@ -429,7 +446,10 @@ def create_sino3d_gpu(data, proj_geom, vol_geom, returnData=True, gpuIndex=None)
         volume_id = data3d.create('-vol', vol_geom, data)
     else:
         volume_id = data
-    sino_id = data3d.create('-sino', proj_geom, 0)
+    if out is None:
+        sino_id = data3d.create('-sino', proj_geom, 0)
+    else:
+        sino_id = out
     algString = 'FP3D_CUDA'
     cfg = astra_dict(algString)
     if not gpuIndex==None:
@@ -448,7 +468,7 @@ def create_sino3d_gpu(data, proj_geom, vol_geom, returnData=True, gpuIndex=None)
         return sino_id
 
 
-def create_reconstruction(rec_type, proj_id, sinogram, iterations=1, use_mask='no', mask=np.array([]), use_minc='no', minc=0, use_maxc='no', maxc=255, returnData=True, filterType=None, filterData=None):
+def create_reconstruction(rec_type, proj_id, sinogram, iterations=1, use_mask='no', mask=np.array([]), use_minc='no', minc=0, use_maxc='no', maxc=255, returnData=True, filterType=None, filterData=None, out=None):
     """Create a reconstruction of a sinogram (2D).
 
 :param rec_type: Name of the reconstruction algorithm.
@@ -477,6 +497,8 @@ def create_reconstruction(rec_type, proj_id, sinogram, iterations=1, use_mask='n
 :type filterType: :class:`string`
 :param filterData: Optional filter data for filter-based methods.
 :type filterData: :class:`numpy.ndarray`
+:param out: Optional ID of existing data object to contain the output
+:type out: :class:`int`
 :returns: :class:`int` or (:class:`int`, :class:`numpy.ndarray`) -- If ``returnData=False``, returns the ID of the reconstruction. Otherwise, returns a tuple containing the ID of the reconstruction and reconstruction itself, in that order.
 
 """
@@ -486,7 +508,10 @@ def create_reconstruction(rec_type, proj_id, sinogram, iterations=1, use_mask='n
     else:
         sino_id = sinogram
     vol_geom = projector.volume_geometry(proj_id)
-    recon_id = data2d.create('-vol', vol_geom, 0)
+    if out is None:
+        recon_id = data2d.create('-vol', vol_geom, 0)
+    else:
+        recon_id = out
     cfg = astra_dict(rec_type)
     cfg['ProjectorId'] = proj_id
     cfg['ProjectionDataId'] = sino_id
