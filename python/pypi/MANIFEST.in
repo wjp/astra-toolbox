@@ -1,0 +1,6 @@
+include requirements.txt
+recursive-include astra *
+recursive-include astra-toolbox *
+recursive-exclude astra-toolbox/.git *
+recursive-exclude astra-toolbox/matlab *
+recursive-exclude astra-toolbox/samples/matlab *
