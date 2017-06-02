@@ -40,7 +40,7 @@ along with the ASTRA Toolbox. If not, see <http://www.gnu.org/licenses/>.
 #define M_PI 3.14159265358979323846
 #endif
 
-#define ASTRA_CUDA_ASSERT(err) do {  if (err != cudaSuccess) { astraCUDA::reportCudaError(err); assert(err == cudaSuccess); } } while(0)
+#define ASTRA_CUDA_ASSERT(err) do {  if (err != cudaSuccess) { astraCUDA::reportCudaError(err, __FUNCTION__); assert(err == cudaSuccess); } } while(0)
 
 
 namespace astraCUDA {
@@ -72,7 +72,7 @@ void duplicateProjectionData(float* D_dst, float* D_src, unsigned int pitch, con
 
 
 bool cudaTextForceKernelsCompletion();
-void reportCudaError(cudaError_t err);
+void reportCudaError(cudaError_t err, const char *loc);
 
 
 

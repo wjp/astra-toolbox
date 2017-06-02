@@ -45,6 +45,7 @@ along with the ASTRA Toolbox. If not, see <http://www.gnu.org/licenses/>.
 
 #include "../cuda/2d/astra.h"
 #include "../cuda/3d/mem3d.h"
+#include "../cuda/3d/astra3d.h"
 
 #include <cstring>
 #include <sstream>
@@ -1330,6 +1331,29 @@ bool CCompositeGeometryManager::doBP(CProjector3D *pProjector, const std::vector
 }
 
 
+static astraCUDA3d::SSubDimensions3D getPSFDimensions(const CCompositeGeometryManager::CProjectionPart *part)
+{
+	size_t projx, projy, projz;
+	part->getDims(projx, projy, projz);
+
+	unsigned int PSF_U, PSF_V;
+	getRequiredPSFSize(projx, projz, PSF_U, PSF_V);
+
+	astraCUDA3d::SSubDimensions3D subdims;
+	subdims.nx = PSF_U;
+	subdims.pitch = PSF_U;
+	subdims.ny = 1;
+	subdims.nz = PSF_V;
+	subdims.subnx = subdims.nx;
+	subdims.subny = subdims.ny;
+	subdims.subnz = subdims.nz;
+	subdims.subx = 0;
+	subdims.suby = 0;
+	subdims.subz = 0;
+
+	return subdims;
+}
+
 
 
 static bool doJob(const CCompositeGeometryManager::TJobSet::const_iterator& iter)
@@ -1406,11 +1430,17 @@ static bool doJob(const CCompositeGeometryManager::TJobSet::const_iterator& iter
 		int detectorSuperSampling = 1;
 		int voxelSuperSampling = 1;
 		bool densityWeighting = false;
+		CFloat32CustomGPUMemory *PSFRe = 0;
+		CFloat32CustomGPUMemory *PSFIm = 0;
 		if (projector) {
 			projKernel = projector->getProjectionKernel();
 			detectorSuperSampling = projector->getDetectorSuperSampling();
 			voxelSuperSampling = projector->getVoxelSuperSampling();
 			densityWeighting = projector->getDensityWeighting();
+			if (projector->getPSF_Re() && projector->getPSF_Im()) {
+				PSFRe = createGPUMemoryHandler(projector->getPSF_Re());
+				PSFIm = createGPUMemoryHandler(projector->getPSF_Im());
+			}
 		}
 
 		size_t inx, iny, inz;
@@ -1447,12 +1477,70 @@ static bool doJob(const CCompositeGeometryManager::TJobSet::const_iterator& iter
 			ok = astraCUDA3d::FP(((CCompositeGeometryManager::CProjectionPart*)j.pOutput.get())->pGeom, dstMem->hnd, ((CCompositeGeometryManager::CVolumePart*)j.pInput.get())->pGeom, srcMem->hnd, detectorSuperSampling, projKernel);
 			if (!ok) ASTRA_ERROR("Error performing sub-FP");
 			ASTRA_DEBUG("CCompositeGeometryManager::doJobs: FP done");
+
+			if (PSFRe && PSFIm) {
+				if (!j.pOutput->isFull()) {
+					ASTRA_ERROR("Can't apply PSF to split output volume");
+				} else {
+					ASTRA_DEBUG("CCompositeGeometryManager::doJobs: doing PSF for FP");
+
+					astraCUDA3d::SSubDimensions3D psfdims = getPSFDimensions((CCompositeGeometryManager::CProjectionPart*)(j.pOutput.get()));
+
+
+					ok = PSFRe->allocateGPUMemory(psfdims.nx, psfdims.ny, psfdims.nz, astraCUDA3d::INIT_NO);
+					if (!ok) ASTRA_ERROR("Error allocating GPU memory");
+
+					ok = PSFRe->copyToGPUMemory(psfdims);
+					if (!ok) ASTRA_ERROR("Error copying PSF data to GPU");
+
+					ok = PSFIm->allocateGPUMemory(psfdims.nx, psfdims.ny, psfdims.nz, astraCUDA3d::INIT_NO);
+					if (!ok) ASTRA_ERROR("Error allocating GPU memory");
+
+					ok = PSFIm->copyToGPUMemory(psfdims);
+					if (!ok) ASTRA_ERROR("Error copying PSF data to GPU");
+
+					ok = astraCUDA3d::PSF(((CCompositeGeometryManager::CProjectionPart*)j.pOutput.get())->pGeom, dstMem->hnd, PSFRe->hnd, PSFIm->hnd, false, true);
+					if (!ok) ASTRA_ERROR("Error performing PSF");
+					ASTRA_DEBUG("CCompositeGeometryManager::doJobs: PSF done");
+				}
+			}
+
 		}
 		break;
 		case CCompositeGeometryManager::SJob::JOB_BP:
 		{
 			assert(dynamic_cast<CCompositeGeometryManager::CVolumePart*>(j.pOutput.get()));
 			assert(dynamic_cast<CCompositeGeometryManager::CProjectionPart*>(j.pInput.get()));
+
+			if (PSFRe && PSFIm) {
+				// TODO: Check that input isn't persistent on the GPU
+				if (!j.pInput->isFull()) {
+					ASTRA_ERROR("Can't apply PSF to split input volume");
+				} else if (dynamic_cast<CFloat32ExistingGPUMemory *>(srcMem)) {
+					ASTRA_ERROR("Can't apply PSF BP to persistent GPU volume");
+				} else {
+					ASTRA_DEBUG("CCompositeGeometryManager::doJobs: doing PSF for BP");
+
+					astraCUDA3d::SSubDimensions3D psfdims = getPSFDimensions((CCompositeGeometryManager::CProjectionPart*)(j.pInput.get()));
+
+
+					ok = PSFRe->allocateGPUMemory(psfdims.nx, psfdims.ny, psfdims.nz, astraCUDA3d::INIT_NO);
+					if (!ok) ASTRA_ERROR("Error allocating GPU memory");
+
+					ok = PSFRe->copyToGPUMemory(psfdims);
+					if (!ok) ASTRA_ERROR("Error copying PSF data to GPU");
+
+					ok = PSFIm->allocateGPUMemory(psfdims.nx, psfdims.ny, psfdims.nz, astraCUDA3d::INIT_NO);
+					if (!ok) ASTRA_ERROR("Error allocating GPU memory");
+
+					ok = PSFIm->copyToGPUMemory(psfdims);
+					if (!ok) ASTRA_ERROR("Error copying PSF data to GPU");
+
+					ok = astraCUDA3d::PSF(((CCompositeGeometryManager::CProjectionPart*)j.pInput.get())->pGeom, srcMem->hnd, PSFRe->hnd, PSFIm->hnd, true, true);
+					if (!ok) ASTRA_ERROR("Error performing PSF");
+					ASTRA_DEBUG("CCompositeGeometryManager::doJobs: PSF done");
+				}
+			}
 
 			ASTRA_DEBUG("CCompositeGeometryManager::doJobs: doing BP");
 
@@ -1484,6 +1572,16 @@ static bool doJob(const CCompositeGeometryManager::TJobSet::const_iterator& iter
 
 		ok = srcMem->freeGPUMemory();
 		if (!ok) ASTRA_ERROR("Error freeing GPU memory");
+
+		if (PSFRe) {
+			ok = PSFRe->freeGPUMemory();
+			if (!ok) ASTRA_ERROR("Error freeing GPU memory for PSF");
+		}
+
+		if (PSFIm) {
+			ok = PSFIm->freeGPUMemory();
+			if (!ok) ASTRA_ERROR("Error freeing GPU memory for PSF");
+		}
 
 		delete srcMem;
 	}

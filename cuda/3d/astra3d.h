@@ -308,6 +308,8 @@ _AstraExport bool astraCudaBP_SIRTWeighted(float* pfVolume, const float* pfProje
                       const CProjectionGeometry3D* pProjGeom,
                       int iGPUIndex, int iVoxelSuperSampling);
 
+_AstraExport void getRequiredPSFSize(unsigned int projU, unsigned int projV, unsigned int &PSF_U, unsigned int &PSF_V);
+
 }
 
 

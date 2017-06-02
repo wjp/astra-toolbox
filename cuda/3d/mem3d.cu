@@ -40,6 +40,7 @@ along with the ASTRA Toolbox. If not, see <http://www.gnu.org/licenses/>.
 #include "par3d_fp.h"
 #include "par3d_bp.h"
 #include "fdk.h"
+#include "psf3d.h"
 
 #include "astra/Logging.h"
 
@@ -318,6 +319,13 @@ bool FDK(const astra::CProjectionGeometry3D* pProjGeom, MemHandle3D projData, co
 
 
 }
+
+
+bool PSF(const astra::CProjectionGeometry3D* pProjGeom, MemHandle3D projData, MemHandle3D PSF_Re, MemHandle3D PSF_Im, bool adjoint, bool singlePSF)
+{
+	return applyPSF(projData.d->ptr, PSF_Re.d->ptr, PSF_Im.d->ptr, pProjGeom, adjoint, singlePSF);
+}
+
 
 _AstraExport MemHandle3D wrapHandle(float *D_ptr, unsigned int x, unsigned int y, unsigned int z, unsigned int pitch)
 {

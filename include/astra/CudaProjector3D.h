@@ -41,6 +41,8 @@ along with the ASTRA Toolbox. If not, see <http://www.gnu.org/licenses/>.
 namespace astra
 {
 
+class CFloat32ProjectionData3D;
+
 /** This is a three-dimensional CUDA-projector.
  *  It is essentially a fake projector, containing settings relevant for the
  *  actual CUDA code.
@@ -119,6 +121,9 @@ public:
 	int getGPUIndex() const { return m_iGPUIndex; }
 	bool getDensityWeighting() const { return m_bDensityWeighting; }
 
+	CFloat32ProjectionData3D* getPSF_Re() const { return m_pPSF_Re; }
+	CFloat32ProjectionData3D* getPSF_Im() const { return m_pPSF_Im; }
+
 protected:
 
 	Cuda3DProjectionKernel m_projectionKernel;
@@ -127,6 +132,8 @@ protected:
 	int m_iGPUIndex;
 	bool m_bDensityWeighting;
 
+	CFloat32ProjectionData3D * m_pPSF_Re;
+	CFloat32ProjectionData3D * m_pPSF_Im;
 };
 
 

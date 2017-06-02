@@ -27,12 +27,17 @@ along with the ASTRA Toolbox. If not, see <http://www.gnu.org/licenses/>.
 
 #include "astra/CudaProjector3D.h"
 
+#include "astra/AstraObjectManager.h"
+
 #include "astra/VolumeGeometry3D.h"
 #include "astra/ProjectionGeometry3D.h"
 
 #include "astra/ConeProjectionGeometry3D.h"
 #include "astra/ConeVecProjectionGeometry3D.h"
 
+#include "astra/Float32ProjectionData3D.h"
+
+#include "astra/Logging.h"
 
 namespace astra
 {
@@ -68,6 +73,9 @@ void CCudaProjector3D::_clear()
 	m_iDetectorSuperSampling = 1;
 	m_iGPUIndex = -1;
 	m_bDensityWeighting = false;
+
+	m_pPSF_Re = 0;
+	m_pPSF_Im = 0;
 }
 
 //----------------------------------------------------------------------------------------
@@ -90,6 +98,20 @@ bool CCudaProjector3D::_check()
 	// volume geometry
 	ASTRA_CONFIG_CHECK(m_pVolumeGeometry, "CudaProjector3D", "VolumeGeometry3D not initialized.");
 	ASTRA_CONFIG_CHECK(m_pVolumeGeometry->isInitialized(), "CudaProjector3D", "VolumeGeometry3D not initialized.");
+
+	if (m_pPSF_Re && m_pPSF_Im) {
+		unsigned int paddedU, paddedV;
+		getRequiredPSFSize(m_pProjectionGeometry->getDetectorColCount(), m_pProjectionGeometry->getDetectorRowCount(), paddedU, paddedV);
+
+		if (m_pPSF_Re->getDetectorColCount() != paddedU || m_pPSF_Re->getDetectorRowCount() != paddedV) {
+			ASTRA_ERROR("Dimensions of PSF_Re are incorrect. They should be %d x %d instead of %d x %d", paddedV, paddedU, m_pPSF_Re->getDetectorRowCount(), m_pPSF_Re->getDetectorColCount());
+			return false;
+		}
+		if (m_pPSF_Im->getDetectorColCount() != paddedU || m_pPSF_Im->getDetectorRowCount() != paddedV) {
+			ASTRA_ERROR("Dimensions of PSF_Im are incorrect. They should be %d x %d instead of %d x %d", paddedV, paddedU, m_pPSF_Im->getDetectorRowCount(), m_pPSF_Im->getDetectorColCount());
+			return false;
+		}
+	}
 
 	return true;
 }
@@ -144,6 +166,18 @@ bool CCudaProjector3D::initialize(const Config& _cfg)
 	CC.markOptionParsed("GPUIndex");
 	if (!_cfg.self.hasOption("GPUIndex"))
 		CC.markOptionParsed("GPUindex");
+
+	if (_cfg.self.hasOption("PSF_Re") && _cfg.self.hasOption("PSF_Im")) {
+		int id;
+		id = (int)_cfg.self.getOptionNumerical("PSF_Re");
+		m_pPSF_Re = dynamic_cast<CFloat32ProjectionData3D*>(CData3DManager::getSingleton().get(id));
+
+		id = (int)_cfg.self.getOptionNumerical("PSF_Im");
+		m_pPSF_Im = dynamic_cast<CFloat32ProjectionData3D*>(CData3DManager::getSingleton().get(id));
+		CC.markOptionParsed("PSF_Re");
+		CC.markOptionParsed("PSF_Im");
+
+	}
 
 	m_bIsInitialized = _check();
 	return m_bIsInitialized;

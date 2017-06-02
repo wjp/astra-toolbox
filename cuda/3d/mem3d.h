@@ -100,6 +100,8 @@ bool BP(const astra::CProjectionGeometry3D* pProjGeom, MemHandle3D projData, con
 
 bool FDK(const astra::CProjectionGeometry3D* pProjGeom, MemHandle3D projData, const astra::CVolumeGeometry3D* pVolGeom, MemHandle3D volData, bool bShortScan, const float *pfFilter = 0);
 
+bool PSF(const astra::CProjectionGeometry3D* pProjGeom, MemHandle3D projData, MemHandle3D PSF_Re, MemHandle3D PSF_Im, bool adjoint, bool singlePSF);
+
 }
 
 #endif

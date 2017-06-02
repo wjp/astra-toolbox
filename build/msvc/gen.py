@@ -176,6 +176,7 @@ P_astra["filters"]["CUDA\\cuda source"] = [
 "cuda\\3d\\mem3d.cu",
 "cuda\\3d\\par3d_bp.cu",
 "cuda\\3d\\par3d_fp.cu",
+"cuda\\3d\\psf3d.cu",
 "cuda\\3d\\sirt3d.cu",
 "cuda\\3d\\util3d.cu",
 ]
@@ -312,6 +313,7 @@ P_astra["filters"]["CUDA\\cuda headers"] = [
 "cuda\\3d\\mem3d.h",
 "cuda\\3d\\par3d_bp.h",
 "cuda\\3d\\par3d_fp.h",
+"cuda\\3d\\psf3d.h",
 "cuda\\3d\\sirt3d.h",
 "cuda\\3d\\util3d.h",
 ]

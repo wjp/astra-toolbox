@@ -91,7 +91,7 @@ bool allocateVolume(float*& ptr, unsigned int width, unsigned int height, unsign
 	size_t p;
 	cudaError_t ret = cudaMallocPitch((void**)&ptr, &p, sizeof(float)*width, height);
 	if (ret != cudaSuccess) {
-		reportCudaError(ret);
+		reportCudaError(ret, "allocateVolume");
 		ASTRA_ERROR("Failed to allocate %dx%d GPU buffer", width, height);
 		return false;
 	}
@@ -267,10 +267,10 @@ bool cudaTextForceKernelsCompletion()
 	return true;
 }
 
-void reportCudaError(cudaError_t err)
+void reportCudaError(cudaError_t err, const char *loc)
 {
 	if(err != cudaSuccess)
-		ASTRA_ERROR("CUDA error %d: %s.", err, cudaGetErrorString(err));
+		ASTRA_ERROR("CUDA error in %s: %d (%s).", loc, err, cudaGetErrorString(err));
 }
 
 
