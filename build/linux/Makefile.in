@@ -34,6 +34,8 @@ all: $(TARGETS)
 prefix=@prefix@
 exec_prefix=@exec_prefix@
 datarootdir=@datarootdir@
+includedir=@includedir@
+libdir=@libdir@
 
 srcdir=@srcdir@
 abs_top_builddir=@abs_top_builddir@
@@ -57,7 +59,7 @@ BOOSTUTF_LIBS=@LIBS_BOOSTUTF@
 
 ifeq ($(cuda),yes)
 CPPFLAGS  += @CPPFLAGS_CUDA@ -DASTRA_CUDA
-NVCCFLAGS += @NVCCFLAGS_EXTRA@ @CPPFLAGS_CUDA@ -I$(srcdir)/../.. -I$(srcdir)/../../include -DASTRA_CUDA
+NVCCFLAGS += @NVCCFLAGS_EXTRA@ @CPPFLAGS_CUDA@ -I$(srcdir)/../../include -DASTRA_CUDA
 LDFLAGS   += @LDFLAGS_CUDA@
 LIBS      += -lcudart -lcufft
 NVCC       = @NVCC@
@@ -81,17 +83,22 @@ endif
 ifeq ($(python),yes)
 PYTHON      = @PYTHON@
 PYINCDIR := $(shell $(PYTHON) -c 'from __future__ import print_function; from distutils.sysconfig import get_python_inc; print(get_python_inc())')
+PYLIBDIR := $(shell $(PYTHON) -c 'from distutils.sysconfig import get_config_var; import six; six.print_(get_config_var("LIBDIR"))')
 PYLIBVER = `basename $(PYINCDIR)`
 CPPFLAGS += -DASTRA_PYTHON -I$(PYINCDIR)
 PYCPPFLAGS  := $(CPPFLAGS)
 PYCPPFLAGS  += -I../include
-PYLDFLAGS = $(MODLDFLAGS)
+
+# copy the current MODLDFLAGS to PYLDFLAGS, and then add flags for matlab/octave
+PYLDFLAGS := $(MODLDFLAGS)
+MODLDFLAGS += -L$(PYLIBDIR)
+
 MODPYLIBS=-l$(PYLIBVER)
 endif
 
 # This is below where PYCPPFLAGS copies CPPFLAGS.  The python code is built
 # from a different directory, so these relative includes would be wrong.
-CPPFLAGS+=-I$(srcdir)/../.. -I$(srcdir)/../../include -I$(srcdir)/../../lib/include
+CPPFLAGS+=-I$(srcdir)/../../include -I$(srcdir)/../../lib/include
 
 ifeq ($(matlab),yes)
 MEXFLAGS  = -cxx
@@ -141,7 +148,9 @@ BASE_OBJECTS=\
 	src/FanFlatBeamStripKernelProjector2D.lo \
 	src/FanFlatProjectionGeometry2D.lo \
 	src/FanFlatVecProjectionGeometry2D.lo \
+	src/Features.lo \
 	src/FilteredBackProjectionAlgorithm.lo \
+	src/Filters.lo \
 	src/Float32Data2D.lo \
 	src/Float32Data3D.lo \
 	src/Float32Data3DMemory.lo \
@@ -154,18 +163,21 @@ BASE_OBJECTS=\
 	src/Float32VolumeData3DMemory.lo \
 	src/ForwardProjectionAlgorithm.lo \
 	src/Fourier.lo \
+	src/GeometryUtil2D.lo \
 	src/GeometryUtil3D.lo \
 	src/Globals.lo \
 	src/Logging.lo \
 	src/ParallelBeamBlobKernelProjector2D.lo \
+	src/ParallelBeamDistanceDrivenProjector2D.lo \
 	src/ParallelBeamLinearKernelProjector2D.lo \
 	src/ParallelBeamLineKernelProjector2D.lo \
 	src/ParallelBeamStripKernelProjector2D.lo \
 	src/ParallelProjectionGeometry2D.lo \
+	src/ParallelVecProjectionGeometry2D.lo \
 	src/ParallelProjectionGeometry3D.lo \
 	src/ParallelVecProjectionGeometry3D.lo \
 	src/PlatformDepSystemCode.lo \
-	src/PluginAlgorithm.lo \
+	src/PluginAlgorithmFactory.lo \
 	src/ProjectionGeometry2D.lo \
 	src/ProjectionGeometry3D.lo \
 	src/Projector2D.lo \
@@ -179,8 +191,7 @@ BASE_OBJECTS=\
 	src/VolumeGeometry2D.lo \
 	src/VolumeGeometry3D.lo \
 	src/XMLDocument.lo \
-	src/XMLNode.lo \
-	src/swrap.lo
+	src/XMLNode.lo
 
 CUDA_CXX_OBJECTS=\
 	src/CudaProjector2D.lo \
@@ -214,6 +225,7 @@ CUDA_OBJECTS=\
 	cuda/2d/par_bp.lo \
 	cuda/2d/fan_fp.lo \
 	cuda/2d/fan_bp.lo \
+	cuda/2d/fbp.lo \
 	cuda/2d/sirt.lo \
 	cuda/2d/sart.lo \
 	cuda/2d/cgls.lo \
@@ -346,7 +358,7 @@ endif
 endif
 
 libastra.la: $(ALL_OBJECTS)
-	./libtool --mode=link --tag=CXX $(LD) -rpath @libdir@ -o $@ $(LDFLAGS) $(LIBS) $+
+	./libtool --mode=link --tag=CXX $(LD) -rpath $(libdir) -o $@ $(LDFLAGS) $(LIBS) $+
 
 %.o: %.cpp
 	$(MKDIR) $(*D)/$(DEPDIR)
@@ -427,9 +439,9 @@ distclean: clean
 	rm -f $(srcdir)/configure Makefile
 
 install-libraries: libastra.la
-	$(INSTALL_SH) -m 755 -d @libdir@
-	./libtool --mode=install $(INSTALL_SH) -m 644 libastra.la @libdir@
-	./libtool --mode=finish @libdir@
+	$(INSTALL_SH) -m 755 -d $(libdir)
+	./libtool --mode=install $(INSTALL_SH) -m 644 libastra.la $(libdir)
+	./libtool --mode=finish $(libdir)
 
 
 # ------------------------
@@ -507,8 +519,15 @@ install-matlab: $(MATLAB_MEX) install-matlab-so
 	$(INSTALL_SH) -m 755 -d $(MATLABBASE)
 	$(INSTALL_SH) -m 755 -d $(MATLABBASE)/mex
 	$(INSTALL_SH) -m 755 -d $(MATLABBASE)/tools
+	$(INSTALL_SH) -m 755 -d $(MATLABBASE)/algorithms
 	$(INSTALL_SH) -m 755 $(MATLAB_MEX) $(MATLABBASE)/mex
 	$(INSTALL_SH) -m 644 $(srcdir)/../../matlab/tools/*.m $(MATLABBASE)/tools
+
+	for D in DART DART/tools DART/examples plot_geom plot_geom/private plot_geom/+draw plot_geom/+draw/private plot_geom/+parseargs plot_geom/+stlTools; do \
+		$(INSTALL_SH) -m 755 -d $(MATLABBASE)/algorithms/$$D; \
+		$(INSTALL_SH) -m 644 $(srcdir)/../../matlab/algorithms/$$D/*.m $(MATLABBASE)/algorithms/$$D; \
+	done
+
 # TODO: docs
 else
 install-matlab:
@@ -527,8 +546,37 @@ else
 install-octave:
 endif
 
+ifeq ($(install_type),module)
 
-Makefile: $(srcdir)/Makefile.in config.status
+install-dev:
+	@echo "install-dev is not compatible with the 'module' install type."
+	@echo "Please use 'prefix' or 'dir' instead."
+
+install-headers:
+	@echo "install-headers is not compatible with the 'module' install type."
+	@echo "Please use 'prefix' or 'dir' instead."
+
+else
+
+install-headers:
+	$(INSTALL_SH) -m 755 -d $(includedir)
+	$(INSTALL_SH) -m 755 -d $(includedir)/astra
+	$(INSTALL_SH) -m 755 -d $(includedir)/astra/cuda
+	$(INSTALL_SH) -m 755 -d $(includedir)/astra/cuda/2d
+	$(INSTALL_SH) -m 755 -d $(includedir)/astra/cuda/3d
+	$(INSTALL_SH) -m 644 $(srcdir)/../../include/astra/*.h $(includedir)/astra
+	$(INSTALL_SH) -m 644 $(srcdir)/../../include/astra/*.inl $(includedir)/astra
+	$(INSTALL_SH) -m 644 $(srcdir)/../../include/astra/cuda/2d/*.h $(includedir)/astra/cuda/2d
+	$(INSTALL_SH) -m 644 $(srcdir)/../../include/astra/cuda/3d/*.h $(includedir)/astra/cuda/3d
+
+install-dev: install-libraries install-headers libastra.pc
+	$(INSTALL_SH) -m 755 -d $(libdir)
+	$(INSTALL_SH) -m 755 -d $(libdir)/pkgconfig/
+	$(INSTALL_SH) -m 644 libastra.pc $(libdir)/pkgconfig/
+endif
+
+
+Makefile libastra.pc: %: $(srcdir)/%.in config.status
 	CONFIG_HEADERS= CONFIG_LINKS= CONFIG_FILES=$@ $(SHELL) ./config.status
 
 config.status: $(srcdir)/configure
@@ -539,7 +587,7 @@ $(srcdir)/configure: $(srcdir)/configure.ac
 	@echo "configure.ac has been changed. Regenerating configure script"
 	cd $(srcdir) && $(SHELL) ./autogen.sh
 
-.PHONY: all mex test clean distclean install install-libraries py install-python-site-packages install-python install-octave install-matlab-so install-octave-so
+.PHONY: all mex test clean distclean install install-libraries py install-python-site-packages install-python install-octave install-matlab-so install-octave-so install-headers install-dev
 
 # don't remove intermediate files:
 .SECONDARY:

@@ -1,9 +1,9 @@
 /*
 -----------------------------------------------------------------------
-Copyright: 2010-2016, iMinds-Vision Lab, University of Antwerp
-           2014-2016, CWI, Amsterdam
+Copyright: 2010-2018, imec Vision Lab, University of Antwerp
+           2014-2018, CWI, Amsterdam
 
-Contact: astra@uantwerpen.be
+Contact: astra@astra-toolbox.com
 Website: http://www.astra-toolbox.com/
 
 This file is part of the ASTRA Toolbox.
@@ -46,6 +46,10 @@ void CSartAlgorithm::_clear()
 {
 	CReconstructionAlgorithm2D::_clear();
 	m_piProjectionOrder = NULL;
+	m_piProjectionOrder = NULL;
+	m_pTotalRayLength = NULL;
+	m_pTotalPixelWeight = NULL;
+
 	m_iProjectionCount = 0;
 	m_iCurrentProjection = 0;
 	m_bIsInitialized = false;
@@ -57,10 +61,19 @@ void CSartAlgorithm::_clear()
 void CSartAlgorithm::clear()
 {
 	CReconstructionAlgorithm2D::clear();
-	if (m_piProjectionOrder) {
-		delete[] m_piProjectionOrder;
-		m_piProjectionOrder = NULL;
-	}
+
+	delete[] m_piProjectionOrder;
+	m_piProjectionOrder = NULL;
+
+	delete m_pTotalRayLength;
+	m_pTotalRayLength = NULL;
+
+	delete m_pTotalPixelWeight;
+	m_pTotalPixelWeight = NULL;
+
+	delete m_pDiffSinogram;
+	m_pDiffSinogram = NULL;
+
 	m_iProjectionCount = 0;
 	m_iCurrentProjection = 0;
 	m_bIsInitialized = false;

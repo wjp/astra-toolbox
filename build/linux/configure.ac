@@ -1,8 +1,8 @@
 dnl -----------------------------------------------------------------------
-dnl Copyright: 2010-2016, iMinds-Vision Lab, University of Antwerp
-dnl            2014-2016, CWI, Amsterdam
+dnl Copyright: 2010-2018, imec Vision Lab, University of Antwerp
+dnl            2014-2018, CWI, Amsterdam
 dnl
-dnl Contact: astra@uantwerpen.be
+dnl Contact: astra@astra-toolbox.com
 dnl Website: http://www.astra-toolbox.com/
 dnl
 dnl This file is part of the ASTRA Toolbox.
@@ -23,7 +23,7 @@ dnl along with the ASTRA Toolbox. If not, see <http://www.gnu.org/licenses/>.
 dnl
 dnl -----------------------------------------------------------------------
 
-AC_INIT(astra, 1.8.0)
+AC_INIT(astra, 1.9.0dev)
 AC_CONFIG_SRCDIR([Makefile.in])
 LT_INIT([disable-static])
 
@@ -125,15 +125,22 @@ fi
 AC_ARG_WITH(cuda_compute, [[  --with-cuda-compute=archs  comma separated list of CUDA compute models (optional)]],,)
 if test x"$HAVECUDA" = xyes; then
   AC_MSG_CHECKING([for nvcc archs])
-  dnl 10 11 12 13 20 21 30 32 35 37 50 52 53 60 61
+  dnl 10 11 12 13 20 21 30 32 35 37 50 52 53 60 61 62 70 72 75
   if test x"$with_cuda_compute" = x; then
-    with_cuda_compute="20,30,35,50,60"
+    with_cuda_compute="20,30,35,50,60,70,75"
   fi
   ASTRA_FIND_NVCC_ARCHS([$with_cuda_compute],NVCCFLAGS_EXTRA,NVCCARCHS)
   AC_MSG_RESULT([$NVCCARCHS])
 fi
 
 AC_ARG_VAR(NVCCFLAGS, [CUDA nvcc flags])
+
+PKGCONFIG_CFLAGS_EXTRA=
+if test x"$HAVECUDA" = xyes; then
+  PKGCONFIG_CFLAGS_EXTRA="-DASTRA_CUDA"
+fi
+AC_SUBST(PKGCONFIG_CFLAGS_EXTRA)
+
 
 
 AC_SUBST(HAVECUDA)
@@ -295,7 +302,7 @@ AC_SUBST(SAVED_CXXFLAGS)
 AC_SUBST(SAVED_NVCCFLAGS)
 AC_SUBST(SAVED_LDFLAGS)
 AC_SUBST(SAVED_LIBS)
-AC_CONFIG_FILES([Makefile])
+AC_CONFIG_FILES([Makefile libastra.pc])
 AC_OUTPUT
 
 echo

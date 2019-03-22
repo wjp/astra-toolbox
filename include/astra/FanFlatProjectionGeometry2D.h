@@ -1,9 +1,9 @@
 /*
 -----------------------------------------------------------------------
-Copyright: 2010-2016, iMinds-Vision Lab, University of Antwerp
-           2014-2016, CWI, Amsterdam
+Copyright: 2010-2018, imec Vision Lab, University of Antwerp
+           2014-2018, CWI, Amsterdam
 
-Contact: astra@uantwerpen.be
+Contact: astra@astra-toolbox.com
 Website: http://www.astra-toolbox.com/
 
 This file is part of the ASTRA Toolbox.
@@ -29,6 +29,7 @@ along with the ASTRA Toolbox. If not, see <http://www.gnu.org/licenses/>.
 #define _INC_ASTRA_FANFLATPROJECTIONGEOMETRY2D
 
 #include "ProjectionGeometry2D.h"
+#include "FanFlatVecProjectionGeometry2D.h"
 
 #include <cmath>
 
@@ -189,6 +190,10 @@ public:
 	 * @return a unit vector describing the direction
 	 */
 	virtual CVector3D getProjectionDirection(int _iProjectionIndex, int _iDetectorIndex);
+
+	/** Create a vector geom
+	*/
+	CFanFlatVecProjectionGeometry2D* toVectorGeometry();	
 };
 
 

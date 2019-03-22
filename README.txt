@@ -1,11 +1,11 @@
 -----------------------------------------------------------------------
 This file is part of the ASTRA Toolbox
 
-Copyright: 2010-2016, iMinds-Vision Lab, University of Antwerp
-           2014-2016, CWI, Amsterdam
+Copyright: 2010-2018, imec Vision Lab, University of Antwerp
+           2014-2018, CWI, Amsterdam
            http://visielab.uantwerpen.be/ and http://www.cwi.nl/
 License: Open Source under GPLv3
-Contact: astra@uantwerpen.be
+Contact: astra@astra-toolbox.com
 Website: http://www.astra-toolbox.com/
 -----------------------------------------------------------------------
 
@@ -60,6 +60,8 @@ inside a conda environment.
 
 conda install -c astra-toolbox astra-toolbox
 
+conda install -c astra-toolbox/label/dev astra-toolbox
+
 
 
 Linux, from source:
@@ -109,6 +111,19 @@ make install
 This will install Astra into your current Python environment.
 
 
+As a C++ library:
+
+Requirements: g++, boost, CUDA (5.5 or higher)
+
+cd build/linux
+./autogen.sh   # when building a git version
+./configure --with-cuda=/usr/local/cuda
+make
+make install-dev
+
+This will install the Astra library and C++ headers.
+
+
 macOS, from source:
 --------------------
 
@@ -134,7 +149,7 @@ Requirements: Visual Studio 2015 (full or community), boost (recent), CUDA 8.0,
 Using the Visual Studio IDE:
 
 Set the environment variable MATLAB_ROOT to your matlab install location.
-Copy boost headers to lib\include\boost, and boost libraries to bin\x64.
+Copy boost headers to lib\include\boost, and boost libraries to lib\x64.
 Open astra_vc14.sln in Visual Studio.
 Select the appropriate solution configuration (typically Release_CUDA|x64).
 Build the solution.
@@ -149,6 +164,21 @@ Edit build_env.bat and set up the correct directories.
 Run build_setup.bat to automatically copy the boost headers and libraries.
 For matlab: Run build_matlab.bat. The .dll and .mexw64 files will be in bin\x64\Release_Cuda.
 For python 2.7/3.5: Run build_python27.bat or build_python35.bat. Astra will be directly installed into site-packages.
+
+
+Testing your installation:
+---------------------------
+
+To perform a (very) basic test of your ASTRA installation in Python, you can
+run the following Python command.
+
+import astra
+astra.test()
+
+
+To test your ASTRA installation in Matlab, the equivalent command is:
+
+astra_test
 
 
 References:

@@ -1,9 +1,9 @@
 /*
 -----------------------------------------------------------------------
-Copyright: 2010-2016, iMinds-Vision Lab, University of Antwerp
-           2014-2016, CWI, Amsterdam
+Copyright: 2010-2018, imec Vision Lab, University of Antwerp
+           2014-2018, CWI, Amsterdam
 
-Contact: astra@uantwerpen.be
+Contact: astra@astra-toolbox.com
 Website: http://www.astra-toolbox.com/
 
 This file is part of the ASTRA Toolbox.
@@ -26,6 +26,7 @@ along with the ASTRA Toolbox. If not, see <http://www.gnu.org/licenses/>.
 */
 
 
+#include "ParallelBeamDistanceDrivenProjector2D.inl"
 #include "ParallelBeamLinearKernelProjector2D.inl"
 #include "ParallelBeamLineKernelProjector2D.inl"
 #include "ParallelBeamStripKernelProjector2D.inl"

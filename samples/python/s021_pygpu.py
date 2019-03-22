@@ -1,8 +1,8 @@
 # -----------------------------------------------------------------------
-# Copyright: 2010-2016, iMinds-Vision Lab, University of Antwerp
-#            2013-2016, CWI, Amsterdam
+# Copyright: 2010-2018, imec Vision Lab, University of Antwerp
+#            2013-2018, CWI, Amsterdam
 #
-# Contact: astra@uantwerpen.be
+# Contact: astra@astra-toolbox.com
 # Website: http://www.astra-toolbox.com/
 #
 # This file is part of the ASTRA Toolbox.
@@ -37,12 +37,12 @@ angles = np.linspace(0, 2 * np.pi, 180, False)
 proj_geom = astra.create_proj_geom('cone', 1.0, 1.0, 128, 192, angles, 1000, 0)
 
 # Create a simple hollow cube phantom, as a pygpu gpuarray
-vol_gpuarr = pygpu.gpuarray.zeros(astra.functions.geom_size(vol_geom), dtype='float32')
+vol_gpuarr = pygpu.gpuarray.zeros(astra.geom_size(vol_geom), dtype='float32')
 vol_gpuarr[17:113, 17:113, 17:113] = 1
 vol_gpuarr[33:97, 33:97, 33:97] = 0
 
 # Create a pygpu gpuarray for the output projection data
-proj_gpuarr = pygpu.gpuarray.zeros(astra.functions.geom_size(proj_geom), dtype='float32')
+proj_gpuarr = pygpu.gpuarray.zeros(astra.geom_size(proj_geom), dtype='float32')
 
 # Create the astra GPULink objects and create astra data3d objects from them
 z, y, x = proj_gpuarr.shape

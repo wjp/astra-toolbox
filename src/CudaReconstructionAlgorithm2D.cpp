@@ -1,9 +1,9 @@
 /*
 -----------------------------------------------------------------------
-Copyright: 2010-2016, iMinds-Vision Lab, University of Antwerp
-           2014-2016, CWI, Amsterdam
+Copyright: 2010-2018, imec Vision Lab, University of Antwerp
+           2014-2018, CWI, Amsterdam
 
-Contact: astra@uantwerpen.be
+Contact: astra@astra-toolbox.com
 Website: http://www.astra-toolbox.com/
 
 This file is part of the ASTRA Toolbox.
@@ -36,7 +36,7 @@ along with the ASTRA Toolbox. If not, see <http://www.gnu.org/licenses/>.
 
 #include "astra/Logging.h"
 
-#include "../cuda/2d/algo.h"
+#include "astra/cuda/2d/algo.h"
 
 #include <ctime>
 
@@ -115,14 +115,22 @@ bool CCudaReconstructionAlgorithm2D::initialize(const Config& _cfg)
 	initializeFromProjector();
 
 	// Deprecated options
-	m_iDetectorSuperSampling = (int)_cfg.self.getOptionNumerical("DetectorSuperSampling", m_iDetectorSuperSampling);
-	m_iPixelSuperSampling = (int)_cfg.self.getOptionNumerical("PixelSuperSampling", m_iPixelSuperSampling);
+	try {
+		m_iDetectorSuperSampling = _cfg.self.getOptionInt("DetectorSuperSampling", m_iDetectorSuperSampling);
+		m_iPixelSuperSampling = _cfg.self.getOptionInt("PixelSuperSampling", m_iPixelSuperSampling);
+	} catch (const StringUtil::bad_cast &e) {
+		ASTRA_CONFIG_CHECK(false, "CudaReconstructionAlgorithm2D", "Supersampling options must be integers.");
+	}
 	CC.markOptionParsed("DetectorSuperSampling");
 	CC.markOptionParsed("PixelSuperSampling");
 
 	// GPU number
-	m_iGPUIndex = (int)_cfg.self.getOptionNumerical("GPUindex", -1);
-	m_iGPUIndex = (int)_cfg.self.getOptionNumerical("GPUIndex", m_iGPUIndex);
+	try {
+		m_iGPUIndex = _cfg.self.getOptionInt("GPUindex", -1);
+		m_iGPUIndex = _cfg.self.getOptionInt("GPUIndex", m_iGPUIndex);
+	} catch (const StringUtil::bad_cast &e) {
+		ASTRA_CONFIG_CHECK(false, "CudaReconstructionAlgorithm2D", "GPUIndex must be an integer.");
+	}
 	CC.markOptionParsed("GPUIndex");
 	if (!_cfg.self.hasOption("GPUIndex"))
 		CC.markOptionParsed("GPUindex");
@@ -249,69 +257,14 @@ bool CCudaReconstructionAlgorithm2D::setupGeometry()
 	ok = m_pAlgo->setGPUIndex(m_iGPUIndex);
 	if (!ok) return false;
 
-	astraCUDA::SDimensions dims;
-
 	const CVolumeGeometry2D& volgeom = *m_pReconstruction->getGeometry();
+	const CProjectionGeometry2D& projgeom = *m_pSinogram->getGeometry();
 
-	// TODO: non-square pixels?
-	dims.iVolWidth = volgeom.getGridColCount();
-	dims.iVolHeight = volgeom.getGridRowCount();
-	float fPixelSize = volgeom.getPixelLengthX();
-
-	dims.iRaysPerDet = m_iDetectorSuperSampling;
-	dims.iRaysPerPixelDim = m_iPixelSuperSampling;
-
-
-	const CParallelProjectionGeometry2D* parProjGeom = dynamic_cast<CParallelProjectionGeometry2D*>(m_pSinogram->getGeometry());
-	const CFanFlatProjectionGeometry2D* fanProjGeom = dynamic_cast<CFanFlatProjectionGeometry2D*>(m_pSinogram->getGeometry());
-	const CFanFlatVecProjectionGeometry2D* fanVecProjGeom = dynamic_cast<CFanFlatVecProjectionGeometry2D*>(m_pSinogram->getGeometry());
-
-	if (parProjGeom) {
-
-		float *offsets, *angles, detSize, outputScale;
-
-		ok = convertAstraGeometry(&volgeom, parProjGeom, offsets, angles, detSize, outputScale);
-
-		dims.iProjAngles = parProjGeom->getProjectionAngleCount();
-		dims.iProjDets = parProjGeom->getDetectorCount();
-		dims.fDetScale = parProjGeom->getDetectorWidth() / fPixelSize;
-
-		ok = m_pAlgo->setGeometry(dims, parProjGeom->getProjectionAngles());
-		ok &= m_pAlgo->setTOffsets(offsets);
-
-		// CHECKME: outputScale? detSize?
-
-		delete[] offsets;
-		delete[] angles;
-
-	} else if (fanProjGeom || fanVecProjGeom) {
-
-		astraCUDA::SFanProjection* projs;
-		float outputScale;
-
-		if (fanProjGeom) {
-			ok = convertAstraGeometry(&volgeom, fanProjGeom, projs, outputScale);
-		} else {
-			ok = convertAstraGeometry(&volgeom, fanVecProjGeom, projs, outputScale);
-		}
-
-		dims.iProjAngles = m_pSinogram->getGeometry()->getProjectionAngleCount();
-		dims.iProjDets = m_pSinogram->getGeometry()->getDetectorCount();
-		dims.fDetScale = m_pSinogram->getGeometry()->getDetectorWidth() / fPixelSize;
-
-		ok = m_pAlgo->setFanGeometry(dims, projs);
-
-		// CHECKME: outputScale?
-
-		delete[] projs;
-
-	} else {
-
-		ASTRA_ASSERT(false);
-
-	}
+	ok = m_pAlgo->setGeometry(&volgeom, &projgeom);
 	if (!ok) return false;
 
+	ok = m_pAlgo->setSuperSampling(m_iDetectorSuperSampling, m_iPixelSuperSampling);
+	if (!ok) return false;
 
 	if (m_bUseReconstructionMask)
 		ok &= m_pAlgo->enableVolumeMask();

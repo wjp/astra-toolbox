@@ -1,10 +1,10 @@
 %--------------------------------------------------------------------------
 % This file is part of the ASTRA Toolbox
 %
-% Copyright: 2010-2016, iMinds-Vision Lab, University of Antwerp
-%            2014-2016, CWI, Amsterdam
+% Copyright: 2010-2018, imec Vision Lab, University of Antwerp
+%            2014-2018, CWI, Amsterdam
 % License: Open Source under GPLv3
-% Contact: astra@uantwerpen.be
+% Contact: astra@astra-toolbox.com
 % Website: http://www.astra-toolbox.com/
 %--------------------------------------------------------------------------
 
@@ -42,7 +42,7 @@ classdef StatisticsDefault < matlab.mixin.Copyable
 			
 			% projection difference
 			if strcmp(this.proj_diff, 'yes') 
-				new_sino = DART.tomography.createForwardProjection(DART, DART.S);
+				new_sino = DART.tomography.project(DART.S);
 				stats.proj_diff = sum((new_sino(:) - DART.base.sinogram(:)) .^2 ) ./ (sum(DART.base.sinogram(:)) );
 				stats.proj_diff_hist(DART.iterationcount) = stats.proj_diff;
 			end

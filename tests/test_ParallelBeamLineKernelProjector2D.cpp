@@ -1,9 +1,9 @@
 /*
 -----------------------------------------------------------------------
-Copyright: 2010-2016, iMinds-Vision Lab, University of Antwerp
-           2014-2016, CWI, Amsterdam
+Copyright: 2010-2018, imec Vision Lab, University of Antwerp
+           2014-2018, CWI, Amsterdam
 
-Contact: astra@uantwerpen.be
+Contact: astra@astra-toolbox.com
 Website: http://www.astra-toolbox.com/
 
 This file is part of the ASTRA Toolbox.
@@ -74,7 +74,7 @@ BOOST_FIXTURE_TEST_CASE( testParallelBeamLineKernelProjector2D_Rectangle, TestPa
 	for (int i = 0; i < iCount; ++i)
 		fWeight += pPix[i].m_fWeight;
 
-	BOOST_CHECK_SMALL(fWeight - 7.13037f, 0.00001f);
+	BOOST_CHECK_SMALL(fWeight - 7.13037f, 0.00001f); // 6 / sin(1)
 
 	delete[] pPix;
 }

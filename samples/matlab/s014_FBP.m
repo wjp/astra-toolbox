@@ -1,15 +1,15 @@
 % -----------------------------------------------------------------------
 % This file is part of the ASTRA Toolbox
 % 
-% Copyright: 2010-2016, iMinds-Vision Lab, University of Antwerp
-%            2014-2016, CWI, Amsterdam
+% Copyright: 2010-2018, imec Vision Lab, University of Antwerp
+%            2014-2018, CWI, Amsterdam
 % License: Open Source under GPLv3
-% Contact: astra@uantwerpen.be
+% Contact: astra@astra-toolbox.com
 % Website: http://www.astra-toolbox.com/
 % -----------------------------------------------------------------------
 
 vol_geom = astra_create_vol_geom(256, 256);
-proj_geom = astra_create_proj_geom('parallel', 1.0, 384, linspace2(0,pi,180));
+proj_geom = astra_create_proj_geom('fanflat', 1.0, 384, linspace2(0,2*pi,1800), 500, 0);
 
 % As before, create a sinogram from a phantom
 P = phantom(256);
@@ -24,7 +24,7 @@ rec_id = astra_mex_data2d('create', '-vol', vol_geom);
 cfg = astra_struct('FBP_CUDA');
 cfg.ReconstructionDataId = rec_id;
 cfg.ProjectionDataId = sinogram_id;
-cfg.FilterType = 'Ram-Lak';
+cfg.option.FilterType = 'Ram-Lak';
 
 % possible values for FilterType:
 % none, ram-lak, shepp-logan, cosine, hamming, hann, tukey, lanczos,

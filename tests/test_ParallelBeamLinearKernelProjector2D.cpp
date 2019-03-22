@@ -1,9 +1,9 @@
 /*
 -----------------------------------------------------------------------
-Copyright: 2010-2016, iMinds-Vision Lab, University of Antwerp
-           2014-2016, CWI, Amsterdam
+Copyright: 2010-2018, imec Vision Lab, University of Antwerp
+           2014-2018, CWI, Amsterdam
 
-Contact: astra@uantwerpen.be
+Contact: astra@astra-toolbox.com
 Website: http://www.astra-toolbox.com/
 
 This file is part of the ASTRA Toolbox.
@@ -85,10 +85,10 @@ float32 compute_linear_kernel(const astra::CProjectionGeometry2D& projgeom, cons
 
 	if (fabs(cos(fAngle)) > fabs(sin(fAngle))) {
 		fDetStep = volgeom.getPixelLengthY() * fabs(cos(fAngle));
-		fWeight = volgeom.getPixelLengthX() * 1.0f / fabs(cos(fAngle));
+		fWeight = projgeom.getDetectorWidth() * volgeom.getPixelLengthX() * 1.0f / fabs(cos(fAngle));
 	} else {
 		fDetStep = volgeom.getPixelLengthX() * fabs(sin(fAngle));
-		fWeight = volgeom.getPixelLengthY() * 1.0f / fabs(sin(fAngle));
+		fWeight = projgeom.getDetectorWidth() * volgeom.getPixelLengthY() * 1.0f / fabs(sin(fAngle));
 	}
 
 //	printf("step: %f\n   weight: %f\n", fDetStep, fWeight);
@@ -155,7 +155,7 @@ BOOST_AUTO_TEST_CASE( testParallelBeamLinearKernelProjector2D_Rectangles )
 				            pPix[i].m_iIndex / volGeom.getGridColCount(),
 				            iDet,
 				            projGeom.getProjectionAngle(0));
-				BOOST_CHECK_SMALL( pPix[i].m_fWeight - fTest, 0.00037f);
+				BOOST_CHECK_SMALL( pPix[i].m_fWeight - fTest, 0.0004f);
 				fW += pPix[i].m_fWeight;
 			}
 

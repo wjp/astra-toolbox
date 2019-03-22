@@ -1,8 +1,8 @@
 # -----------------------------------------------------------------------
-# Copyright: 2010-2016, iMinds-Vision Lab, University of Antwerp
-#            2013-2016, CWI, Amsterdam
+# Copyright: 2010-2018, imec Vision Lab, University of Antwerp
+#            2013-2018, CWI, Amsterdam
 #
-# Contact: astra@uantwerpen.be
+# Contact: astra@astra-toolbox.com
 # Website: http://www.astra-toolbox.com/
 #
 # This file is part of the ASTRA Toolbox.
@@ -128,6 +128,10 @@ cdef extern from "astra/FanFlatVecProjectionGeometry2D.h" namespace "astra":
     cdef cppclass CFanFlatVecProjectionGeometry2D:
         CFanFlatVecProjectionGeometry2D()
 
+cdef extern from "astra/ParallelVecProjectionGeometry2D.h" namespace "astra":
+    cdef cppclass CParallelVecProjectionGeometry2D:
+        CParallelVecProjectionGeometry2D()
+
 cdef extern from "astra/ParallelProjectionGeometry2D.h" namespace "astra":
     cdef cppclass CParallelProjectionGeometry2D:
         CParallelProjectionGeometry2D()
@@ -152,9 +156,14 @@ cdef extern from "astra/ReconstructionAlgorithm2D.h" namespace "astra":
     cdef cppclass CReconstructionAlgorithm2D:
         bool getResidualNorm(float32&)
 
+cdef extern from "astra/ReconstructionAlgorithm3D.h" namespace "astra":
+    cdef cppclass CReconstructionAlgorithm3D:
+        bool getResidualNorm(float32&)
+
 cdef extern from "astra/Projector2D.h" namespace "astra":
     cdef cppclass CProjector2D:
         bool isInitialized()
+        bool initialize(Config)
         CProjectionGeometry2D* getProjectionGeometry()
         CVolumeGeometry2D* getVolumeGeometry()
         CSparseMatrix* getMatrix()
@@ -162,6 +171,7 @@ cdef extern from "astra/Projector2D.h" namespace "astra":
 cdef extern from "astra/Projector3D.h" namespace "astra":
     cdef cppclass CProjector3D:
         bool isInitialized()
+        bool initialize(Config)
         CProjectionGeometry3D* getProjectionGeometry()
         CVolumeGeometry3D* getVolumeGeometry()
 
@@ -205,7 +215,6 @@ cdef extern from "astra/Float32Data3DMemory.h" namespace "astra":
         CFloat32Data3DMemory()
         void updateStatistics()
         float32 *getData()
-        float32 ***getData3D()
         THREEEDataType getType()
 
 

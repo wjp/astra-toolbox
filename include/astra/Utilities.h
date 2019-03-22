@@ -1,9 +1,9 @@
 /*
 -----------------------------------------------------------------------
-Copyright: 2010-2016, iMinds-Vision Lab, University of Antwerp
-           2014-2016, CWI, Amsterdam
+Copyright: 2010-2018, imec Vision Lab, University of Antwerp
+           2014-2018, CWI, Amsterdam
 
-Contact: astra@uantwerpen.be
+Contact: astra@astra-toolbox.com
 Website: http://www.astra-toolbox.com/
 
 This file is part of the ASTRA Toolbox.
@@ -50,6 +50,10 @@ public:
 //< Parse string as int.
 //< Throw exception on failure.
 _AstraExport int stringToInt(const std::string& s);
+
+//< Parse string as int.
+//< Return fallback on failure.
+_AstraExport int stringToInt(const std::string& s, int fallback);
 
 //< Parse string as float.
 //< Throw exception on failure.

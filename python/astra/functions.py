@@ -1,8 +1,8 @@
 # -----------------------------------------------------------------------
-# Copyright: 2010-2016, iMinds-Vision Lab, University of Antwerp
-#            2013-2016, CWI, Amsterdam
+# Copyright: 2010-2018, imec Vision Lab, University of Antwerp
+#            2013-2018, CWI, Amsterdam
 #
-# Contact: astra@uantwerpen.be
+# Contact: astra@astra-toolbox.com
 # Website: http://www.astra-toolbox.com/
 #
 # This file is part of the ASTRA Toolbox.
@@ -172,7 +172,27 @@ def geom_2vec(proj_geom):
     :param proj_geom: Projection geometry to convert
     :type proj_geom: :class:`dict`
     """
-    if proj_geom['type'] == 'fanflat':
+
+    if proj_geom['type'] == 'parallel':
+        angles = proj_geom['ProjectionAngles']
+        vectors = np.zeros((len(angles), 6))
+        for i in range(len(angles)):
+
+            # source
+            vectors[i, 0] = np.sin(angles[i])
+            vectors[i, 1] = -np.cos(angles[i])
+
+            # center of detector
+            vectors[i, 2] = 0
+            vectors[i, 3] = 0
+
+            # vector from detector pixel 0 to 1
+            vectors[i, 4] = np.cos(angles[i]) * proj_geom['DetectorWidth']
+            vectors[i, 5] = np.sin(angles[i]) * proj_geom['DetectorWidth']
+        proj_geom_out = ac.create_proj_geom(
+        'parallel_vec', proj_geom['DetectorCount'], vectors)
+
+    elif proj_geom['type'] == 'fanflat':
         angles = proj_geom['ProjectionAngles']
         vectors = np.zeros((len(angles), 6))
         for i in range(len(angles)):
@@ -251,3 +271,38 @@ def geom_2vec(proj_geom):
         raise ValueError(
         'No suitable vector geometry found for type: ' + proj_geom['type'])
     return proj_geom_out
+
+
+def geom_postalignment(proj_geom, factor):
+    """Apply a postalignment to a vector-based projection geometry.
+    Can be used to model the rotation axis offset.
+
+    For 2D geometries, the argument factor is a single float specifying the
+    distance to shift the detector (measured in detector pixels).
+
+    For 3D geometries, factor can be a pair of floats specifying the horizontal
+    resp. vertical distances to shift the detector. If only a single float
+    is specified, this is treated as a horizontal shift.
+
+    :param proj_geom: input projection geometry
+    :type proj_geom: :class:`dict`
+    :param factor: number of pixels to shift the detector
+    :type factor: :class:`float`
+    """
+
+    proj_geom = geom_2vec(proj_geom)
+
+    if proj_geom['type'] == 'parallel_vec' or proj_geom['type'] == 'fanflat_vec':
+        V = proj_geom['Vectors']
+        V[:,2:4] = V[:,2:4] + factor * V[:,4:6]
+
+    elif proj_geom['type'] == 'parallel3d_vec' or proj_geom['type'] == 'cone_vec':
+        V = proj_geom['Vectors']
+        V[:,3:6] = V[:,3:6] + factor[0] * V[:,6:9]
+        if len(factor) > 1:
+            V[:,3:6] = V[:,3:6] + factor[1] * V[:,9:12]
+    else:
+        raise RuntimeError('No suitable geometry for postalignment: ' + proj_geom['type'])
+
+    return proj_geom
+

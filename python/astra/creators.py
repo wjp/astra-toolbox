@@ -1,8 +1,8 @@
 # -----------------------------------------------------------------------
-# Copyright: 2010-2016, iMinds-Vision Lab, University of Antwerp
-#            2013-2016, CWI, Amsterdam
+# Copyright: 2010-2018, imec Vision Lab, University of Antwerp
+#            2013-2018, CWI, Amsterdam
 #
-# Contact: astra@uantwerpen.be
+# Contact: astra@astra-toolbox.com
 # Website: http://www.astra-toolbox.com/
 #
 # This file is part of the ASTRA Toolbox.
@@ -81,37 +81,19 @@ This method can be called in a number of ways:
     if len(varargin) == 1 and isinstance(varargin[0], int) == 1:
         vol_geom['GridRowCount'] = varargin[0]
         vol_geom['GridColCount'] = varargin[0]
-        vol_geom['option']['WindowMinX'] = -varargin[0] / 2.
-        vol_geom['option']['WindowMaxX'] = varargin[0] / 2.
-        vol_geom['option']['WindowMinY'] = -varargin[0] / 2.
-        vol_geom['option']['WindowMaxY'] = varargin[0] / 2.
     # astra_create_vol_geom([row_count col_count])
     elif len(varargin) == 1 and len(varargin[0]) == 2:
         vol_geom['GridRowCount'] = varargin[0][0]
         vol_geom['GridColCount'] = varargin[0][1]
-        vol_geom['option']['WindowMinX'] = -varargin[0][1] / 2.
-        vol_geom['option']['WindowMaxX'] = varargin[0][1] / 2.
-        vol_geom['option']['WindowMinY'] = -varargin[0][0] / 2.
-        vol_geom['option']['WindowMaxY'] = varargin[0][0] / 2.
     # astra_create_vol_geom([row_count col_count slice_count])
     elif len(varargin) == 1 and len(varargin[0]) == 3:
         vol_geom['GridRowCount'] = varargin[0][0]
         vol_geom['GridColCount'] = varargin[0][1]
         vol_geom['GridSliceCount'] = varargin[0][2]
-        vol_geom['option']['WindowMinX'] = -varargin[0][1] / 2.
-        vol_geom['option']['WindowMaxX'] = varargin[0][1] / 2.
-        vol_geom['option']['WindowMinY'] = -varargin[0][0] / 2.
-        vol_geom['option']['WindowMaxY'] = varargin[0][0] / 2.
-        vol_geom['option']['WindowMinZ'] = -varargin[0][2] / 2.
-        vol_geom['option']['WindowMaxZ'] = varargin[0][2] / 2.
     # astra_create_vol_geom(row_count, col_count)
     elif len(varargin) == 2:
         vol_geom['GridRowCount'] = varargin[0]
         vol_geom['GridColCount'] = varargin[1]
-        vol_geom['option']['WindowMinX'] = -varargin[1] / 2.
-        vol_geom['option']['WindowMaxX'] = varargin[1] / 2.
-        vol_geom['option']['WindowMinY'] = -varargin[0] / 2.
-        vol_geom['option']['WindowMaxY'] = varargin[0] / 2.
     # astra_create_vol_geom(row_count, col_count, min_x, max_x, min_y, max_y)
     elif len(varargin) == 6:
         vol_geom['GridRowCount'] = varargin[0]
@@ -136,6 +118,17 @@ This method can be called in a number of ways:
         vol_geom['option']['WindowMaxY'] = varargin[6]
         vol_geom['option']['WindowMinZ'] = varargin[7]
         vol_geom['option']['WindowMaxZ'] = varargin[8]
+
+    # set the window options, if not set already.
+    if not 'WindowMinX' in vol_geom['option']:
+        vol_geom['option']['WindowMinX'] = -vol_geom['GridColCount'] / 2.
+        vol_geom['option']['WindowMaxX'] =  vol_geom['GridColCount'] / 2.
+        vol_geom['option']['WindowMinY'] = -vol_geom['GridRowCount'] / 2.
+        vol_geom['option']['WindowMaxY'] =  vol_geom['GridRowCount'] / 2.
+        if 'GridSliceCount' in vol_geom:
+            vol_geom['option']['WindowMinZ'] = -vol_geom['GridSliceCount'] / 2.
+            vol_geom['option']['WindowMaxZ'] =  vol_geom['GridSliceCount'] / 2.
+
     return vol_geom
 
 
@@ -154,6 +147,13 @@ This method can be called in a number of ways:
 :type angles: :class:`numpy.ndarray`
 :returns: A parallel projection geometry.
 
+``create_proj_geom('parallel_vec', det_count, V)``:
+
+:param det_count: Number of detector pixels.
+:type det_count: :class:`int`
+:param V: Vector array.
+:type V: :class:`numpy.ndarray`
+:returns: A parallel-beam projection geometry.
 
 ``create_proj_geom('fanflat', det_width, det_count, angles, source_origin, origin_det)``:
 
@@ -241,6 +241,12 @@ This method can be called in a number of ways:
             raise Exception(
                 'not enough variables: astra_create_proj_geom(parallel, detector_spacing, det_count, angles)')
         return {'type': 'parallel', 'DetectorWidth': args[0], 'DetectorCount': args[1], 'ProjectionAngles': args[2]}
+    elif intype == 'parallel_vec':
+        if len(args) < 2:
+            raise Exception('not enough variables: astra_create_proj_geom(parallel_vec, det_count, V)')
+        if not args[1].shape[1] == 6:
+            raise Exception('V should be a Nx6 matrix, with N the number of projections')
+        return {'type':'parallel_vec', 'DetectorCount':args[0], 'Vectors':args[1]}
     elif intype == 'fanflat':
         if len(args) < 5:
             raise Exception('not enough variables: astra_create_proj_geom(fanflat, det_width, det_count, angles, source_origin, origin_det)')

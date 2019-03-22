@@ -1,9 +1,9 @@
 /*
 -----------------------------------------------------------------------
-Copyright: 2010-2016, iMinds-Vision Lab, University of Antwerp
-           2014-2016, CWI, Amsterdam
+Copyright: 2010-2018, imec Vision Lab, University of Antwerp
+           2014-2018, CWI, Amsterdam
 
-Contact: astra@uantwerpen.be
+Contact: astra@astra-toolbox.com
 Website: http://www.astra-toolbox.com/
 
 This file is part of the ASTRA Toolbox.
@@ -148,14 +148,6 @@ public:
 	virtual void computeProjectionRayWeights(int _iProjectionIndex, 
 											 SPixelWeight* _pfWeightedPixels, 
 											 int* _piRayStoredPixelCount);
-
-	/** Create a list of detectors that are influenced by point [_iRow, _iCol].
-	 *
-	 * @param _iRow row of the point
-	 * @param _iCol column of the point
-	 * @return list of SDetector2D structs
-	 */
-	virtual std::vector<SDetector2D> projectPoint(int _iRow, int _iCol) = 0;
 
 	/** Returns the number of weights required for storage of all weights of one projection ray.
 	 *

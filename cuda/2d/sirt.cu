@@ -1,9 +1,9 @@
 /*
 -----------------------------------------------------------------------
-Copyright: 2010-2016, iMinds-Vision Lab, University of Antwerp
-           2014-2016, CWI, Amsterdam
+Copyright: 2010-2018, imec Vision Lab, University of Antwerp
+           2014-2018, CWI, Amsterdam
 
-Contact: astra@uantwerpen.be
+Contact: astra@astra-toolbox.com
 Website: http://www.astra-toolbox.com/
 
 This file is part of the ASTRA Toolbox.
@@ -25,16 +25,16 @@ along with the ASTRA Toolbox. If not, see <http://www.gnu.org/licenses/>.
 -----------------------------------------------------------------------
 */
 
-#include <cstdio>
-#include <cassert>
-
-#include "sirt.h"
-#include "util.h"
-#include "arith.h"
+#include "astra/cuda/2d/sirt.h"
+#include "astra/cuda/2d/util.h"
+#include "astra/cuda/2d/arith.h"
 
 #ifdef STANDALONE
 #include "testutil.h"
 #endif
+
+#include <cstdio>
+#include <cassert>
 
 namespace astraCUDA {
 
@@ -151,7 +151,7 @@ bool SIRT::precomputeWeights()
 bool SIRT::doSlabCorrections()
 {
 	// This function compensates for effectively infinitely large slab-like
-	// objects of finite thickness 1.
+	// objects of finite thickness 1 in a parallel beam geometry.
 
 	// Each ray through the object has an intersection of length d/cos(alpha).
 	// The length of the ray actually intersecting the reconstruction volume is
@@ -169,6 +169,10 @@ bool SIRT::doSlabCorrections()
 	if (useVolumeMask || useSinogramMask)
 		return false;
 
+	// Parallel-beam only
+	if (!parProjs)
+		return false;
+
 	// multiply by line weights
 	processSino<opDiv>(D_sinoData, D_lineWeight, projPitch, dims);
 
@@ -180,7 +184,9 @@ bool SIRT::doSlabCorrections()
 	float bound = cosf(1.3963f);
 	float* t = (float*)D_sinoData;
 	for (int i = 0; i < dims.iProjAngles; ++i) {
-		float f = fabs(cosf(angles[i]));
+		float angle, detsize, offset;
+		getParParameters(parProjs[i], dims.iProjDets, angle, detsize, offset);
+		float f = fabs(cosf(angle));
 
 		if (f < bound)
 			f = bound;
@@ -188,7 +194,6 @@ bool SIRT::doSlabCorrections()
 		processSino<opMul>(t, f, sinoPitch, subdims);
 		t += sinoPitch;
 	}
-
 	return true;
 }
 
@@ -297,40 +302,6 @@ float SIRT::computeDiffNorm()
 	return sqrt(s);
 }
 
-
-bool doSIRT(float* D_volumeData, unsigned int volumePitch,
-            float* D_sinoData, unsigned int sinoPitch,
-            float* D_maskData, unsigned int maskPitch,
-            const SDimensions& dims, const float* angles,
-            const float* TOffsets, unsigned int iterations)
-{
-	SIRT sirt;
-	bool ok = true;
-
-	ok &= sirt.setGeometry(dims, angles);
-	if (D_maskData)
-		ok &= sirt.enableVolumeMask();
-	if (TOffsets)
-		ok &= sirt.setTOffsets(TOffsets);
-
-	if (!ok)
-		return false;
-
-	ok = sirt.init();
-	if (!ok)
-		return false;
-
-	if (D_maskData)
-		ok &= sirt.setVolumeMask(D_maskData, maskPitch);
-
-	ok &= sirt.setBuffers(D_volumeData, volumePitch, D_sinoData, sinoPitch);
-	if (!ok)
-		return false;
-
-	ok = sirt.iterate(iterations);
-
-	return ok;
-}
 
 }
 

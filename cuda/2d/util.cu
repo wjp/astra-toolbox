@@ -1,9 +1,9 @@
 /*
 -----------------------------------------------------------------------
-Copyright: 2010-2016, iMinds-Vision Lab, University of Antwerp
-           2014-2016, CWI, Amsterdam
+Copyright: 2010-2018, imec Vision Lab, University of Antwerp
+           2014-2018, CWI, Amsterdam
 
-Contact: astra@uantwerpen.be
+Contact: astra@astra-toolbox.com
 Website: http://www.astra-toolbox.com/
 
 This file is part of the ASTRA Toolbox.
@@ -25,11 +25,12 @@ along with the ASTRA Toolbox. If not, see <http://www.gnu.org/licenses/>.
 -----------------------------------------------------------------------
 */
 
+#include "astra/cuda/2d/util.h"
+
+#include "astra/Logging.h"
+
 #include <cstdio>
 #include <cassert>
-#include "util.h"
-
-#include "../../include/astra/Logging.h"
 
 namespace astraCUDA {
 
@@ -272,7 +273,6 @@ void reportCudaError(cudaError_t err)
 	if(err != cudaSuccess)
 		ASTRA_ERROR("CUDA error %d: %s.", err, cudaGetErrorString(err));
 }
-
 
 
 }

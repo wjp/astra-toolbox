@@ -1,8 +1,8 @@
 # -----------------------------------------------------------------------
-# Copyright: 2010-2016, iMinds-Vision Lab, University of Antwerp
-#            2013-2016, CWI, Amsterdam
+# Copyright: 2010-2018, imec Vision Lab, University of Antwerp
+#            2013-2018, CWI, Amsterdam
 #
-# Contact: astra@uantwerpen.be
+# Contact: astra@astra-toolbox.com
 # Website: http://www.astra-toolbox.com/
 #
 # This file is part of the ASTRA Toolbox.
@@ -28,13 +28,19 @@ import numpy as np
 
 vol_geom = astra.create_vol_geom(128, 128, 128)
 
-angles = np.linspace(0, np.pi, 180,False)
-proj_geom = astra.create_proj_geom('parallel3d', 1.0, 1.0, 128, 192, angles)
+angles = np.linspace(0, 2*np.pi, 180,False)
+proj_geom = astra.create_proj_geom('cone', 1.0, 1.0, 128, 192, angles, 2000, 0)
 
 # Create a simple hollow cube phantom
 cube = np.zeros((128,128,128))
 cube[17:113,17:113,17:113] = 1
 cube[33:97,33:97,33:97] = 0
+
+cfg = astra.astra_dict('cuda3d')
+cfg['ProjectionKernel'] = 'line'
+cfg['ProjectionGeometry'] = proj_geom
+cfg['VolumeGeometry'] = vol_geom
+projector_id = astra.projector3d.create(cfg)
 
 # Create projection data from this
 proj_id, proj_data = astra.create_sino3d_gpu(cube, proj_geom, vol_geom)
@@ -49,9 +55,12 @@ pylab.imshow(proj_data[:,20,:])
 rec_id = astra.data3d.create('-vol', vol_geom)
 
 # Set up the parameters for a reconstruction algorithm using the GPU
-cfg = astra.astra_dict('SIRT3D_CUDA')
+astra.plugin.register(astra.plugins.SIRTPlugin)
+cfg = astra.astra_dict('SIRT-PLUGIN')
 cfg['ReconstructionDataId'] = rec_id
 cfg['ProjectionDataId'] = proj_id
+cfg['ProjectorId'] = projector_id
+
 
 
 # Create the algorithm object from the configuration structure

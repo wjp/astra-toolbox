@@ -1,8 +1,8 @@
 # -----------------------------------------------------------------------
-# Copyright: 2010-2016, iMinds-Vision Lab, University of Antwerp
-#            2013-2016, CWI, Amsterdam
+# Copyright: 2010-2018, imec Vision Lab, University of Antwerp
+#            2013-2018, CWI, Amsterdam
 #
-# Contact: astra@uantwerpen.be
+# Contact: astra@astra-toolbox.com
 # Website: http://www.astra-toolbox.com/
 #
 # This file is part of the ASTRA Toolbox.
@@ -44,6 +44,30 @@ def set_gpu_index(idx, memory=0):
     :type idx: :class:`int`
     """
     a.set_gpu_index(idx, memory)
+
+def get_gpu_info(idx=-1):
+    """Get GPU info.
+    
+    :param idx: GPU index, or -1 for current device
+    :type idx: :class:`int`
+    :returns: :class:`str` -- GPU info
+    """
+    return a.get_gpu_info(idx)
+
+def has_feature(feature):
+    """Check a feature flag.
+
+    These are used to check if certain functionality has been
+    enabled at compile time, if new functionality is present, or if
+    a backward-incompatible change is present.
+
+    See include/astra/Features.h for a list.
+
+    :param feature: The name of the feature
+    :type feature: :class:`str`
+    :returns: :class:`bool` -- The presence of the feature
+    """
+    return a.has_feature(feature)
 
 def delete(ids):
     """Delete an astra object.

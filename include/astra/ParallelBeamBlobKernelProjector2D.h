@@ -1,9 +1,9 @@
 /*
 -----------------------------------------------------------------------
-Copyright: 2010-2016, iMinds-Vision Lab, University of Antwerp
-           2014-2016, CWI, Amsterdam
+Copyright: 2010-2018, imec Vision Lab, University of Antwerp
+           2014-2018, CWI, Amsterdam
 
-Contact: astra@uantwerpen.be
+Contact: astra@astra-toolbox.com
 Website: http://www.astra-toolbox.com/
 
 This file is part of the ASTRA Toolbox.
@@ -160,14 +160,6 @@ public:
 		                                 int _iMaxPixelCount, 
 										 int& _iStoredPixelCount);
 
-	/** Create a list of detectors that are influenced by point [_iRow, _iCol].
-	 *
-	 * @param _iRow row of the point
-	 * @param _iCol column of the point
-	 * @return list of SDetector2D structs
-	 */
-	virtual std::vector<SDetector2D> projectPoint(int _iRow, int _iCol);
-
 	/** Policy-based projection of all rays.  This function will calculate each non-zero projection 
 	 * weight and use this value for a task provided by the policy object.
 	 *
@@ -214,7 +206,12 @@ protected:
 	float32 m_fBlobSampleRate; //< At which interval are the inserted blob values evaluated?
 	int m_iBlobSampleCount; //< Number of evaluated blob samples
 	float32* m_pfBlobValues; //< Evaluated blob values
-	float32* m_pfBlobValuesNeg; //< Evaluated blob values
+
+	/** Internal policy-based projection of a range of angles and range.
+ 	 * (_i*From is inclusive, _i*To exclusive) */
+	template <typename Policy>
+	void projectBlock_internal(int _iProjFrom, int _iProjTo,
+	                           int _iDetFrom, int _iDetTo, Policy& _policy);
 
 };
 

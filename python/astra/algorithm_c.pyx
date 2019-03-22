@@ -1,8 +1,8 @@
 # -----------------------------------------------------------------------
-# Copyright: 2010-2016, iMinds-Vision Lab, University of Antwerp
-#            2013-2016, CWI, Amsterdam
+# Copyright: 2010-2018, imec Vision Lab, University of Antwerp
+#            2013-2018, CWI, Amsterdam
 #
-# Contact: astra@uantwerpen.be
+# Contact: astra@astra-toolbox.com
 # Website: http://www.astra-toolbox.com/
 #
 # This file is part of the ASTRA Toolbox.
@@ -44,7 +44,15 @@ from .utils import wrap_from_bytes
 cdef CAlgorithmManager * manAlg = <CAlgorithmManager * >PyAlgorithmManager.getSingletonPtr()
 
 cdef extern from *:
-    CReconstructionAlgorithm2D * dynamic_cast_recAlg "dynamic_cast<astra::CReconstructionAlgorithm2D*>" (CAlgorithm * ) except NULL
+    CReconstructionAlgorithm2D * dynamic_cast_recAlg2D "dynamic_cast<astra::CReconstructionAlgorithm2D*>" (CAlgorithm * )
+    CReconstructionAlgorithm3D * dynamic_cast_recAlg3D "dynamic_cast<astra::CReconstructionAlgorithm3D*>" (CAlgorithm * )
+
+cdef extern from "src/PythonPluginAlgorithm.h" namespace "astra":
+    cdef cppclass CPluginAlgorithm:
+        object getInstance()
+
+cdef extern from *:
+    CPluginAlgorithm * dynamic_cast_PluginAlg "dynamic_cast<astra::CPluginAlgorithm*>" (CAlgorithm * )
 
 
 def create(config):
@@ -53,11 +61,11 @@ def create(config):
     alg = PyAlgorithmFactory.getSingletonPtr().create(cfg.self.getAttribute(six.b('type')))
     if alg == NULL:
         del cfg
-        raise Exception("Unknown algorithm.")
+        raise Exception("Unknown Algorithm.")
     if not alg.initialize(cfg[0]):
         del cfg
         del alg
-        raise Exception("Algorithm not initialized.")
+        raise Exception("Unable to initialize Algorithm.")
     del cfg
     return manAlg.store(alg)
 
@@ -79,12 +87,18 @@ def run(i, iterations=0):
 
 def get_res_norm(i):
     cdef CReconstructionAlgorithm2D * pAlg2D
+    cdef CReconstructionAlgorithm3D * pAlg3D
     cdef CAlgorithm * alg = getAlg(i)
     cdef float32 res = 0.0
-    pAlg2D = dynamic_cast_recAlg(alg)
-    if pAlg2D == NULL:
-        raise Exception("Operation not supported.")
-    if not pAlg2D.getResidualNorm(res):
+    pAlg2D = dynamic_cast_recAlg2D(alg)
+    pAlg3D = dynamic_cast_recAlg3D(alg)
+    if pAlg2D != NULL:
+        if not pAlg2D.getResidualNorm(res):
+            raise Exception("Operation not supported.")
+    elif pAlg3D != NULL:
+        if not pAlg3D.getResidualNorm(res):
+            raise Exception("Operation not supported.")
+    else:
         raise Exception("Operation not supported.")
     return res
 
@@ -95,6 +109,16 @@ def delete(ids):
             manAlg.remove(i)
     except TypeError:
         manAlg.remove(ids)
+
+
+def get_plugin_object(algorithm_id):
+    cdef CAlgorithm *alg
+    cdef CPluginAlgorithm *pluginAlg
+    alg = getAlg(algorithm_id)
+    pluginAlg = dynamic_cast_PluginAlg(alg)
+    if not pluginAlg:
+        raise Exception("Not a plugin algorithm")
+    return pluginAlg.getInstance()
 
 
 def clear():

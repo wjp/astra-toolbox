@@ -1,9 +1,9 @@
 /*
 -----------------------------------------------------------------------
-Copyright: 2010-2016, iMinds-Vision Lab, University of Antwerp
-           2014-2016, CWI, Amsterdam
+Copyright: 2010-2018, imec Vision Lab, University of Antwerp
+           2014-2018, CWI, Amsterdam
 
-Contact: astra@uantwerpen.be
+Contact: astra@astra-toolbox.com
 Website: http://www.astra-toolbox.com/
 
 This file is part of the ASTRA Toolbox.
@@ -25,16 +25,16 @@ along with the ASTRA Toolbox. If not, see <http://www.gnu.org/licenses/>.
 -----------------------------------------------------------------------
 */
 
-#include <cstdio>
-#include <cassert>
-
-#include "cgls.h"
-#include "util.h"
-#include "arith.h"
+#include "astra/cuda/2d/cgls.h"
+#include "astra/cuda/2d/util.h"
+#include "astra/cuda/2d/arith.h"
 
 #ifdef STANDALONE
 #include "testutil.h"
 #endif
+
+#include <cstdio>
+#include <cassert>
 
 namespace astraCUDA {
 
@@ -206,42 +206,6 @@ float CGLS::computeDiffNorm()
 	return sqrt(s);
 }
 
-bool doCGLS(float* D_volumeData, unsigned int volumePitch,
-            float* D_sinoData, unsigned int sinoPitch,
-            const SDimensions& dims, /*const SAugmentedData& augs,*/
-            const float* angles, const float* TOffsets, unsigned int iterations)
-{
-	CGLS cgls;
-	bool ok = true;
-
-	ok &= cgls.setGeometry(dims, angles);
-#if 0
-	if (D_maskData)
-		ok &= cgls.enableVolumeMask();
-#endif
-	if (TOffsets)
-		ok &= cgls.setTOffsets(TOffsets);
-
-	if (!ok)
-		return false;
-
-	ok = cgls.init();
-	if (!ok)
-		return false;
-
-#if 0
-	if (D_maskData)
-		ok &= cgls.setVolumeMask(D_maskData, maskPitch);
-#endif
-
-	ok &= cgls.setBuffers(D_volumeData, volumePitch, D_sinoData, sinoPitch);
-	if (!ok)
-		return false;
-
-	ok = cgls.iterate(iterations);
-
-	return ok;
-}
 
 }
 

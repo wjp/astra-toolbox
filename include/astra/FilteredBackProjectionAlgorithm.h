@@ -1,9 +1,9 @@
 /*
 -----------------------------------------------------------------------
-Copyright: 2010-2016, iMinds-Vision Lab, University of Antwerp
-           2014-2016, CWI, Amsterdam
+Copyright: 2010-2018, imec Vision Lab, University of Antwerp
+           2014-2018, CWI, Amsterdam
 
-Contact: astra@uantwerpen.be
+Contact: astra@astra-toolbox.com
 Website: http://www.astra-toolbox.com/
 
 This file is part of the ASTRA Toolbox.
@@ -35,6 +35,7 @@ along with the ASTRA Toolbox. If not, see <http://www.gnu.org/licenses/>.
 #include "Projector2D.h"
 #include "Float32ProjectionData2D.h"
 #include "Float32VolumeData2D.h"
+#include "Filters.h"
 
 
 namespace astra {
@@ -143,6 +144,10 @@ public:
 	 * @return description string
 	 */
 	virtual std::string description() const;
+
+protected:
+
+	SFilterConfig m_filterConfig;
 
 };
 

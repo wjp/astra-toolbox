@@ -1,9 +1,9 @@
 /*
 -----------------------------------------------------------------------
-Copyright: 2010-2016, iMinds-Vision Lab, University of Antwerp
-           2014-2016, CWI, Amsterdam
+Copyright: 2010-2018, imec Vision Lab, University of Antwerp
+           2014-2018, CWI, Amsterdam
 
-Contact: astra@uantwerpen.be
+Contact: astra@astra-toolbox.com
 Website: http://www.astra-toolbox.com/
 
 This file is part of the ASTRA Toolbox.
@@ -26,9 +26,19 @@ along with the ASTRA Toolbox. If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "astra/Globals.h"
+#include "astra/cuda/2d/astra.h"
 
-namespace astra{
-    bool running_in_matlab=false;
+namespace astra {
+
+bool running_in_matlab=false;
+
+_AstraExport bool cudaAvailable() {
+#ifdef ASTRA_CUDA
+	return astraCUDA::availableGPUMemory() > 0;
+#else
+	return false;
+#endif
 }
-// nothing to see here :)
+
+}
 

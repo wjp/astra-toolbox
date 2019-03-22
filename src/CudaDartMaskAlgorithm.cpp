@@ -1,9 +1,9 @@
 /*
 -----------------------------------------------------------------------
-Copyright: 2010-2016, iMinds-Vision Lab, University of Antwerp
-           2014-2016, CWI, Amsterdam
+Copyright: 2010-2018, imec Vision Lab, University of Antwerp
+           2014-2018, CWI, Amsterdam
 
-Contact: astra@uantwerpen.be
+Contact: astra@astra-toolbox.com
 Website: http://www.astra-toolbox.com/
 
 This file is part of the ASTRA Toolbox.
@@ -29,8 +29,9 @@ along with the ASTRA Toolbox. If not, see <http://www.gnu.org/licenses/>.
 
 #include "astra/CudaDartMaskAlgorithm.h"
 
-#include "../cuda/2d/darthelper.h"
-#include "../cuda/2d/algo.h"
+#include "astra/cuda/2d/astra.h"
+#include "astra/cuda/2d/darthelper.h"
+#include "astra/cuda/2d/algo.h"
 
 #include "astra/AstraObjectManager.h"
 
@@ -65,14 +66,14 @@ bool CCudaDartMaskAlgorithm::initialize(const Config& _cfg)
 	// reconstruction data
 	XMLNode node = _cfg.self.getSingleNode("SegmentationDataId");
 	ASTRA_CONFIG_CHECK(node, "CudaDartMask", "No SegmentationDataId tag specified.");
-	int id = node.getContentInt();
+	int id = StringUtil::stringToInt(node.getContent(), -1);
 	m_pSegmentation = dynamic_cast<CFloat32VolumeData2D*>(CData2DManager::getSingleton().get(id));
 	CC.markNodeParsed("SegmentationDataId");
 
 	// reconstruction data
 	node = _cfg.self.getSingleNode("MaskDataId");
 	ASTRA_CONFIG_CHECK(node, "CudaDartMask", "No MaskDataId tag specified.");
-	id = node.getContentInt();
+	id = StringUtil::stringToInt(node.getContent(), -1);
 	m_pMask = dynamic_cast<CFloat32VolumeData2D*>(CData2DManager::getSingleton().get(id));
 	CC.markNodeParsed("MaskDataId");
 
@@ -83,16 +84,28 @@ bool CCudaDartMaskAlgorithm::initialize(const Config& _cfg)
 	if (!_cfg.self.hasOption("GPUindex"))
 		CC.markOptionParsed("GPUIndex");
 
-    // Option: Connectivity
-	m_iConn = (unsigned int)_cfg.self.getOptionNumerical("Connectivity", 8);
+	// Option: Connectivity
+	try {
+		m_iConn = _cfg.self.getOptionInt("Connectivity", 8);
+	} catch (const StringUtil::bad_cast &e) {
+		ASTRA_CONFIG_CHECK(false, "CudaDartMask", "Connectivity must be an integer.");
+	}
 	CC.markOptionParsed("Connectivity");
 
 	// Option: Threshold
-	m_iThreshold = (unsigned int)_cfg.self.getOptionNumerical("Threshold", 1);
+	try {
+		m_iThreshold = _cfg.self.getOptionInt("Threshold", 1);
+	} catch (const StringUtil::bad_cast &e) {
+		ASTRA_CONFIG_CHECK(false, "CudaDartMask", "Threshold must be an integer.");
+	}
 	CC.markOptionParsed("Threshold");
 
 	// Option: Radius
-	m_iRadius = (unsigned int)_cfg.self.getOptionNumerical("Radius", 1);
+	try {
+		m_iRadius = _cfg.self.getOptionInt("Radius", 1);
+	} catch (const StringUtil::bad_cast &e) {
+		ASTRA_CONFIG_CHECK(false, "CudaDartMask", "Radius must be an integer.");
+	}
 	CC.markOptionParsed("Radius");
 
 	_check();
@@ -130,7 +143,8 @@ void CCudaDartMaskAlgorithm::run(int _iNrIterations)
 bool CCudaDartMaskAlgorithm::_check() 
 {
 
-	// connectivity: 4 of 8
+	// connectivity: 4 or 8
+	ASTRA_CONFIG_CHECK(m_iConn == 4 || m_iConn == 8, "CudaDartMask", "Connectivity must be 4 or 8");
 
 	// gpuindex >= 0 
 

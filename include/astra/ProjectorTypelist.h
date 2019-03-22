@@ -1,9 +1,9 @@
 /*
 -----------------------------------------------------------------------
-Copyright: 2010-2016, iMinds-Vision Lab, University of Antwerp
-           2014-2016, CWI, Amsterdam
+Copyright: 2010-2018, imec Vision Lab, University of Antwerp
+           2014-2018, CWI, Amsterdam
 
-Contact: astra@uantwerpen.be
+Contact: astra@astra-toolbox.com
 Website: http://www.astra-toolbox.com/
 
 This file is part of the ASTRA Toolbox.
@@ -35,6 +35,7 @@ along with the ASTRA Toolbox. If not, see <http://www.gnu.org/licenses/>.
 #include "Projector2D.h"
 #include "ParallelBeamLineKernelProjector2D.h"
 #include "ParallelBeamLinearKernelProjector2D.h"
+#include "ParallelBeamDistanceDrivenProjector2D.h"
 #include "ParallelBeamBlobKernelProjector2D.h"
 #include "ParallelBeamStripKernelProjector2D.h"
 #include "SparseMatrixProjector2D.h"
@@ -46,9 +47,10 @@ namespace astra{
 
 #ifdef ASTRA_CUDA
 
-	typedef TYPELIST_8(
+	typedef TYPELIST_9(
 				CFanFlatBeamLineKernelProjector2D,
 				CFanFlatBeamStripKernelProjector2D,
+				CParallelBeamDistanceDrivenProjector2D,
 				CParallelBeamLinearKernelProjector2D,
 				CParallelBeamLineKernelProjector2D,
 				CParallelBeamBlobKernelProjector2D,
@@ -59,9 +61,10 @@ namespace astra{
 
 #else
 
-	typedef TYPELIST_7(
+	typedef TYPELIST_8(
 				CFanFlatBeamLineKernelProjector2D,
 				CFanFlatBeamStripKernelProjector2D,
+				CParallelBeamDistanceDrivenProjector2D,
 				CParallelBeamLinearKernelProjector2D,
 				CParallelBeamLineKernelProjector2D,
 				CParallelBeamBlobKernelProjector2D,

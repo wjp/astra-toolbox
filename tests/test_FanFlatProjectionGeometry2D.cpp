@@ -1,9 +1,9 @@
 /*
 -----------------------------------------------------------------------
-Copyright: 2010-2016, iMinds-Vision Lab, University of Antwerp
-           2014-2016, CWI, Amsterdam
+Copyright: 2010-2018, imec Vision Lab, University of Antwerp
+           2014-2018, CWI, Amsterdam
 
-Contact: astra@uantwerpen.be
+Contact: astra@astra-toolbox.com
 Website: http://www.astra-toolbox.com/
 
 This file is part of the ASTRA Toolbox.
@@ -81,7 +81,7 @@ BOOST_AUTO_TEST_CASE( testFanFlatProjectionGeometry2D_Offsets )
 
 	float t, theta;
 	geom.getRayParams(0, 2, t, theta);
-	BOOST_CHECK_SMALL( tan(theta) + 0.25f, (double)astra::eps );
+	BOOST_CHECK_SMALL( tan(theta) + 0.25, (double)astra::eps );
 	BOOST_CHECK_SMALL( 17.0f*t*t - 1.0f, astra::eps );
 
 	// TODO: add test with large angle

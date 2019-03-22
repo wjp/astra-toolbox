@@ -1,9 +1,9 @@
 /*
 -----------------------------------------------------------------------
-Copyright: 2010-2016, iMinds-Vision Lab, University of Antwerp
-           2014-2016, CWI, Amsterdam
+Copyright: 2010-2018, imec Vision Lab, University of Antwerp
+           2014-2018, CWI, Amsterdam
 
-Contact: astra@uantwerpen.be
+Contact: astra@astra-toolbox.com
 Website: http://www.astra-toolbox.com/
 
 This file is part of the ASTRA Toolbox.
@@ -25,25 +25,26 @@ along with the ASTRA Toolbox. If not, see <http://www.gnu.org/licenses/>.
 -----------------------------------------------------------------------
 */
 
+#include "astra/cuda/3d/util3d.h"
+#include "astra/cuda/3d/dims3d.h"
+#include "astra/cuda/3d/arith3d.h"
+#include "astra/cuda/3d/cone_bp.h"
+
+#include "astra/cuda/2d/fft.h"
+
+#ifdef STANDALONE
+#include "astra/cuda/3d/cone_fp.h"
+#include "testutil.h"
+#endif
+
+#include "astra/Logging.h"
+
 #include <cstdio>
 #include <cassert>
 #include <iostream>
 #include <list>
 
 #include <cuda.h>
-#include "util3d.h"
-
-#ifdef STANDALONE
-#include "cone_fp.h"
-#include "testutil.h"
-#endif
-
-#include "dims3d.h"
-#include "arith3d.h"
-#include "cone_bp.h"
-#include "../2d/fft.h"
-
-#include "../../include/astra/Logging.h"
 
 namespace astraCUDA3d {
 
@@ -59,7 +60,7 @@ __constant__ float gC_angle[g_MaxAngles];
 // per-detector u/v shifts?
 
 
-__global__ void devFDK_preweight(void* D_projData, unsigned int projPitch, unsigned int startAngle, unsigned int endAngle, float fSrcOrigin, float fDetOrigin, float fZShift, float fDetUSize, float fDetVSize, const SDimensions3D dims)
+__global__ void devFDK_preweight(void* D_projData, unsigned int projPitch, unsigned int startAngle, unsigned int endAngle, float fSrcOrigin, float fDetOrigin, float fZShift, float fDetUSize, float fDetVSize, float fVoxSize, const SDimensions3D dims)
 {
 	float* projData = (float*)D_projData;
 	int angle = startAngle + blockIdx.y * g_anglesPerWeightBlock + threadIdx.y;
@@ -83,10 +84,18 @@ __global__ void devFDK_preweight(void* D_projData, unsigned int projPitch, unsig
 
 	float fV = (startDetectorV - 0.5f*dims.iProjV + 0.5f) * fDetVSize + fZShift;
 
-	//const float fW = fCentralRayLength;
-	//const float fW = fCentralRayLength * (M_PI / 2.0f) / (float)dims.iProjAngles;
+	// Contributions to the weighting factors:
+	// fCentralRayLength / fRayLength   : the main FDK preweighting factor
+	// fSrcOrigin / (fDetUSize * fCentralRayLength)
+	//                                  : to adjust the filter to the det width
+	// || u v s || ^ 2                  : see cone_bp.cu, FDKWEIGHT
+	// pi / (2 * iProjAngles)           : scaling of the integral over angles
+	// fVoxSize ^ 2                     : ...
+
 	const float fW1 = fSrcOrigin * fDetUSize * fDetVSize;
-	const float fW = fCentralRayLength * fW1 * fW1 * (M_PI / 2.0f) / (float)dims.iProjAngles;
+	const float fW2 = fCentralRayLength / (fDetUSize * fSrcOrigin);
+	const float fW3 = fVoxSize * fVoxSize;
+	const float fW = fCentralRayLength * fW1 * fW1 * fW2 * fW3 * (M_PI / 2.0f) / (float)dims.iProjAngles;
 
 	for (int detectorV = startDetectorV; detectorV < endDetectorV; ++detectorV)
 	{
@@ -142,6 +151,8 @@ __global__ void devFDK_ParkerWeight(void* D_projData, unsigned int projPitch, un
 		fWeight = 0.0f;
 	}
 
+	fWeight *= 2; // adjust to effectively halved angular range
+
 	for (int detectorV = startDetectorV; detectorV < endDetectorV; ++detectorV)
 	{
 
@@ -156,7 +167,8 @@ __global__ void devFDK_ParkerWeight(void* D_projData, unsigned int projPitch, un
 bool FDK_PreWeight(cudaPitchedPtr D_projData,
                 float fSrcOrigin, float fDetOrigin,
                 float fZShift,
-                float fDetUSize, float fDetVSize, bool bShortScan,
+                float fDetUSize, float fDetVSize, float fVoxSize,
+				bool bShortScan,
                 const SDimensions3D& dims, const float* angles)
 {
 	// The pre-weighting factor for a ray is the cosine of the angle between
@@ -168,7 +180,7 @@ bool FDK_PreWeight(cudaPitchedPtr D_projData,
 
 	int projPitch = D_projData.pitch/sizeof(float);
 
-	devFDK_preweight<<<dimGrid, dimBlock>>>(D_projData.ptr, projPitch, 0, dims.iProjAngles, fSrcOrigin, fDetOrigin, fZShift, fDetUSize, fDetVSize, dims);
+	devFDK_preweight<<<dimGrid, dimBlock>>>(D_projData.ptr, projPitch, 0, dims.iProjAngles, fSrcOrigin, fDetOrigin, fZShift, fDetUSize, fDetVSize, fVoxSize, dims);
 
 	cudaTextForceKernelsCompletion();
 
@@ -226,14 +238,41 @@ bool FDK_PreWeight(cudaPitchedPtr D_projData,
 }
 
 bool FDK_Filter(cudaPitchedPtr D_projData,
-                cufftComplex * D_filter,
+                const float *pfFilter,
                 const SDimensions3D& dims)
 {
-
 	// The filtering is a regular ramp filter per detector line.
 
+	// Generate filter
+	// TODO: Check errors
 	int iPaddedDetCount = calcNextPowerOfTwo(2 * dims.iProjU);
-	int iHalfFFTSize = calcFFTFourSize(iPaddedDetCount);
+	int iHalfFFTSize = astra::calcFFTFourierSize(iPaddedDetCount);
+
+
+	cufftComplex *pHostFilter = new cufftComplex[dims.iProjAngles * iHalfFFTSize];
+	memset(pHostFilter, 0, sizeof(cufftComplex) * dims.iProjAngles * iHalfFFTSize);
+
+	if (pfFilter == 0){
+		astra::SFilterConfig filter;
+		filter.m_eType = astra::FILTER_RAMLAK;
+		astraCUDA::genCuFFTFilter(filter, dims.iProjAngles, pHostFilter, iPaddedDetCount, iHalfFFTSize);
+	} else {
+		for (int i = 0; i < dims.iProjAngles * iHalfFFTSize; i++) {
+			pHostFilter[i].x = pfFilter[i];
+			pHostFilter[i].y = 0;
+		}
+	}
+
+	cufftComplex * D_filter;
+
+	astraCUDA::allocateComplexOnDevice(dims.iProjAngles, iHalfFFTSize, &D_filter);
+	astraCUDA::uploadComplexArrayToDevice(dims.iProjAngles, iHalfFFTSize, pHostFilter, D_filter);
+
+	delete [] pHostFilter;
+
+
+
+
 	int projPitch = D_projData.pitch/sizeof(float);
 	
 
@@ -241,22 +280,22 @@ bool FDK_Filter(cudaPitchedPtr D_projData,
 	float* D_sinoData = (float*)D_projData.ptr;
 
 	cufftComplex * D_sinoFFT = NULL;
-	allocateComplexOnDevice(dims.iProjAngles, iHalfFFTSize, &D_sinoFFT);
+	astraCUDA::allocateComplexOnDevice(dims.iProjAngles, iHalfFFTSize, &D_sinoFFT);
 
 	bool ok = true;
 
 	for (int v = 0; v < dims.iProjV; ++v) {
 
-		ok = runCudaFFT(dims.iProjAngles, D_sinoData, projPitch,
+		ok = astraCUDA::runCudaFFT(dims.iProjAngles, D_sinoData, projPitch,
 		                dims.iProjU, iPaddedDetCount, iHalfFFTSize,
 		                D_sinoFFT);
 
 		if (!ok) break;
 
-		applyFilter(dims.iProjAngles, iHalfFFTSize, D_sinoFFT, D_filter);
+		astraCUDA::applyFilter(dims.iProjAngles, iHalfFFTSize, D_sinoFFT, D_filter);
 
 
-		ok = runCudaIFFT(dims.iProjAngles, D_sinoFFT, D_sinoData, projPitch,
+		ok = astraCUDA::runCudaIFFT(dims.iProjAngles, D_sinoFFT, D_sinoData, projPitch,
 		                 dims.iProjU, iPaddedDetCount, iHalfFFTSize);
 
 		if (!ok) break;
@@ -264,7 +303,8 @@ bool FDK_Filter(cudaPitchedPtr D_projData,
 		D_sinoData += (dims.iProjAngles * projPitch);
 	}
 
-	freeComplexOnDevice(D_sinoFFT);
+	astraCUDA::freeComplexOnDevice(D_sinoFFT);
+	astraCUDA::freeComplexOnDevice(D_filter);
 
 	return ok;
 }
@@ -277,12 +317,6 @@ bool FDK(cudaPitchedPtr D_volumeData,
 	     const float* pfFilter)
 {
 	bool ok;
-	// Generate filter
-	// TODO: Check errors
-	cufftComplex * D_filter;
-	int iPaddedDetCount = calcNextPowerOfTwo(2 * dims.iProjU);
-	int iHalfFFTSize = calcFFTFourSize(iPaddedDetCount);
-
 
 	// NB: We don't support arbitrary cone_vec geometries here.
 	// Only those that are vertical sub-geometries
@@ -310,8 +344,9 @@ bool FDK(cudaPitchedPtr D_volumeData,
 
 
 #if 1
+	// NB: assuming cube voxels (params.fVolScaleX)
 	ok = FDK_PreWeight(D_projData, fSrcOrigin, fDetOrigin,
-	                fZShift, fDetUSize, fDetVSize,
+	                fZShift, fDetUSize, fDetVSize, params.fVolScaleX,
 	                bShortScan, dims, pfAngles);
 #else
 	ok = true;
@@ -322,33 +357,8 @@ bool FDK(cudaPitchedPtr D_volumeData,
 		return false;
 
 #if 1
-	cufftComplex *pHostFilter = new cufftComplex[dims.iProjAngles * iHalfFFTSize];
-	memset(pHostFilter, 0, sizeof(cufftComplex) * dims.iProjAngles * iHalfFFTSize);
-
-	if (pfFilter == 0){
-		genFilter(FILTER_RAMLAK, 1.0f, dims.iProjAngles, pHostFilter, iPaddedDetCount, iHalfFFTSize);
-	} else {
-		for (int i = 0; i < dims.iProjAngles * iHalfFFTSize; i++) {
-			pHostFilter[i].x = pfFilter[i];
-			pHostFilter[i].y = 0;
-		}
-	}
-
-
-	allocateComplexOnDevice(dims.iProjAngles, iHalfFFTSize, &D_filter);
-	uploadComplexArrayToDevice(dims.iProjAngles, iHalfFFTSize, pHostFilter, D_filter);
-
-	delete [] pHostFilter;
-
-
 	// Perform filtering
-
-
-
-	ok = FDK_Filter(D_projData, D_filter, dims);
-
-	// Clean up filter
-	freeComplexOnDevice(D_filter);
+	ok = FDK_Filter(D_projData, pfFilter, dims);
 #endif
 
 	if (!ok)

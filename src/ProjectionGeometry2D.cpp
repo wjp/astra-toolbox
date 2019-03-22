@@ -1,9 +1,9 @@
 /*
 -----------------------------------------------------------------------
-Copyright: 2010-2016, iMinds-Vision Lab, University of Antwerp
-           2014-2016, CWI, Amsterdam
+Copyright: 2010-2018, imec Vision Lab, University of Antwerp
+           2014-2018, CWI, Amsterdam
 
-Contact: astra@uantwerpen.be
+Contact: astra@astra-toolbox.com
 Website: http://www.astra-toolbox.com/
 
 This file is part of the ASTRA Toolbox.
@@ -44,11 +44,10 @@ CProjectionGeometry2D::CProjectionGeometry2D() : configCheckData(0)
 CProjectionGeometry2D::CProjectionGeometry2D(int _iAngleCount, 
 											 int _iDetectorCount, 
 											 float32 _fDetectorWidth, 
-											 const float32* _pfProjectionAngles,
-											 const float32* _pfExtraDetectorOffsets) : configCheckData(0)
+											 const float32* _pfProjectionAngles) : configCheckData(0)
 {
 	_clear();
-	_initialize(_iAngleCount, _iDetectorCount, _fDetectorWidth, _pfProjectionAngles,_pfExtraDetectorOffsets);
+	_initialize(_iAngleCount, _iDetectorCount, _fDetectorWidth, _pfProjectionAngles);
 }
 
 //----------------------------------------------------------------------------------------
@@ -69,7 +68,6 @@ void CProjectionGeometry2D::_clear()
 	m_iDetectorCount = 0;
 	m_fDetectorWidth = 0.0f;
 	m_pfProjectionAngles = NULL;
-	m_pfExtraDetectorOffset = NULL;
 	m_bInitialized = false;
 }
 
@@ -82,10 +80,8 @@ void CProjectionGeometry2D::clear()
 	m_fDetectorWidth = 0.0f;
 	if (m_bInitialized){
 		delete[] m_pfProjectionAngles;
-		delete[] m_pfExtraDetectorOffset;
 	}
 	m_pfProjectionAngles = NULL;
-	m_pfExtraDetectorOffset = NULL;
 	m_bInitialized = false;
 }
 
@@ -120,22 +116,49 @@ bool CProjectionGeometry2D::initialize(const Config& _cfg)
 		clear();
 	}
 
+	// Required: DetectorCount
+	XMLNode node = _cfg.self.getSingleNode("DetectorCount");
+	ASTRA_CONFIG_CHECK(node, "ProjectionGeometry2D", "No DetectorCount tag specified.");
+	try {
+		m_iDetectorCount = node.getContentInt();
+	} catch (const StringUtil::bad_cast &e) {
+		ASTRA_CONFIG_CHECK(false, "ProjectionGeometry2D", "DetectorCount must be an integer.");
+	}
+	CC.markNodeParsed("DetectorCount");
+
+	if (!initializeAngles(_cfg))
+		return false;
+
+	// some checks
+	ASTRA_CONFIG_CHECK(m_iDetectorCount > 0, "ProjectionGeometry2D", "DetectorCount should be positive.");
+
+	return true;
+}
+
+bool CProjectionGeometry2D::initializeAngles(const Config& _cfg)
+{
+	ConfigStackCheck<CProjectionGeometry2D> CC("ProjectionGeometry2D", this, _cfg);
+
 	// Required: DetectorWidth
 	XMLNode node = _cfg.self.getSingleNode("DetectorWidth");
 	ASTRA_CONFIG_CHECK(node, "ProjectionGeometry2D", "No DetectorWidth tag specified.");
-	m_fDetectorWidth = node.getContentNumerical();
+	try {
+		m_fDetectorWidth = node.getContentNumerical();
+	} catch (const StringUtil::bad_cast &e) {
+		ASTRA_CONFIG_CHECK(false, "ProjectionGeometry2D", "DetectorWidth must be numerical.");
+	}
 	CC.markNodeParsed("DetectorWidth");
 
-	// Required: DetectorCount
-	node = _cfg.self.getSingleNode("DetectorCount");
-	ASTRA_CONFIG_CHECK(node, "ProjectionGeometry2D", "No DetectorCount tag specified.");
-	m_iDetectorCount = node.getContentInt();
-	CC.markNodeParsed("DetectorCount");
 
 	// Required: ProjectionAngles
 	node = _cfg.self.getSingleNode("ProjectionAngles");
 	ASTRA_CONFIG_CHECK(node, "ProjectionGeometry2D", "No ProjectionAngles tag specified.");
-	vector<float32> angles = node.getContentNumericalArray();
+	vector<float32> angles;
+	try {
+		angles = node.getContentNumericalArray();
+	} catch (const StringUtil::bad_cast &e) {
+		ASTRA_CONFIG_CHECK(false, "ProjectionGeometry2D", "ProjectionAngles must be a numerical vector.");
+	}
 	m_iProjectionAngleCount = angles.size();
 	ASTRA_CONFIG_CHECK(m_iProjectionAngleCount > 0, "ProjectionGeometry2D", "Not enough ProjectionAngles specified.");
 	m_pfProjectionAngles = new float32[m_iProjectionAngleCount];
@@ -143,27 +166,10 @@ bool CProjectionGeometry2D::initialize(const Config& _cfg)
 		m_pfProjectionAngles[i] = angles[i];
 	}
 	CC.markNodeParsed("ProjectionAngles");
-
-	vector<float32> offset = _cfg.self.getOptionNumericalArray("ExtraDetectorOffset");
-	m_pfExtraDetectorOffset = new float32[m_iProjectionAngleCount];
-	if (offset.size() == (size_t)m_iProjectionAngleCount) {
-		for (int i = 0; i < m_iProjectionAngleCount; i++) {
-			m_pfExtraDetectorOffset[i] = offset[i];
-		}
-	} else {
-		for (int i = 0; i < m_iProjectionAngleCount; i++) {
-			m_pfExtraDetectorOffset[i] = 0.0f;
-		}	
-	}
-	CC.markOptionParsed("ExtraDetectorOffset");
-
-	// some checks
-	ASTRA_CONFIG_CHECK(m_iDetectorCount > 0, "ProjectionGeometry2D", "DetectorCount should be positive.");
-	ASTRA_CONFIG_CHECK(m_fDetectorWidth > 0.0f, "ProjectionGeometry2D", "DetectorWidth should be positive.");
 	ASTRA_CONFIG_CHECK(m_pfProjectionAngles != NULL, "ProjectionGeometry2D", "ProjectionAngles not initialized");
 
-	// Interface class, so don't return true
-	return false;
+	ASTRA_CONFIG_CHECK(m_fDetectorWidth > 0.0f, "ProjectionGeometry2D", "DetectorWidth should be positive.");
+	return true;
 }
 
 //----------------------------------------------------------------------------------------
@@ -171,8 +177,7 @@ bool CProjectionGeometry2D::initialize(const Config& _cfg)
 bool CProjectionGeometry2D::_initialize(int _iProjectionAngleCount, 
 									    int _iDetectorCount, 
 									    float32 _fDetectorWidth, 
-									    const float32* _pfProjectionAngles,
-										const float32* _pfExtraDetectorOffsets)
+									    const float32* _pfProjectionAngles)
 {
 	if (m_bInitialized) {
 		clear();
@@ -183,10 +188,8 @@ bool CProjectionGeometry2D::_initialize(int _iProjectionAngleCount,
 	m_iDetectorCount = _iDetectorCount;
 	m_fDetectorWidth = _fDetectorWidth;
 	m_pfProjectionAngles = new float32[m_iProjectionAngleCount];
-	m_pfExtraDetectorOffset = new float32[m_iProjectionAngleCount];
 	for (int i = 0; i < m_iProjectionAngleCount; i++) {
 		m_pfProjectionAngles[i] = _pfProjectionAngles[i];		
-		m_pfExtraDetectorOffset[i] = _pfExtraDetectorOffsets ? _pfExtraDetectorOffsets[i]:0;
 	}
 
 	// Interface class, so don't set m_bInitialized to true

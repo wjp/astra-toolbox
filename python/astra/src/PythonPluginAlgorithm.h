@@ -1,9 +1,9 @@
 /*
 -----------------------------------------------------------------------
-Copyright: 2010-2016, iMinds-Vision Lab, University of Antwerp
-           2014-2016, CWI, Amsterdam
+Copyright: 2010-2018, imec Vision Lab, University of Antwerp
+           2014-2018, CWI, Amsterdam
 
-Contact: astra@uantwerpen.be
+Contact: astra@astra-toolbox.com
 Website: http://www.astra-toolbox.com/
 
 This file is part of the ASTRA Toolbox.
@@ -34,7 +34,7 @@ along with the ASTRA Toolbox. If not, see <http://www.gnu.org/licenses/>.
 #include "astra/Singleton.h"
 #include "astra/XMLDocument.h"
 #include "astra/XMLNode.h"
-#include "astra/PluginAlgorithm.h"
+#include "astra/PluginAlgorithmFactory.h"
 
 #include <Python.h>
 
@@ -49,33 +49,12 @@ public:
     bool initialize(const Config& _cfg);
     void run(int _iNrIterations);
 
+    // Return instance (including INCREF)
+    PyObject *getInstance() const;
+
 private:
     PyObject * instance;
 
-};
-
-class CPythonPluginAlgorithmFactory : public CPluginAlgorithmFactory, public Singleton<CPythonPluginAlgorithmFactory> {
-
-public:
-
-    CPythonPluginAlgorithmFactory();
-    virtual ~CPythonPluginAlgorithmFactory();
-
-    virtual CAlgorithm * getPlugin(const std::string &name);
-
-    virtual bool registerPlugin(std::string name, std::string className);
-    virtual bool registerPlugin(std::string className);
-    bool registerPluginClass(std::string name, PyObject * className);
-    bool registerPluginClass(PyObject * className);
-
-    PyObject * getRegistered();
-    virtual std::map<std::string, std::string> getRegisteredMap();
-
-    virtual std::string getHelp(const std::string &name);
-
-private:
-    PyObject * pluginDict;
-    PyObject *inspect, *six;
 };
 
 PyObject* XMLNode2dict(XMLNode node);

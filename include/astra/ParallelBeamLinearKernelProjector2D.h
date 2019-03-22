@@ -1,9 +1,9 @@
 /*
 -----------------------------------------------------------------------
-Copyright: 2010-2016, iMinds-Vision Lab, University of Antwerp
-           2014-2016, CWI, Amsterdam
+Copyright: 2010-2018, imec Vision Lab, University of Antwerp
+           2014-2018, CWI, Amsterdam
 
-Contact: astra@uantwerpen.be
+Contact: astra@astra-toolbox.com
 Website: http://www.astra-toolbox.com/
 
 This file is part of the ASTRA Toolbox.
@@ -29,6 +29,7 @@ along with the ASTRA Toolbox. If not, see <http://www.gnu.org/licenses/>.
 #define _INC_ASTRA_PARALLELLINEARKERNELPROJECTOR
 
 #include "ParallelProjectionGeometry2D.h"
+#include "ParallelVecProjectionGeometry2D.h"
 #include "Float32Data2D.h"
 #include "Projector2D.h"
 
@@ -134,14 +135,6 @@ public:
 		                                 int _iMaxPixelCount, 
 										 int& _iStoredPixelCount);
 	
-	/** Create a list of detectors that are influenced by point [_iRow, _iCol].
-	 *
-	 * @param _iRow row of the point
-	 * @param _iCol column of the point
-	 * @return list of SDetector2D structs
-	 */
-	virtual std::vector<SDetector2D> projectPoint(int _iRow, int _iCol);
-
 
 	/** Policy-based projection of all rays.  This function will calculate each non-zero projection 
 	 * weight and use this value for a task provided by the policy object.
@@ -183,7 +176,6 @@ protected:
 	template <typename Policy>
 	void projectBlock_internal(int _iProjFrom, int _iProjTo,
 	                           int _iDetFrom, int _iDetTo, Policy& _policy);
-
 
 };
 

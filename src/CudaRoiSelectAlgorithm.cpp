@@ -1,9 +1,9 @@
 /*
 -----------------------------------------------------------------------
-Copyright: 2010-2016, iMinds-Vision Lab, University of Antwerp
-           2014-2016, CWI, Amsterdam
+Copyright: 2010-2018, imec Vision Lab, University of Antwerp
+           2014-2018, CWI, Amsterdam
 
-Contact: astra@uantwerpen.be
+Contact: astra@astra-toolbox.com
 Website: http://www.astra-toolbox.com/
 
 This file is part of the ASTRA Toolbox.
@@ -29,8 +29,9 @@ along with the ASTRA Toolbox. If not, see <http://www.gnu.org/licenses/>.
 
 #include "astra/CudaRoiSelectAlgorithm.h"
 
-#include "../cuda/2d/darthelper.h"
-#include "../cuda/2d/algo.h"
+#include "astra/cuda/2d/astra.h"
+#include "astra/cuda/2d/darthelper.h"
+#include "astra/cuda/2d/algo.h"
 
 #include "astra/AstraObjectManager.h"
 
@@ -61,12 +62,12 @@ CCudaRoiSelectAlgorithm::~CCudaRoiSelectAlgorithm()
 bool CCudaRoiSelectAlgorithm::initialize(const Config& _cfg)
 {
 	ASTRA_ASSERT(_cfg.self);
-	ConfigStackCheck<CAlgorithm> CC("CudaDartMaskAlgorithm", this, _cfg);
+	ConfigStackCheck<CAlgorithm> CC("CudaDartRoiSelectAlgorithm", this, _cfg);
 
 	// reconstruction data
 	XMLNode node = _cfg.self.getSingleNode("DataId");
 	ASTRA_CONFIG_CHECK(node, "CudaRoiSelect", "No DataId tag specified.");
-	int id = node.getContentInt();
+	int id = StringUtil::stringToInt(node.getContent(), -1);
 	m_pData = dynamic_cast<CFloat32VolumeData2D*>(CData2DManager::getSingleton().get(id));
 	CC.markNodeParsed("DataId");
 
@@ -78,7 +79,11 @@ bool CCudaRoiSelectAlgorithm::initialize(const Config& _cfg)
 		CC.markOptionParsed("GPUIndex");
 
 	// Option: Radius
-	m_fRadius = (unsigned int)_cfg.self.getOptionNumerical("Radius", 0.0f);
+	try {
+		m_fRadius = _cfg.self.getOptionNumerical("Radius", 0.0f);
+	} catch (const StringUtil::bad_cast &e) {
+		ASTRA_CONFIG_CHECK(false, "CudaDartRoiSelect", "Radius must be numerical.");
+	}
 	CC.markOptionParsed("Radius");
 
 	_check();

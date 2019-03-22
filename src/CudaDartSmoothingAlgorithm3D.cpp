@@ -1,9 +1,9 @@
 /*
 -----------------------------------------------------------------------
-Copyright: 2010-2016, iMinds-Vision Lab, University of Antwerp
-           2014-2016, CWI, Amsterdam
+Copyright: 2010-2018, imec Vision Lab, University of Antwerp
+           2014-2018, CWI, Amsterdam
 
-Contact: astra@uantwerpen.be
+Contact: astra@astra-toolbox.com
 Website: http://www.astra-toolbox.com/
 
 This file is part of the ASTRA Toolbox.
@@ -29,8 +29,8 @@ along with the ASTRA Toolbox. If not, see <http://www.gnu.org/licenses/>.
 
 #include "astra/CudaDartSmoothingAlgorithm3D.h"
 
-#include "../cuda/3d/darthelper3d.h"
-#include "../cuda/3d/dims3d.h"
+#include "astra/cuda/3d/darthelper3d.h"
+#include "astra/cuda/3d/dims3d.h"
 
 #include "astra/AstraObjectManager.h"
 
@@ -60,19 +60,19 @@ CCudaDartSmoothingAlgorithm3D::~CCudaDartSmoothingAlgorithm3D()
 bool CCudaDartSmoothingAlgorithm3D::initialize(const Config& _cfg)
 {
 	ASTRA_ASSERT(_cfg.self);
-	ConfigStackCheck<CAlgorithm> CC("CudaDartSmoothingAlgorithm", this, _cfg);
+	ConfigStackCheck<CAlgorithm> CC("CudaDartSmoothingAlgorithm3D", this, _cfg);
 
 	// reconstruction data
 	XMLNode node = _cfg.self.getSingleNode("InDataId");
-	ASTRA_CONFIG_CHECK(node, "CudaDartMask", "No InDataId tag specified.");
-	int id = node.getContentInt();
+	ASTRA_CONFIG_CHECK(node, "CudaDartSmoothing3D", "No InDataId tag specified.");
+	int id = StringUtil::stringToInt(node.getContent(), -1);
 	m_pIn = dynamic_cast<CFloat32VolumeData3DMemory*>(CData3DManager::getSingleton().get(id));
 	CC.markNodeParsed("InDataId");
 
 	// reconstruction data
 	node = _cfg.self.getSingleNode("OutDataId");
-	ASTRA_CONFIG_CHECK(node, "CudaDartMask", "No OutDataId tag specified.");
-	id = node.getContentInt();
+	ASTRA_CONFIG_CHECK(node, "CudaDartSmoothing3D", "No OutDataId tag specified.");
+	id = StringUtil::stringToInt(node.getContent(), -1);
 	m_pOut = dynamic_cast<CFloat32VolumeData3DMemory*>(CData3DManager::getSingleton().get(id));
 	CC.markNodeParsed("OutDataId");
 
@@ -84,11 +84,19 @@ bool CCudaDartSmoothingAlgorithm3D::initialize(const Config& _cfg)
 		CC.markOptionParsed("GPUIndex");
 
 	// Option: Intensity
-	m_fB = (float)_cfg.self.getOptionNumerical("Intensity", 0.3f);
+	try {
+		m_fB = (float)_cfg.self.getOptionNumerical("Intensity", 0.3f);
+	} catch (const StringUtil::bad_cast &e) {
+		ASTRA_CONFIG_CHECK(false, "CudaDartSmoothing3D", "Intensity must be numerical");
+	}
 	CC.markOptionParsed("Intensity");
 
 	// Option: Radius
-	m_iRadius = (unsigned int)_cfg.self.getOptionNumerical("Radius", 1);
+	try {
+		m_iRadius = _cfg.self.getOptionInt("Radius", 1);
+	} catch (const StringUtil::bad_cast &e) {
+		ASTRA_CONFIG_CHECK(false, "CudaDartSmoothing3D", "Radius must be an integer.");
+	}
 	CC.markOptionParsed("Radius");
 
 	_check();

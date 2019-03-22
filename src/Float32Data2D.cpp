@@ -1,9 +1,9 @@
 /*
 -----------------------------------------------------------------------
-Copyright: 2010-2016, iMinds-Vision Lab, University of Antwerp
-           2014-2016, CWI, Amsterdam
+Copyright: 2010-2018, imec Vision Lab, University of Antwerp
+           2014-2018, CWI, Amsterdam
 
-Contact: astra@uantwerpen.be
+Contact: astra@astra-toolbox.com
 Website: http://www.astra-toolbox.com/
 
 This file is part of the ASTRA Toolbox.
@@ -286,7 +286,7 @@ void CFloat32Data2D::_allocateData()
 	ASTRA_ASSERT(!m_bInitialized);
 
 	ASTRA_ASSERT(m_iSize > 0);
-	ASTRA_ASSERT(m_iSize == (size_t)m_iWidth * m_iHeight);
+	ASTRA_ASSERT((size_t)m_iSize == (size_t)m_iWidth * m_iHeight);
 	ASTRA_ASSERT(m_pfData == NULL);
 	ASTRA_ASSERT(m_ppfData2D == NULL);
 

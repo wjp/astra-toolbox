@@ -1,8 +1,8 @@
 # -----------------------------------------------------------------------
-# Copyright: 2010-2016, iMinds-Vision Lab, University of Antwerp
-#            2013-2016, CWI, Amsterdam
+# Copyright: 2010-2018, imec Vision Lab, University of Antwerp
+#            2013-2018, CWI, Amsterdam
 #
-# Contact: astra@uantwerpen.be
+# Contact: astra@astra-toolbox.com
 # Website: http://www.astra-toolbox.com/
 #
 # This file is part of the ASTRA Toolbox.
@@ -28,7 +28,7 @@
 
 include "config.pxi"
 import six
-from .utils import wrap_from_bytes
+from .utils import wrap_from_bytes, wrap_to_bytes
 
 from libcpp.string cimport string
 from libcpp.vector cimport vector
@@ -38,13 +38,21 @@ from .PyIndexManager cimport CAstraObjectManagerBase
 
 cdef extern from "astra/Globals.h" namespace "astra":
     bool cudaEnabled()
+    bool cudaAvailable()
+
+cdef extern from "astra/Features.h" namespace "astra":
+    bool hasFeature(string)
 
 IF HAVE_CUDA==True:
-  cdef extern from "../cuda/2d/darthelper.h" namespace "astraCUDA":
+  cdef extern from "astra/cuda/2d/astra.h" namespace "astraCUDA":
       bool setGPUIndex(int)
+      string getCudaDeviceString(int)
 ELSE:
   def setGPUIndex():
     pass
+  def getCudaDeviceString(idx):
+    pass
+
 cdef extern from "astra/CompositeGeometryManager.h" namespace "astra":
     cdef cppclass SGPUParams:
         vector[int] GPUIndices
@@ -61,16 +69,16 @@ def credits():
  * Dr. Folkert Bleichrodt
  * Dr. Andrei Dabravolski
  * Dr. Willem Jan Palenstijn
+ * Dr. Daniel Pelt
  * Dr. Tom Roelandts
  * Dr. Wim van Aarle
  * Dr. Gert Van Gompel
  * Sander van der Maar, MSc.
- * Gert Merckx, MSc.
- * Daan Pelt, MSc.""")
+ * Gert Merckx, MSc.""")
 
 
 def use_cuda():
-    return cudaEnabled()
+    return cudaAvailable()
 
 IF HAVE_CUDA==True:
   def set_gpu_index(idx, memory=0):
@@ -79,14 +87,20 @@ IF HAVE_CUDA==True:
     if use_cuda()==True:
         if not isinstance(idx, collections.Iterable) or isinstance(idx, six.string_types + (six.text_type,six.binary_type)):
             idx = (idx,)
+        if memory != 0 and memory < 1024*1024:
+            raise ValueError("Setting GPU memory lower than 1MB is not supported.")
         params.memory = memory
         params.GPUIndices = idx
         setGlobalGPUParams(params)
         ret = setGPUIndex(params.GPUIndices[0])
         if not ret:
             six.print_("Failed to set GPU " + str(params.GPUIndices[0]))
+  def get_gpu_info(idx=-1):
+    return wrap_from_bytes(getCudaDeviceString(idx))
 ELSE:
   def set_gpu_index(idx, memory=0):
+    raise NotImplementedError("CUDA support is not enabled in ASTRA")
+  def get_gpu_info(idx=-1):
     raise NotImplementedError("CUDA support is not enabled in ASTRA")
 
 def delete(ids):
@@ -109,3 +123,6 @@ def info(ids):
         if ptr:
             s = ptr.getType() + six.b("\t") + ptr.getInfo(i)
             six.print_(wrap_from_bytes(s))
+
+def has_feature(feature):
+    return hasFeature(wrap_to_bytes(feature))

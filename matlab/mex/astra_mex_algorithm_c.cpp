@@ -1,9 +1,9 @@
 /*
 -----------------------------------------------------------------------
-Copyright: 2010-2016, iMinds-Vision Lab, University of Antwerp
-           2014-2016, CWI, Amsterdam
+Copyright: 2010-2018, imec Vision Lab, University of Antwerp
+           2014-2018, CWI, Amsterdam
 
-Contact: astra@uantwerpen.be
+Contact: astra@astra-toolbox.com
 Website: http://www.astra-toolbox.com/
 
 This file is part of the ASTRA Toolbox.
@@ -33,8 +33,6 @@ along with the ASTRA Toolbox. If not, see <http://www.gnu.org/licenses/>.
 #include "mexHelpFunctions.h"
 #include "mexInitFunctions.h"
 #include "astra/Globals.h"
-
-#define USE_MATLAB_UNDOCUMENTED
 
 #ifdef USE_MATLAB_UNDOCUMENTED
 extern "C" { bool utIsInterruptPending(); }
@@ -83,7 +81,7 @@ void astra_mex_algorithm_create(int nlhs, mxArray* plhs[], int nrhs, const mxArr
 	CAlgorithm* pAlg = CAlgorithmFactory::getSingleton().create(cfg->self.getAttribute("type"));
 	if (!pAlg) {
 		delete cfg;
-		mexErrMsgTxt("Unknown algorithm. \n");
+		mexErrMsgTxt("Unknown Algorithm. \n");
 		return;
 	}
 
@@ -91,7 +89,7 @@ void astra_mex_algorithm_create(int nlhs, mxArray* plhs[], int nrhs, const mxArr
 	if (!pAlg->initialize(*cfg)) {
 		delete cfg;
 		delete pAlg;
-		mexErrMsgTxt("Algorithm not initialized. \n");
+		mexErrMsgTxt("Unable to initialize Algorithm. \n");
 		return;
 	}
 	delete cfg;

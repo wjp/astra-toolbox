@@ -1,9 +1,9 @@
 /*
 -----------------------------------------------------------------------
-Copyright: 2010-2016, iMinds-Vision Lab, University of Antwerp
-           2014-2016, CWI, Amsterdam
+Copyright: 2010-2018, imec Vision Lab, University of Antwerp
+           2014-2018, CWI, Amsterdam
 
-Contact: astra@uantwerpen.be
+Contact: astra@astra-toolbox.com
 Website: http://www.astra-toolbox.com/
 
 This file is part of the ASTRA Toolbox.
@@ -26,6 +26,8 @@ along with the ASTRA Toolbox. If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "astra/FanFlatProjectionGeometry2D.h"
+
+#include "astra/GeometryUtil2D.h"
 
 #include <cstring>
 #include <sstream>
@@ -129,18 +131,27 @@ bool CFanFlatProjectionGeometry2D::initialize(const Config& _cfg)
 	ConfigStackCheck<CProjectionGeometry2D> CC("FanFlatProjectionGeometry2D", this, _cfg);		
 
 	// initialization of parent class
-	CProjectionGeometry2D::initialize(_cfg);
+	if (!CProjectionGeometry2D::initialize(_cfg))
+		return false;
 
 	// Required: DistanceOriginDetector
 	XMLNode node = _cfg.self.getSingleNode("DistanceOriginDetector");
 	ASTRA_CONFIG_CHECK(node, "FanFlatProjectionGeometry2D", "No DistanceOriginDetector tag specified.");
-	m_fOriginDetectorDistance = node.getContentNumerical();
+	try {
+		m_fOriginDetectorDistance = node.getContentNumerical();
+	} catch (const StringUtil::bad_cast &e) {
+		ASTRA_CONFIG_CHECK(false, "FanFlatProjectionGeometry2D", "DistanceOriginDetector must be numerical.");
+	}
 	CC.markNodeParsed("DistanceOriginDetector");
 
 	// Required: DetectorOriginSource
 	node = _cfg.self.getSingleNode("DistanceOriginSource");
 	ASTRA_CONFIG_CHECK(node, "FanFlatProjectionGeometry2D", "No DistanceOriginSource tag specified.");
-	m_fOriginSourceDistance = node.getContentNumerical();
+	try {
+		m_fOriginSourceDistance = node.getContentNumerical();
+	} catch (const StringUtil::bad_cast &e) {
+		ASTRA_CONFIG_CHECK(false, "FanFlatProjectionGeometry2D", "DistanceOriginSource must be numerical.");
+	}
 	CC.markNodeParsed("DistanceOriginSource");
 
 	// success
@@ -213,7 +224,21 @@ Config* CFanFlatProjectionGeometry2D::getConfiguration() const
 	cfg->self.addChildNode("ProjectionAngles", m_pfProjectionAngles, m_iProjectionAngleCount);
 	return cfg;
 }
-//----------------------------------------------------------------------------------------
 
+//----------------------------------------------------------------------------------------
+CFanFlatVecProjectionGeometry2D* CFanFlatProjectionGeometry2D::toVectorGeometry()
+{
+	SFanProjection* vectors = genFanProjections(m_iProjectionAngleCount,
+	                                            m_iDetectorCount,
+	                                            m_fOriginSourceDistance,
+	                                            m_fOriginDetectorDistance,
+	                                            m_fDetectorWidth,
+	                                            m_pfProjectionAngles);
+
+	CFanFlatVecProjectionGeometry2D* vecGeom = new CFanFlatVecProjectionGeometry2D();
+	vecGeom->initialize(m_iProjectionAngleCount, m_iDetectorCount, vectors);
+	delete[] vectors;
+	return vecGeom;
+}
 
 } // namespace astra

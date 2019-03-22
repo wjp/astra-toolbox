@@ -1,8 +1,8 @@
 # -----------------------------------------------------------------------
-# Copyright: 2010-2016, iMinds-Vision Lab, University of Antwerp
-#            2013-2016, CWI, Amsterdam
+# Copyright: 2010-2018, imec Vision Lab, University of Antwerp
+#            2013-2018, CWI, Amsterdam
 #
-# Contact: astra@uantwerpen.be
+# Contact: astra@astra-toolbox.com
 # Website: http://www.astra-toolbox.com/
 #
 # This file is part of the ASTRA Toolbox.
@@ -65,6 +65,17 @@ def delete(ids):
     
     """
     return a.delete(ids)
+
+def get_plugin_object(i):
+    """Return the Python object instance of a plugin algorithm.
+
+    :param i: ID of object corresponding to a plugin algorithm.
+    :type i: :class:`int`
+    :returns: The Python object instance of the plugin algorithm.
+
+    """
+    return a.get_plugin_object(i)
+
 
 def clear():
     """Clear all matrix objects."""

@@ -1,9 +1,9 @@
 /*
 -----------------------------------------------------------------------
-Copyright: 2010-2016, iMinds-Vision Lab, University of Antwerp
-           2014-2016, CWI, Amsterdam
+Copyright: 2010-2018, imec Vision Lab, University of Antwerp
+           2014-2018, CWI, Amsterdam
 
-Contact: astra@uantwerpen.be
+Contact: astra@astra-toolbox.com
 Website: http://www.astra-toolbox.com/
 
 This file is part of the ASTRA Toolbox.
@@ -25,20 +25,20 @@ along with the ASTRA Toolbox. If not, see <http://www.gnu.org/licenses/>.
 -----------------------------------------------------------------------
 */
 
+#include "astra/cuda/3d/util3d.h"
+#include "astra/cuda/3d/dims3d.h"
+
+#ifdef STANDALONE
+#include "astra/cuda/3d/par3d_fp.h"
+#include "testutil.h"
+#endif
+
 #include <cstdio>
 #include <cassert>
 #include <iostream>
 #include <list>
 
 #include <cuda.h>
-#include "util3d.h"
-
-#ifdef STANDALONE
-#include "par3d_fp.h"
-#include "testutil.h"
-#endif
-
-#include "dims3d.h"
 
 typedef texture<float, 3, cudaReadModeElementType> texture3D;
 

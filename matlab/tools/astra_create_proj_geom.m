@@ -87,10 +87,10 @@ function proj_geom = astra_create_proj_geom(type, varargin)
 %--------------------------------------------------------------------------
 % This file is part of the ASTRA Toolbox
 % 
-% Copyright: 2010-2016, iMinds-Vision Lab, University of Antwerp
-%            2014-2016, CWI, Amsterdam
+% Copyright: 2010-2018, imec Vision Lab, University of Antwerp
+%            2014-2018, CWI, Amsterdam
 % License: Open Source under GPLv3
-% Contact: astra@uantwerpen.be
+% Contact: astra@astra-toolbox.com
 % Website: http://www.astra-toolbox.com/
 %--------------------------------------------------------------------------
 
@@ -104,6 +104,19 @@ if strcmp(type,'parallel')
 		'DetectorWidth',		varargin{1}, ...
 		'DetectorCount',		varargin{2}, ...
 		'ProjectionAngles',		varargin{3}  ...
+	);
+
+elseif strcmp(type,'parallel_vec')
+	if numel(varargin) < 2
+		error('not enough variables: astra_create_proj_geom(parallel_vec, det_count, V')
+	end
+	if size(varargin{2}, 2) ~= 6
+		error('V should be a Nx6 matrix, with N the number of projections')
+	end
+	proj_geom = struct( ...
+		'type',					'parallel_vec',  ...
+		'DetectorCount',		varargin{1}, ...
+		'Vectors',				varargin{2}  ...
 	);
 
 elseif strcmp(type,'fanflat')

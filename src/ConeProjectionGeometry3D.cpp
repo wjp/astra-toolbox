@@ -1,9 +1,9 @@
 /*
 -----------------------------------------------------------------------
-Copyright: 2010-2016, iMinds-Vision Lab, University of Antwerp
-           2014-2016, CWI, Amsterdam
+Copyright: 2010-2018, imec Vision Lab, University of Antwerp
+           2014-2018, CWI, Amsterdam
 
-Contact: astra@uantwerpen.be
+Contact: astra@astra-toolbox.com
 Website: http://www.astra-toolbox.com/
 
 This file is part of the ASTRA Toolbox.
@@ -83,18 +83,27 @@ bool CConeProjectionGeometry3D::initialize(const Config& _cfg)
 	ConfigStackCheck<CProjectionGeometry3D> CC("ConeProjectionGeometry3D", this, _cfg);	
 
 	// initialization of parent class
-	CProjectionGeometry3D::initialize(_cfg);
+	if (!CProjectionGeometry3D::initialize(_cfg))
+		return false;
 
 	// Required: DistanceOriginDetector
 	XMLNode node = _cfg.self.getSingleNode("DistanceOriginDetector");
 	ASTRA_CONFIG_CHECK(node, "ConeProjectionGeometry3D", "No DistanceOriginDetector tag specified.");
-	m_fOriginDetectorDistance = node.getContentNumerical();
+	try {
+		m_fOriginDetectorDistance = node.getContentNumerical();
+	} catch (const StringUtil::bad_cast &e) {
+		ASTRA_CONFIG_CHECK(false, "ConeProjectionGeometry3D", "DistanceOriginDetector must be numerical.");
+	}
 	CC.markNodeParsed("DistanceOriginDetector");
 
 	// Required: DetectorOriginSource
 	node = _cfg.self.getSingleNode("DistanceOriginSource");
 	ASTRA_CONFIG_CHECK(node, "ConeProjectionGeometry3D", "No DistanceOriginSource tag specified.");
-	m_fOriginSourceDistance = node.getContentNumerical();
+	try {
+		m_fOriginSourceDistance = node.getContentNumerical();
+	} catch (const StringUtil::bad_cast &e) {
+		ASTRA_CONFIG_CHECK(false, "ConeProjectionGeometry3D", "DistanceOriginSource must be numerical.");
+	}
 	CC.markNodeParsed("DistanceOriginSource");
 
 	// success
@@ -225,7 +234,7 @@ CVector3D CConeProjectionGeometry3D::getProjectionDirection(int _iProjectionInde
 
 	#undef ROTATE
 
-	CVector3D ret(fDetX - fSrcX, fDetY - fSrcY, fDetZ - fDetZ);
+	CVector3D ret(fDetX - fSrcX, fDetY - fSrcY, fDetZ - fSrcZ);
 	return ret;
 }
 

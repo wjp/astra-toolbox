@@ -1,10 +1,10 @@
 /*
 -----------------------------------------------------------------------
-Copyright: 2010-2015, iMinds-Vision Lab, University of Antwerp
-           2014-2015, CWI, Amsterdam
+Copyright: 2010-2018, imec Vision Lab, University of Antwerp
+           2014-2018, CWI, Amsterdam
 
-Contact: astra@uantwerpen.be
-Website: http://sf.net/projects/astra-toolbox
+Contact: astra@astra-toolbox.com
+Website: http://www.astra-toolbox.com/
 
 This file is part of the ASTRA Toolbox.
 
@@ -23,7 +23,6 @@ You should have received a copy of the GNU General Public License
 along with the ASTRA Toolbox. If not, see <http://www.gnu.org/licenses/>.
 
 -----------------------------------------------------------------------
-$Id$
 */
 
 #include <cstdio>
@@ -32,13 +31,13 @@ $Id$
 #include <list>
 
 #include <cuda.h>
-#include "util3d.h"
+#include "astra/cuda/3d/util3d.h"
 
 #ifdef STANDALONE
 #include "testutil.h"
 #endif
 
-#include "dims3d.h"
+#include "astra/cuda/3d/dims3d.h"
 
 typedef texture<float, 3, cudaReadModeElementType> texture3D;
 
@@ -751,16 +750,12 @@ bool ConeLineFP(cudaPitchedPtr D_volumeData,
 	return ret;
 }
 
-bool ConeLineBP(cudaPitchedPtr D_volumeData,
-            cudaPitchedPtr D_projData,
-            const SDimensions3D& dims, const SConeProjection* angles,
-            const SProjectorParams3D& params)
+bool ConeLineBP_Array(cudaPitchedPtr D_volumeData,
+                  cudaArray *D_projArray,
+                  const SDimensions3D& dims, const SConeProjection* angles,
+                  const SProjectorParams3D& params)
 {
-	// transfer projections to array
-
-	cudaArray* cuArray = allocateProjectionArray(dims);
-	transferProjectionsToArray(D_projData, cuArray, dims);
-	bindProjDataTexture(cuArray);
+	bindProjDataTexture(D_projArray);
 
 	bool ret = true;
 
@@ -773,6 +768,21 @@ bool ConeLineBP(cudaPitchedPtr D_volumeData,
 		if (!ret)
 			break;
 	}
+
+	return ret;
+}
+
+bool ConeLineBP(cudaPitchedPtr D_volumeData,
+            cudaPitchedPtr D_projData,
+            const SDimensions3D& dims, const SConeProjection* angles,
+            const SProjectorParams3D& params)
+{
+	// transfer projections to array
+
+	cudaArray* cuArray = allocateProjectionArray(dims);
+	transferProjectionsToArray(D_projData, cuArray, dims);
+
+	bool ret = ConeLineBP_Array(D_volumeData, cuArray, dims, angles, params);
 
 	cudaFreeArray(cuArray);
 

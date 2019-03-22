@@ -1,9 +1,9 @@
 /*
 -----------------------------------------------------------------------
-Copyright: 2010-2016, iMinds-Vision Lab, University of Antwerp
-           2014-2016, CWI, Amsterdam
+Copyright: 2010-2018, imec Vision Lab, University of Antwerp
+           2014-2018, CWI, Amsterdam
 
-Contact: astra@uantwerpen.be
+Contact: astra@astra-toolbox.com
 Website: http://www.astra-toolbox.com/
 
 This file is part of the ASTRA Toolbox.
@@ -25,16 +25,16 @@ along with the ASTRA Toolbox. If not, see <http://www.gnu.org/licenses/>.
 -----------------------------------------------------------------------
 */
 
-#include <cstdio>
-#include <cassert>
-
-#include "em.h"
-#include "util.h"
-#include "arith.h"
+#include "astra/cuda/2d/em.h"
+#include "astra/cuda/2d/util.h"
+#include "astra/cuda/2d/arith.h"
 
 #ifdef STANDALONE
 #include "testutil.h"
 #endif
+
+#include <cstdio>
+#include <cassert>
 
 namespace astraCUDA {
 
@@ -168,34 +168,6 @@ float EM::computeDiffNorm()
 	return sqrt(s);
 }
 
-
-bool doEM(float* D_volumeData, unsigned int volumePitch,
-          float* D_sinoData, unsigned int sinoPitch,
-          const SDimensions& dims, const float* angles,
-          const float* TOffsets, unsigned int iterations)
-{
-	EM em;
-	bool ok = true;
-
-	ok &= em.setGeometry(dims, angles);
-	if (TOffsets)
-		ok &= em.setTOffsets(TOffsets);
-
-	if (!ok)
-		return false;
-
-	ok = em.init();
-	if (!ok)
-		return false;
-
-	ok &= em.setBuffers(D_volumeData, volumePitch, D_sinoData, sinoPitch);
-	if (!ok)
-		return false;
-
-	ok = em.iterate(iterations);
-
-	return ok;
-}
 
 }
 

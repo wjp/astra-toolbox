@@ -1,10 +1,10 @@
 %--------------------------------------------------------------------------
 % This file is part of the ASTRA Toolbox
 %
-% Copyright: 2010-2016, iMinds-Vision Lab, University of Antwerp
-%            2014-2016, CWI, Amsterdam
+% Copyright: 2010-2018, imec Vision Lab, University of Antwerp
+%            2014-2018, CWI, Amsterdam
 % License: Open Source under GPLv3
-% Contact: astra@uantwerpen.be
+% Contact: astra@astra-toolbox.com
 % Website: http://www.astra-toolbox.com/
 %--------------------------------------------------------------------------
 
@@ -97,7 +97,7 @@ function rmse = optim_func(values, D_base, params, Optim)
 	% compute rmse
 	ROI = load('roi.mat');
 	[rmse, f_250, f_100, w_250, w_125] = compute_rmse(D.S, ROI);
-	%projection = D.tomography.createForwardProjection(D, D.S);
+	%projection = D.tomography.project(D.S);
 	%proj_diff = sum((projection(:) - D.base.sinogram(:)).^2);
 	
 	% save

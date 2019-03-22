@@ -1,8 +1,8 @@
 # -----------------------------------------------------------------------
-# Copyright: 2010-2016, iMinds-Vision Lab, University of Antwerp
-#            2013-2016, CWI, Amsterdam
+# Copyright: 2010-2018, imec Vision Lab, University of Antwerp
+#            2013-2018, CWI, Amsterdam
 #
-# Contact: astra@uantwerpen.be
+# Contact: astra@astra-toolbox.com
 # Website: http://www.astra-toolbox.com/
 #
 # This file is part of the ASTRA Toolbox.
@@ -26,6 +26,7 @@
 # distutils: language = c++
 # distutils: libraries = astra
 
+import sys
 cimport numpy as np
 import numpy as np
 import six
@@ -45,15 +46,15 @@ from .PyXMLDocument cimport XMLNode
 from .PyIncludes cimport *
 
 
-cdef Config * dictToConfig(string rootname, dc):
+cdef Config * dictToConfig(string rootname, dc) except NULL:
     cdef Config * cfg = new Config()
     cfg.initialize(rootname)
     try:
         readDict(cfg.self, dc)
-    except Exception as e:
+    except Exception:
         del cfg
-        six.print_(e.strerror)
-        return NULL
+        exc = sys.exc_info()
+        raise exc[0], exc[1], exc[2]
     return cfg
 
 def convert_item(item):
@@ -85,7 +86,7 @@ def wrap_from_bytes(value):
     return s
 
 
-cdef void readDict(XMLNode root, _dc):
+cdef bool readDict(XMLNode root, _dc) except False:
     cdef XMLNode listbase
     cdef XMLNode itm
     cdef int i
@@ -122,8 +123,9 @@ cdef void readDict(XMLNode root, _dc):
                 if isinstance(val, builtins.bool):
                     val = int(val)
                 itm = root.addChildNode(item, wrap_to_bytes(val))
+    return True
 
-cdef void readOptions(XMLNode node, dc):
+cdef bool readOptions(XMLNode node, dc) except False:
     cdef XMLNode listbase
     cdef XMLNode itm
     cdef int i
@@ -152,6 +154,7 @@ cdef void readOptions(XMLNode node, dc):
             if isinstance(val, builtins.bool):
                 val = int(val)
             node.addOption(item, wrap_to_bytes(val))
+    return True
 
 cdef configToDict(Config *cfg):
     return XMLNode2dict(cfg.self)
@@ -171,6 +174,7 @@ def stringToPythonValue(inputIn):
     input = castString(inputIn)
     # matrix
     if ';' in input:
+        input = input.rstrip(';')
         row_strings = input.split(';')
         col_strings = row_strings[0].split(',')
         nRows = len(row_strings)
@@ -185,6 +189,7 @@ def stringToPythonValue(inputIn):
 
     # vector
     if ',' in input:
+        input = input.rstrip(',')
         items = input.split(',')
         out = np.empty(len(items))
         for idx,item in enumerate(items):

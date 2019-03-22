@@ -1,8 +1,8 @@
 # -----------------------------------------------------------------------
-# Copyright: 2010-2016, iMinds-Vision Lab, University of Antwerp
-#            2013-2016, CWI, Amsterdam
+# Copyright: 2010-2018, imec Vision Lab, University of Antwerp
+#            2013-2018, CWI, Amsterdam
 #
-# Contact: astra@uantwerpen.be
+# Contact: astra@astra-toolbox.com
 # Website: http://www.astra-toolbox.com/
 #
 # This file is part of the ASTRA Toolbox.
@@ -28,11 +28,11 @@ import numpy as np
 
 # Set up multi-GPU usage.
 # This only works for 3D GPU forward projection and back projection.
-astra.astra.set_gpu_index([0,1])
+astra.set_gpu_index([0,1])
 
 # Optionally, you can also restrict the amount of GPU memory ASTRA will use.
 # The line commented below sets this to 1GB.
-#astra.astra.set_gpu_index([0,1], memory=1024*1024*1024)
+#astra.set_gpu_index([0,1], memory=1024*1024*1024)
 
 vol_geom = astra.create_vol_geom(1024, 1024, 1024)
 

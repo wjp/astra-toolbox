@@ -1,9 +1,9 @@
 /*
 -----------------------------------------------------------------------
-Copyright: 2010-2016, iMinds-Vision Lab, University of Antwerp
-           2014-2016, CWI, Amsterdam
+Copyright: 2010-2018, imec Vision Lab, University of Antwerp
+           2014-2018, CWI, Amsterdam
 
-Contact: astra@uantwerpen.be
+Contact: astra@astra-toolbox.com
 Website: http://www.astra-toolbox.com/
 
 This file is part of the ASTRA Toolbox.
@@ -91,7 +91,7 @@ bool CFanFlatBeamLineKernelProjector2D::_check()
 
 	ASTRA_CONFIG_CHECK(dynamic_cast<CFanFlatProjectionGeometry2D*>(m_pProjectionGeometry) || dynamic_cast<CFanFlatVecProjectionGeometry2D*>(m_pProjectionGeometry), "FanFlatBeamLineKernelProjector2D", "Unsupported projection geometry");
 
-	ASTRA_CONFIG_CHECK(m_pVolumeGeometry->getPixelLengthX() == m_pVolumeGeometry->getPixelLengthY(), "FanFlatBeamLineKernelProjector2D", "Pixel height must equal pixel width.");
+	ASTRA_CONFIG_CHECK(abs(m_pVolumeGeometry->getPixelLengthX() / m_pVolumeGeometry->getPixelLengthY()) - 1 < eps, "FanFlatBeamLineKernelProjector2D", "Pixel height must equal pixel width.");
 	
 	// success
 	return true;
@@ -157,14 +157,6 @@ void CFanFlatBeamLineKernelProjector2D::computeSingleRayWeights(int _iProjection
 	StorePixelWeightsPolicy p(_pWeightedPixels, _iMaxPixelCount);
 	projectSingleRay(_iProjectionIndex, _iDetectorIndex, p);
 	_iStoredPixelCount = p.getStoredPixelCount();
-}
-
-//----------------------------------------------------------------------------------------
-// Splat a single point
-std::vector<SDetector2D> CFanFlatBeamLineKernelProjector2D::projectPoint(int _iRow, int _iCol)
-{
-	std::vector<SDetector2D> res;
-	return res;
 }
 
 //----------------------------------------------------------------------------------------

@@ -1,8 +1,8 @@
 # -----------------------------------------------------------------------
-# Copyright: 2010-2016, iMinds-Vision Lab, University of Antwerp
-#            2013-2016, CWI, Amsterdam
+# Copyright: 2010-2018, imec Vision Lab, University of Antwerp
+#            2013-2018, CWI, Amsterdam
 #
-# Contact: astra@uantwerpen.be
+# Contact: astra@astra-toolbox.com
 # Website: http://www.astra-toolbox.com/
 #
 # This file is part of the ASTRA Toolbox.
@@ -45,10 +45,10 @@ cdef extern from "src/PythonPluginAlgorithm.h" namespace "astra":
         object getRegistered()
         string getHelp(string &name)
 
-cdef extern from "src/PythonPluginAlgorithm.h" namespace "astra::CPythonPluginAlgorithmFactory":
+cdef extern from "src/PythonPluginAlgorithmFactory.h" namespace "astra::CPythonPluginAlgorithmFactory":
     cdef CPythonPluginAlgorithmFactory* getSingletonPtr()
 
-cdef extern from "astra/PluginAlgorithm.h" namespace "astra::CPluginAlgorithmFactory":
+cdef extern from "astra/PluginAlgorithmFactory.h" namespace "astra::CPluginAlgorithmFactory":
     # NB: Using wrong pointer type here for convenience
     cdef void registerFactory(CPythonPluginAlgorithmFactory *)
 

@@ -1,8 +1,8 @@
 # -----------------------------------------------------------------------
-# Copyright: 2010-2016, iMinds-Vision Lab, University of Antwerp
-#            2013-2016, CWI, Amsterdam
+# Copyright: 2010-2018, imec Vision Lab, University of Antwerp
+#            2013-2018, CWI, Amsterdam
 #
-# Contact: astra@uantwerpen.be
+# Contact: astra@astra-toolbox.com
 # Website: http://www.astra-toolbox.com/
 #
 # This file is part of the ASTRA Toolbox.
@@ -57,10 +57,14 @@ IF HAVE_CUDA:
 def create(config):
     cdef Config * cfg = utils.dictToConfig(six.b('Projector2D'), config)
     cdef CProjector2D * proj
-    proj = PyProjector2DFactory.getSingletonPtr().create(cfg[0])
+    proj = PyProjector2DFactory.getSingletonPtr().create(cfg.self.getAttribute(six.b('type')))
     if proj == NULL:
         del cfg
-        raise Exception("Error creating projector.")
+        raise Exception("Unknown Projector2D.")
+    if not proj.initialize(cfg[0]):
+        del cfg
+        del proj
+        raise Exception("Unable to initialize Projector2D.")
     del cfg
     return manProj.store(proj)
 

@@ -1,9 +1,9 @@
 /*
 -----------------------------------------------------------------------
-Copyright: 2010-2016, iMinds-Vision Lab, University of Antwerp
-           2014-2016, CWI, Amsterdam
+Copyright: 2010-2018, imec Vision Lab, University of Antwerp
+           2014-2018, CWI, Amsterdam
 
-Contact: astra@uantwerpen.be
+Contact: astra@astra-toolbox.com
 Website: http://www.astra-toolbox.com/
 
 This file is part of the ASTRA Toolbox.
@@ -27,6 +27,7 @@ along with the ASTRA Toolbox. If not, see <http://www.gnu.org/licenses/>.
 
 #include "astra/Projector2D.h"
 
+#include "astra/ParallelVecProjectionGeometry2D.h"
 #include "astra/FanFlatProjectionGeometry2D.h"
 #include "astra/FanFlatVecProjectionGeometry2D.h"
 #include "astra/SparseMatrixProjectionGeometry2D.h"
@@ -130,6 +131,10 @@ bool CProjector2D::initialize(const Config& _cfg)
 		CFanFlatVecProjectionGeometry2D* pFanFlatVecProjectionGeometry = new CFanFlatVecProjectionGeometry2D();
 		pFanFlatVecProjectionGeometry->initialize(Config(node));
 		m_pProjectionGeometry = pFanFlatVecProjectionGeometry;
+	} else if (type == "parallel_vec") {
+		CParallelVecProjectionGeometry2D* pParallelVecProjectionGeometry = new CParallelVecProjectionGeometry2D();
+		pParallelVecProjectionGeometry->initialize(Config(node));
+		m_pProjectionGeometry = pParallelVecProjectionGeometry;
 	} else {
 		m_pProjectionGeometry = new CParallelProjectionGeometry2D();
 		m_pProjectionGeometry->initialize(Config(node));

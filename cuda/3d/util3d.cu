@@ -1,9 +1,9 @@
 /*
 -----------------------------------------------------------------------
-Copyright: 2010-2016, iMinds-Vision Lab, University of Antwerp
-           2014-2016, CWI, Amsterdam
+Copyright: 2010-2018, imec Vision Lab, University of Antwerp
+           2014-2018, CWI, Amsterdam
 
-Contact: astra@uantwerpen.be
+Contact: astra@astra-toolbox.com
 Website: http://www.astra-toolbox.com/
 
 This file is part of the ASTRA Toolbox.
@@ -25,12 +25,14 @@ along with the ASTRA Toolbox. If not, see <http://www.gnu.org/licenses/>.
 -----------------------------------------------------------------------
 */
 
+#include "astra/cuda/3d/util3d.h"
+
+#include "astra/cuda/2d/util.h"
+
+#include "astra/Logging.h"
+
 #include <cstdio>
 #include <cassert>
-#include "util3d.h"
-#include "../2d/util.h"
-
-#include "../../include/astra/Logging.h"
 
 namespace astraCUDA3d {
 
@@ -384,6 +386,41 @@ bool transferProjectionsToArray(cudaPitchedPtr D_projData, cudaArray* array, con
 
 	return true;
 }
+bool transferHostProjectionsToArray(const float *projData, cudaArray* array, const SDimensions3D& dims)
+{
+	cudaExtent extentA;
+	extentA.width = dims.iProjU;
+	extentA.height = dims.iProjAngles;
+	extentA.depth = dims.iProjV;
+
+	cudaPitchedPtr ptr;
+	ptr.ptr = (void*)projData; // const cast away
+	ptr.pitch = dims.iProjU*sizeof(float);
+	ptr.xsize = dims.iProjU*sizeof(float);
+	ptr.ysize = dims.iProjAngles;
+
+	cudaMemcpy3DParms p;
+	cudaPos zp = {0, 0, 0};
+	p.srcArray = 0;
+	p.srcPos = zp;
+	p.srcPtr = ptr;
+	p.dstArray = array;
+	p.dstPtr.ptr = 0;
+	p.dstPtr.pitch = 0;
+	p.dstPtr.xsize = 0;
+	p.dstPtr.ysize = 0;
+	p.dstPos = zp;
+	p.extent = extentA;
+	p.kind = cudaMemcpyHostToDevice;
+
+	cudaError err = cudaMemcpy3D(&p);
+	ASTRA_CUDA_ASSERT(err);
+
+	// TODO: check errors
+
+	return true;
+}
+
 
 
 float dotProduct3D(cudaPitchedPtr data, unsigned int x, unsigned int y,

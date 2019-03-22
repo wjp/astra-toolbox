@@ -1,9 +1,9 @@
 /*
 -----------------------------------------------------------------------
-Copyright: 2010-2016, iMinds-Vision Lab, University of Antwerp
-           2014-2016, CWI, Amsterdam
+Copyright: 2010-2018, imec Vision Lab, University of Antwerp
+           2014-2018, CWI, Amsterdam
 
-Contact: astra@uantwerpen.be
+Contact: astra@astra-toolbox.com
 Website: http://www.astra-toolbox.com/
 
 This file is part of the ASTRA Toolbox.
@@ -31,13 +31,14 @@ along with the ASTRA Toolbox. If not, see <http://www.gnu.org/licenses/>.
 
 #include "astra/CudaProjector3D.h"
 #include "astra/ConeProjectionGeometry3D.h"
+#include "astra/ConeVecProjectionGeometry3D.h"
 #include "astra/CompositeGeometryManager.h"
 
 #include "astra/Logging.h"
+#include "astra/Filters.h"
 
-#include "../cuda/3d/astra3d.h"
-#include "../cuda/2d/fft.h"
-#include "../cuda/3d/util3d.h"
+#include "astra/cuda/3d/astra3d.h"
+#include "astra/cuda/3d/util3d.h"
 
 using namespace std;
 using namespace astraCUDA3d;
@@ -82,7 +83,7 @@ bool CCudaFDKAlgorithm3D::_check()
 	ASTRA_CONFIG_CHECK(CReconstructionAlgorithm3D::_check(), "CUDA_FDK", "Error in ReconstructionAlgorithm3D initialization");
 
 	const CProjectionGeometry3D* projgeom = m_pSinogram->getGeometry();
-	ASTRA_CONFIG_CHECK(dynamic_cast<const CConeProjectionGeometry3D*>(projgeom), "CUDA_FDK", "Error setting FDK geometry");
+	ASTRA_CONFIG_CHECK(dynamic_cast<const CConeProjectionGeometry3D*>(projgeom) || dynamic_cast<const CConeVecProjectionGeometry3D*>(projgeom), "CUDA_FDK", "Error setting FDK geometry");
 
 
 	const CVolumeGeometry3D* volgeom = m_pReconstruction->getGeometry();
@@ -155,7 +156,7 @@ bool CCudaFDKAlgorithm3D::initialize(const Config& _cfg)
 		const CProjectionGeometry3D* projgeom = m_pSinogram->getGeometry();
 		const CProjectionGeometry2D* filtgeom = pFilterData->getGeometry();
 		int iPaddedDetCount = calcNextPowerOfTwo(2 * projgeom->getDetectorColCount());
-		int iHalfFFTSize = calcFFTFourSize(iPaddedDetCount);
+		int iHalfFFTSize = calcFFTFourierSize(iPaddedDetCount);
 		if(filtgeom->getDetectorCount()!=iHalfFFTSize || filtgeom->getProjectionAngleCount()!=projgeom->getProjectionCount()){
 			ASTRA_ERROR("Filter size does not match required size (%i angles, %i detectors)",projgeom->getProjectionCount(),iHalfFFTSize);
 			return false;
@@ -218,12 +219,6 @@ void CCudaFDKAlgorithm3D::run(int _iNrIterations)
 {
 	// check initialized
 	ASTRA_ASSERT(m_bIsInitialized);
-
-	const CProjectionGeometry3D* projgeom = m_pSinogram->getGeometry();
-	const CConeProjectionGeometry3D* conegeom = dynamic_cast<const CConeProjectionGeometry3D*>(projgeom);
-	// const CVolumeGeometry3D& volgeom = *m_pReconstruction->getGeometry();
-
-	ASTRA_ASSERT(conegeom);
 
 	CFloat32ProjectionData3D* pSinoMem = dynamic_cast<CFloat32ProjectionData3D*>(m_pSinogram);
 	ASTRA_ASSERT(pSinoMem);

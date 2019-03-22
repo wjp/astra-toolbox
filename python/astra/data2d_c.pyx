@@ -1,8 +1,8 @@
 # -----------------------------------------------------------------------
-# Copyright: 2010-2016, iMinds-Vision Lab, University of Antwerp
-#            2013-2016, CWI, Amsterdam
+# Copyright: 2010-2018, imec Vision Lab, University of Antwerp
+#            2013-2018, CWI, Amsterdam
 #
-# Contact: astra@uantwerpen.be
+# Contact: astra@astra-toolbox.com
 # Website: http://www.astra-toolbox.com/
 #
 # This file is part of the ASTRA Toolbox.
@@ -111,6 +111,8 @@ def create(datatype, geometry, data=None, link=False):
             ppGeometry = <CProjectionGeometry2D * >new CFanFlatProjectionGeometry2D()
         elif (tpe == 'fanflat_vec'):
             ppGeometry = <CProjectionGeometry2D * >new CFanFlatVecProjectionGeometry2D()
+        elif (tpe == 'parallel_vec'):
+            ppGeometry = <CProjectionGeometry2D * >new CParallelVecProjectionGeometry2D()
         else:
             ppGeometry = <CProjectionGeometry2D * >new CParallelProjectionGeometry2D()
         if not ppGeometry.initialize(cfg[0]):
@@ -225,6 +227,8 @@ def change_geometry(i, geom):
             ppGeometry = <CProjectionGeometry2D * >new CFanFlatProjectionGeometry2D()
         elif (tpe == 'fanflat_vec'):
             ppGeometry = <CProjectionGeometry2D * >new CFanFlatVecProjectionGeometry2D()
+        elif (tpe == 'parallel_vec'):
+            ppGeometry = <CProjectionGeometry2D * >new CParallelVecProjectionGeometry2D()
         else:
             ppGeometry = <CProjectionGeometry2D * >new CParallelProjectionGeometry2D()
         if not ppGeometry.initialize(cfg[0]):
