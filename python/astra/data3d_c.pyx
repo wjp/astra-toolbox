@@ -72,41 +72,6 @@ cdef extern from "CFloat32CustomPython.h":
     cdef cppclass CFloat32CustomPython:
         CFloat32CustomPython(arrIn)
 
-cdef CFloat32Data3D* create_vol_from_geometry(CVolumeGeometry3D *pGeometry, bool link, data) except NULL:
-    cdef CFloat32Data3D * pDataObject3D = NULL
-    if link:
-        if isinstance(data, np.ndarray):
-            pCustom = <CFloat32CustomMemory*> new CFloat32CustomPython(data)
-            pDataObject3D = <CFloat32Data3D * > new CFloat32VolumeData3DMemory(pGeometry, pCustom)
-        elif isinstance(data, GPULink):
-            IF HAVE_CUDA==True:
-                hnd = wrapHandle(<float*>PyLong_AsVoidPtr(data.ptr), data.x, data.y, data.z, data.pitch/4)
-                pDataObject3D = <CFloat32Data3D * > new CFloat32VolumeData3DGPU(pGeometry, hnd)
-            ELSE:
-                raise NotImplementedError("CUDA support is not enabled in ASTRA")
-        else:
-            raise TypeError("data should be a numpy.ndarray or a GPULink object")
-    else:
-        pDataObject3D = <CFloat32Data3D * > new CFloat32VolumeData3DMemory(pGeometry)
-    return pDataObject3D
-
-cdef CFloat32Data3D* create_proj_from_geometry(CProjectionGeometry3D *pGeometry, bool link, data) except NULL:
-    cdef CFloat32Data3D * pDataObject3D = NULL
-    if link:
-        if isinstance(data, np.ndarray):
-            pCustom = <CFloat32CustomMemory*> new CFloat32CustomPython(data)
-            pDataObject3D = <CFloat32Data3D * > new CFloat32ProjectionData3DMemory(pGeometry, pCustom)
-        elif isinstance(data, GPULink):
-            IF HAVE_CUDA==True:
-                hnd = wrapHandle(<float*>PyLong_AsVoidPtr(data.ptr), data.x, data.y, data.z, data.pitch/4)
-                pDataObject3D = <CFloat32Data3D * > new CFloat32ProjectionData3DGPU(pGeometry, hnd)
-            ELSE:
-                raise NotImplementedError("CUDA support is not enabled in ASTRA")
-        else:
-            raise TypeError("data should be a numpy.ndarray or a GPULink object")
-    else:
-        pDataObject3D = <CFloat32Data3DMemory * > new CFloat32ProjectionData3DMemory(pGeometry)
-    return pDataObject3D
 
 def create(datatype,geometry,data=None, link=False):
     cdef Config *cfg
@@ -135,7 +100,10 @@ def create(datatype,geometry,data=None, link=False):
             del cfg
             del pGeometry
             raise RuntimeError('Geometry class not initialized.')
-        pDataObject3D = create_vol_from_geometry(pGeometry, link, data)
+        if link:
+            pDataObject3D = linkVolFromGeometry(pGeometry, data)
+        else:
+            pDataObject3D = new CFloat32VolumeData3DMemory(pGeometry)
         del cfg
         del pGeometry
     elif datatype == '-sino' or datatype == '-proj3d' or datatype == '-sinocone':
@@ -156,7 +124,10 @@ def create(datatype,geometry,data=None, link=False):
             del cfg
             del ppGeometry
             raise RuntimeError('Geometry class not initialized.')
-        pDataObject3D = create_proj_from_geometry(ppGeometry, link, data)
+        if link:
+            pDataObject3D = linkProjFromGeometry(ppGeometry, data)
+        else:
+            pDataObject3D = new CFloat32ProjectionData3DMemory(ppGeometry)
         del ppGeometry
         del cfg
     else:
@@ -238,6 +209,36 @@ def change_geometry(i, geom):
 
     else:
         raise RuntimeError("Not a known data object")
+
+cdef CFloat32VolumeData3D* linkVolFromGeometry(CVolumeGeometry3D *pGeometry, data) except NULL:
+    cdef CFloat32VolumeData3D * pDataObject3D = NULL
+    if isinstance(data, np.ndarray):
+        pCustom = <CFloat32CustomMemory*> new CFloat32CustomPython(data)
+        pDataObject3D = new CFloat32VolumeData3DMemory(pGeometry, pCustom)
+    elif isinstance(data, GPULink):
+        IF HAVE_CUDA==True:
+            hnd = wrapHandle(<float*>PyLong_AsVoidPtr(data.ptr), data.x, data.y, data.z, data.pitch/4)
+            pDataObject3D = new CFloat32VolumeData3DGPU(pGeometry, hnd)
+        ELSE:
+            raise NotImplementedError("CUDA support is not enabled in ASTRA")
+    else:
+        raise TypeError("data should be a numpy.ndarray or a GPULink object")
+    return pDataObject3D
+
+cdef CFloat32ProjectionData3D* linkProjFromGeometry(CProjectionGeometry3D *pGeometry, data) except NULL:
+    cdef CFloat32ProjectionData3D * pDataObject3D = NULL
+    if isinstance(data, np.ndarray):
+        pCustom = <CFloat32CustomMemory*> new CFloat32CustomPython(data)
+        pDataObject3D = new CFloat32ProjectionData3DMemory(pGeometry, pCustom)
+    elif isinstance(data, GPULink):
+        IF HAVE_CUDA==True:
+            hnd = wrapHandle(<float*>PyLong_AsVoidPtr(data.ptr), data.x, data.y, data.z, data.pitch/4)
+            pDataObject3D = new CFloat32ProjectionData3DGPU(pGeometry, hnd)
+        ELSE:
+            raise NotImplementedError("CUDA support is not enabled in ASTRA")
+    else:
+        raise TypeError("data should be a numpy.ndarray or a GPULink object")
+    return pDataObject3D
 
 
 cdef fillDataObject(CFloat32Data3DMemory * obj, data):
