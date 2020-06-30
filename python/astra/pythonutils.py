@@ -29,6 +29,8 @@
 
 
 """
+import numpy as np
+
 
 def geom_size(geom, dim=None):
     """Returns the size of a volume or sinogram, based on the projection or volume geometry.
