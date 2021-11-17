@@ -1,7 +1,7 @@
 /*
 -----------------------------------------------------------------------
-Copyright: 2010-2018, imec Vision Lab, University of Antwerp
-           2014-2018, CWI, Amsterdam
+Copyright: 2010-2021, imec Vision Lab, University of Antwerp
+           2014-2021, CWI, Amsterdam
 
 Contact: astra@astra-toolbox.com
 Website: http://www.astra-toolbox.com/
@@ -275,13 +275,6 @@ void CCudaSirtAlgorithm3D::run(int _iNrIterations)
 
 }
 //----------------------------------------------------------------------------------------
-void CCudaSirtAlgorithm3D::signalAbort()
-{
-	if (m_bIsInitialized && m_pSirt) {
-		m_pSirt->signalAbort();
-	}
-}
-
 bool CCudaSirtAlgorithm3D::getResidualNorm(float32& _fNorm)
 {
 	if (!m_bIsInitialized || !m_pSirt)

@@ -1,7 +1,7 @@
 /*
 -----------------------------------------------------------------------
-Copyright: 2010-2018, imec Vision Lab, University of Antwerp
-           2014-2018, CWI, Amsterdam
+Copyright: 2010-2021, imec Vision Lab, University of Antwerp
+           2014-2021, CWI, Amsterdam
 
 Contact: astra@astra-toolbox.com
 Website: http://www.astra-toolbox.com/
@@ -47,7 +47,7 @@ public:
 	virtual bool setBuffers(float* D_volumeData, unsigned int volumePitch,
 	                        float* D_projData, unsigned int projPitch);
 
-	virtual bool copyDataToGPU(const float* pfSinogram, unsigned int iSinogramPitch, float fSinogramScale,
+	virtual bool copyDataToGPU(const float* pfSinogram, unsigned int iSinogramPitch,
 	                           const float* pfReconstruction, unsigned int iReconstructionPitch,
 	                           const float* pfVolMask, unsigned int iVolMaskPitch,
 	                           const float* pfSinoMask, unsigned int iSinoMaskPitch);

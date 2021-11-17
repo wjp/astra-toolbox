@@ -1,6 +1,6 @@
 # -----------------------------------------------------------------------
-# Copyright: 2010-2018, imec Vision Lab, University of Antwerp
-#            2013-2018, CWI, Amsterdam
+# Copyright: 2010-2021, imec Vision Lab, University of Antwerp
+#            2013-2021, CWI, Amsterdam
 #
 # Contact: astra@astra-toolbox.com
 # Website: http://www.astra-toolbox.com/
@@ -61,20 +61,20 @@ if os.environ.get('ASTRA_INSTALL_LIBRARY_AS_DATA', ''):
 cmdclass = {}
 ext_modules = []
 
-ext_modules = cythonize(os.path.join(self_path, 'astra', '*.pyx'),
+ext_modules = cythonize(os.path.join('.', 'astra', '*.pyx'),
                         language_level=2)
 cmdclass = {'build_ext': build_ext}
 
 for m in ext_modules:
     if m.name in ('astra.plugin_c', 'astra.algorithm_c'):
-        m.sources.append(os.path.join(self_path, 'astra', 'src',
+        m.sources.append(os.path.join('.', 'astra', 'src',
                                       'PythonPluginAlgorithm.cpp'))
     if m.name in ('astra.plugin_c'):
-        m.sources.append(os.path.join(self_path, 'astra', 'src',
+        m.sources.append(os.path.join('.', 'astra', 'src',
                                       'PythonPluginAlgorithmFactory.cpp'))
 
 setup(name='astra-toolbox',
-      version='1.9.0dev',
+      version='2.0.0',
       description='Python interface to the ASTRA Toolbox',
       author='D.M. Pelt',
       author_email='D.M.Pelt@cwi.nl',

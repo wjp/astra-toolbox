@@ -1,6 +1,6 @@
 # -----------------------------------------------------------------------
-# Copyright: 2010-2018, imec Vision Lab, University of Antwerp
-#            2013-2018, CWI, Amsterdam
+# Copyright: 2010-2021, imec Vision Lab, University of Antwerp
+#            2013-2021, CWI, Amsterdam
 #
 # Contact: astra@astra-toolbox.com
 # Website: http://www.astra-toolbox.com/
@@ -41,7 +41,7 @@ from . import log
 from .optomo import OpTomo
 from .tests import test, test_noCUDA, test_CUDA
 
-__version__ = '1.9.0dev'
+__version__ = '2.0.0'
 
 import os
 

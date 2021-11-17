@@ -1,7 +1,7 @@
 /*
 -----------------------------------------------------------------------
-Copyright: 2010-2018, imec Vision Lab, University of Antwerp
-           2014-2018, CWI, Amsterdam
+Copyright: 2010-2021, imec Vision Lab, University of Antwerp
+           2014-2021, CWI, Amsterdam
 
 Contact: astra@astra-toolbox.com
 Website: http://www.astra-toolbox.com/
@@ -28,10 +28,6 @@ along with the ASTRA Toolbox. If not, see <http://www.gnu.org/licenses/>.
 #include "astra/cuda/2d/cgls.h"
 #include "astra/cuda/2d/util.h"
 #include "astra/cuda/2d/arith.h"
-
-#ifdef STANDALONE
-#include "testutil.h"
-#endif
 
 #include <cstdio>
 #include <cassert>
@@ -102,20 +98,18 @@ bool CGLS::setBuffers(float* _D_volumeData, unsigned int _volumePitch,
 	return true;
 }
 
-bool CGLS::copyDataToGPU(const float* pfSinogram, unsigned int iSinogramPitch, float fSinogramScale,
+bool CGLS::copyDataToGPU(const float* pfSinogram, unsigned int iSinogramPitch,
                          const float* pfReconstruction, unsigned int iReconstructionPitch,
                          const float* pfVolMask, unsigned int iVolMaskPitch,
                          const float* pfSinoMask, unsigned int iSinoMaskPitch)
 {
 	sliceInitialized = false;
 
-	return ReconAlgo::copyDataToGPU(pfSinogram, iSinogramPitch, fSinogramScale, pfReconstruction, iReconstructionPitch, pfVolMask, iVolMaskPitch, pfSinoMask, iSinoMaskPitch);
+	return ReconAlgo::copyDataToGPU(pfSinogram, iSinogramPitch, pfReconstruction, iReconstructionPitch, pfVolMask, iVolMaskPitch, pfSinoMask, iSinoMaskPitch);
 }
 
 bool CGLS::iterate(unsigned int iterations)
 {
-	shouldAbort = false;
-
 	if (!sliceInitialized) {
 
 		// copy sinogram
@@ -146,7 +140,7 @@ bool CGLS::iterate(unsigned int iterations)
 
 
 	// iteration
-	for (unsigned int iter = 0; iter < iterations && !shouldAbort; ++iter) {
+	for (unsigned int iter = 0; iter < iterations && !astra::shouldAbort(); ++iter) {
 
 		// w = A*p
 		zeroProjectionData(D_w, wPitch, dims);
@@ -208,60 +202,3 @@ float CGLS::computeDiffNorm()
 
 
 }
-
-#ifdef STANDALONE
-
-using namespace astraCUDA;
-
-int main()
-{
-	float* D_volumeData;
-	float* D_sinoData;
-
-	SDimensions dims;
-	dims.iVolWidth = 1024;
-	dims.iVolHeight = 1024;
-	dims.iProjAngles = 512;
-	dims.iProjDets = 1536;
-	dims.fDetScale = 1.0f;
-	dims.iRaysPerDet = 1;
-	unsigned int volumePitch, sinoPitch;
-
-	allocateVolume(D_volumeData, dims.iVolWidth, dims.iVolHeight, volumePitch);
-	zeroVolume(D_volumeData, volumePitch, dims.iVolWidth, dims.iVolHeight);
-	printf("pitch: %u\n", volumePitch);
-
-	allocateVolume(D_sinoData, dims.iProjDets, dims.iProjAngles, sinoPitch);
-	zeroVolume(D_sinoData, sinoPitch, dims.iProjDets, dims.iProjAngles);
-	printf("pitch: %u\n", sinoPitch);
-	
-	unsigned int y, x;
-	float* sino = loadImage("sino.png", y, x);
-
-	float* img = new float[dims.iVolWidth*dims.iVolHeight];
-
-	copySinogramToDevice(sino, dims.iProjDets, dims.iProjDets, dims.iProjAngles, D_sinoData, sinoPitch);
-
-	float* angle = new float[dims.iProjAngles];
-
-	for (unsigned int i = 0; i < dims.iProjAngles; ++i)
-		angle[i] = i*(M_PI/dims.iProjAngles);
-
-	CGLS cgls;
-
-	cgls.setGeometry(dims, angle);
-	cgls.init();
-
-	cgls.setBuffers(D_volumeData, volumePitch, D_sinoData, sinoPitch);
-
-	cgls.iterate(25);
-
-	delete[] angle;
-
-	copyVolumeFromDevice(img, dims.iVolWidth, dims.iVolWidth, dims.iVolHeight, D_volumeData, volumePitch);
-
-	saveImage("vol.png",dims.iVolHeight,dims.iVolWidth,img);
-
-	return 0;
-}
-#endif

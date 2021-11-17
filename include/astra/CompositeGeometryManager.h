@@ -1,7 +1,7 @@
 /*
 -----------------------------------------------------------------------
-Copyright: 2010-2018, imec Vision Lab, University of Antwerp
-           2014-2018, CWI, Amsterdam
+Copyright: 2010-2021, imec Vision Lab, University of Antwerp
+           2014-2021, CWI, Amsterdam
 
 Contact: astra@astra-toolbox.com
 Website: http://www.astra-toolbox.com/
@@ -141,7 +141,7 @@ public:
 			JOB_FP, JOB_BP, JOB_FDK, JOB_NOP
 		} eType;
 		enum EMode {
-			MODE_ADD, MODE_SET
+			MODE_ADD = 0, MODE_SET = 1
 		} eMode;
 
 	};

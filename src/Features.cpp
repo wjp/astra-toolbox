@@ -1,7 +1,7 @@
 /*
 -----------------------------------------------------------------------
-Copyright: 2010-2018, imec Vision Lab, University of Antwerp
-           2014-2018, CWI, Amsterdam
+Copyright: 2010-2021, imec Vision Lab, University of Antwerp
+           2014-2021, CWI, Amsterdam
 
 Contact: astra@astra-toolbox.com
 Website: http://www.astra-toolbox.com/
@@ -33,6 +33,15 @@ namespace astra {
 _AstraExport bool hasFeature(const std::string &flag) {
 	if (flag == "cuda") {
 		return cudaEnabled();
+	}
+	if (flag == "projectors_scaled_as_line_integrals") {
+		return true;
+	}
+	if (flag == "fan_cone_BP_density_weighting_by_default") {
+		return true;
+	}
+	if (flag == "unpadded_GPULink") {
+		return true;
 	}
 
 	return false;

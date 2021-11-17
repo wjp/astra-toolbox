@@ -1,7 +1,7 @@
 /*
 -----------------------------------------------------------------------
-Copyright: 2010-2018, imec Vision Lab, University of Antwerp
-           2014-2018, CWI, Amsterdam
+Copyright: 2010-2021, imec Vision Lab, University of Antwerp
+           2014-2021, CWI, Amsterdam
 
 Contact: astra@astra-toolbox.com
 Website: http://www.astra-toolbox.com/
@@ -150,6 +150,13 @@ void CCudaFilteredBackProjectionAlgorithm::initCUDAAlgorithm()
 	ok &= pFBP->setShortScan(m_bShortScan);
 	if (!ok) {
 		ASTRA_ERROR("CCudaFilteredBackProjectionAlgorithm: Failed to set short-scan mode");
+	}
+
+	const CVolumeGeometry2D& volGeom = *m_pReconstruction->getGeometry();
+	float fPixelArea = volGeom.getPixelArea();
+	ok &= pFBP->setReconstructionScale(1.0f/fPixelArea);
+	if (!ok) {
+		ASTRA_ERROR("CCudaFilteredBackProjectionAlgorithm: Failed to set reconstruction scale");
 	}
 }
 

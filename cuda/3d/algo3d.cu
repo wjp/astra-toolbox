@@ -1,7 +1,7 @@
 /*
 -----------------------------------------------------------------------
-Copyright: 2010-2018, imec Vision Lab, University of Antwerp
-           2014-2018, CWI, Amsterdam
+Copyright: 2010-2021, imec Vision Lab, University of Antwerp
+           2014-2021, CWI, Amsterdam
 
 Contact: astra@astra-toolbox.com
 Website: http://www.astra-toolbox.com/
@@ -39,7 +39,6 @@ ReconAlgo3D::ReconAlgo3D()
 {
 	coneProjs = 0;
 	par3DProjs = 0;
-	shouldAbort = false;
 }
 
 ReconAlgo3D::~ReconAlgo3D()
@@ -53,7 +52,6 @@ void ReconAlgo3D::reset()
 	coneProjs = 0;
 	delete[] par3DProjs;
 	par3DProjs = 0;
-	shouldAbort = false;
 }
 
 bool ReconAlgo3D::setConeGeometry(const SDimensions3D& _dims, const SConeProjection* _angles, const SProjectorParams3D& _params)

@@ -1,6 +1,6 @@
 # -----------------------------------------------------------------------
-# Copyright: 2010-2018, imec Vision Lab, University of Antwerp
-#            2013-2018, CWI, Amsterdam
+# Copyright: 2010-2021, imec Vision Lab, University of Antwerp
+#            2013-2021, CWI, Amsterdam
 #
 # Contact: astra@astra-toolbox.com
 # Website: http://www.astra-toolbox.com/
@@ -33,3 +33,6 @@ from .PyIncludes cimport *
 
 cdef configToDict(Config *)
 cdef Config * dictToConfig(string rootname, dc) except NULL
+cdef CFloat32VolumeData3D* linkVolFromGeometry(CVolumeGeometry3D *pGeometry, data) except NULL
+cdef CFloat32ProjectionData3D* linkProjFromGeometry(CProjectionGeometry3D *pGeometry, data) except NULL
+

@@ -1,7 +1,7 @@
 /*
 -----------------------------------------------------------------------
-Copyright: 2010-2018, imec Vision Lab, University of Antwerp
-           2014-2018, CWI, Amsterdam
+Copyright: 2010-2021, imec Vision Lab, University of Antwerp
+           2014-2021, CWI, Amsterdam
 
 Contact: astra@astra-toolbox.com
 Website: http://www.astra-toolbox.com/
@@ -35,7 +35,7 @@ namespace astraCUDA3d {
 bool FDK_PreWeight(cudaPitchedPtr D_projData,
                 float fSrcOrigin, float fDetOrigin,
                 float fZShift,
-                float fDetUSize, float fDetVSize, float fVoxSize,
+                float fDetUSize, float fDetVSize,
                 bool bShortScan,
                 const SDimensions3D& dims, const float* angles);
 

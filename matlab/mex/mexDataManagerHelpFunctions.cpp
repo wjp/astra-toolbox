@@ -1,7 +1,7 @@
 /*
 -----------------------------------------------------------------------
-Copyright: 2010-2018, imec Vision Lab, University of Antwerp
-           2014-2018, CWI, Amsterdam
+Copyright: 2010-2021, imec Vision Lab, University of Antwerp
+           2014-2021, CWI, Amsterdam
 
 Contact: astra@astra-toolbox.com
 Website: http://www.astra-toolbox.com/
@@ -39,7 +39,7 @@ along with the ASTRA Toolbox. If not, see <http://www.gnu.org/licenses/>.
 #ifdef USE_MATLAB_UNDOCUMENTED
 extern "C" {
 mxArray *mxCreateSharedDataCopy(const mxArray *pr);
-bool mxUnshareArray(mxArray *pr, bool noDeepCopy);
+int mxUnshareArray(mxArray *pr, int level);
 mxArray *mxUnreference(mxArray *pr);
 #if 0
 // Unsupported in Matlab R2014b and later
@@ -68,7 +68,7 @@ public:
 				fprintf(stderr, "Performance note: unsharing shared array in link\n");
 			}
 #endif
-			mxUnshareArray(const_cast<mxArray*>(_pArray), false);
+			mxUnshareArray(const_cast<mxArray*>(_pArray), 0);
 			//fprintf(stderr, "Unshared:\narray: %p\tdata: %p\n", (void*)_pArray, (void*)mxGetData(_pArray));
 		}
 		// Then create a (persistent) copy so the data won't be deleted

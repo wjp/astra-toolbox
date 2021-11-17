@@ -1,7 +1,7 @@
 /*
 -----------------------------------------------------------------------
-Copyright: 2010-2018, imec Vision Lab, University of Antwerp
-           2014-2018, CWI, Amsterdam
+Copyright: 2010-2021, imec Vision Lab, University of Antwerp
+           2014-2021, CWI, Amsterdam
 
 Contact: astra@astra-toolbox.com
 Website: http://www.astra-toolbox.com/
@@ -25,8 +25,8 @@ along with the ASTRA Toolbox. If not, see <http://www.gnu.org/licenses/>.
 -----------------------------------------------------------------------
 */
 
-#ifndef _CUDA_ALGO_H
-#define _CUDA_ALGO_H
+#ifndef _CUDA_ALGO3D_H
+#define _CUDA_ALGO3D_H
 
 #include "dims3d.h"
 #include "util3d.h"
@@ -40,8 +40,6 @@ public:
 
 	bool setConeGeometry(const SDimensions3D& dims, const SConeProjection* projs, const SProjectorParams3D& params);
 	bool setPar3DGeometry(const SDimensions3D& dims, const SPar3DProjection* projs, const SProjectorParams3D& params);
-
-	void signalAbort() { shouldAbort = true; }
 
 protected:
 	void reset();
@@ -59,9 +57,6 @@ protected:
 	SPar3DProjection* par3DProjs;
 
 	float fOutputScale;
-
-	volatile bool shouldAbort;
-
 };
 
 

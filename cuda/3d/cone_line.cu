@@ -1,7 +1,7 @@
 /*
 -----------------------------------------------------------------------
-Copyright: 2010-2018, imec Vision Lab, University of Antwerp
-           2014-2018, CWI, Amsterdam
+Copyright: 2010-2021, imec Vision Lab, University of Antwerp
+           2014-2021, CWI, Amsterdam
 
 Contact: astra@astra-toolbox.com
 Website: http://www.astra-toolbox.com/
@@ -198,6 +198,8 @@ __global__ void cone_FP_line_t(float* D_projData, unsigned int projPitch,
 	const float fDetSZ = gC_DetSZ[angle] + 0.5f * fDetUZ + 0.5f * fDetVZ;
 
 	const int detectorU = (blockIdx.x%((dims.iProjU+g_detBlockU-1)/g_detBlockU)) * g_detBlockU + threadIdx.x;
+	if (detectorU >= dims.iProjU)
+		return;
 	const int startDetectorV = (blockIdx.x/((dims.iProjU+g_detBlockU-1)/g_detBlockU)) * g_detBlockV;
 	int endDetectorV = startDetectorV + g_detBlockV;
 	if (endDetectorV > dims.iProjV)
@@ -330,6 +332,8 @@ __global__ void cone_BP_line_t(float* D_volData, unsigned int volPitch,
 	const float fDetSZ = gC_DetSZ[angle] + 0.5f * fDetUZ + 0.5f * fDetVZ;
 
 	const int detectorU = (blockIdx.x%((dims.iProjU+g_detBlockU-1)/g_detBlockU)) * g_detBlockU + threadIdx.x;
+	if (detectorU >= dims.iProjU)
+		return;
 	const int startDetectorV = (blockIdx.x/((dims.iProjU+g_detBlockU-1)/g_detBlockU)) * g_detBlockV;
 	int endDetectorV = startDetectorV + g_detBlockV;
 	if (endDetectorV > dims.iProjV)
@@ -560,16 +564,16 @@ bool ConeLineFP_Array_internal(cudaPitchedPtr D_projData,
 		}
 	}
 
-	for (std::list<cudaStream_t>::iterator iter = streams.begin(); iter != streams.end(); ++iter)
+	bool ok = true;
+
+	for (std::list<cudaStream_t>::iterator iter = streams.begin(); iter != streams.end(); ++iter) {
+		ok &= checkCuda(cudaStreamSynchronize(*iter), "cone line fp");
 		cudaStreamDestroy(*iter);
-
-	streams.clear();
-
-	cudaTextForceKernelsCompletion();
+	}
 
 	// printf("%f\n", toc(t));
 
-	return true;
+	return ok;
 }
 
 bool ConeLineBP_Array_internal(cudaPitchedPtr D_volData,
@@ -704,16 +708,16 @@ bool ConeLineBP_Array_internal(cudaPitchedPtr D_volData,
 		}
 	}
 
-	for (std::list<cudaStream_t>::iterator iter = streams.begin(); iter != streams.end(); ++iter)
+	bool ok = true;
+
+	for (std::list<cudaStream_t>::iterator iter = streams.begin(); iter != streams.end(); ++iter) {
+		ok &= checkCuda(cudaStreamSynchronize(*iter), "cone line bp");
 		cudaStreamDestroy(*iter);
-
-	streams.clear();
-
-	cudaTextForceKernelsCompletion();
+	}
 
 	// printf("%f\n", toc(t));
 
-	return true;
+	return ok;
 }
 
 

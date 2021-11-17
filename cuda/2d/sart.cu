@@ -1,7 +1,7 @@
 /*
 -----------------------------------------------------------------------
-Copyright: 2010-2018, imec Vision Lab, University of Antwerp
-           2014-2018, CWI, Amsterdam
+Copyright: 2010-2021, imec Vision Lab, University of Antwerp
+           2014-2021, CWI, Amsterdam
 
 Contact: astra@astra-toolbox.com
 Website: http://www.astra-toolbox.com/
@@ -54,7 +54,7 @@ void MUL_SART(float* pfOut, const float* pfIn, unsigned int pitch, unsigned int 
 
 	devMUL_SART<<<gridSize, blockSize>>>(pfOut, pfIn, pitch, width);
 
-	cudaTextForceKernelsCompletion();
+	checkCuda(cudaThreadSynchronize(), "MUL_SART");
 }
 
 
@@ -166,13 +166,11 @@ bool SART::precomputeWeights()
 
 bool SART::iterate(unsigned int iterations)
 {
-	shouldAbort = false;
-
 	if (useVolumeMask)
 		precomputeWeights();
 
 	// iteration
-	for (unsigned int iter = 0; iter < iterations && !shouldAbort; ++iter) {
+	for (unsigned int iter = 0; iter < iterations && !astra::shouldAbort(); ++iter) {
 
 		int angle;
 		if (customOrder) {
@@ -256,11 +254,11 @@ bool SART::callFP_SART(float* D_volumeData, unsigned int volumePitch,
 	if (parProjs) {
 		assert(!fanProjs);
 		return FP(D_volumeData, volumePitch, D_projData, projPitch,
-		          d, &parProjs[angle], outputScale);
+		          d, &parProjs[angle], outputScale * fProjectorScale);
 	} else {
 		assert(fanProjs);
 		return FanFP(D_volumeData, volumePitch, D_projData, projPitch,
-		             d, &fanProjs[angle], outputScale);
+		             d, &fanProjs[angle], outputScale * fProjectorScale);
 	}
 }
 
@@ -268,6 +266,7 @@ bool SART::callBP_SART(float* D_volumeData, unsigned int volumePitch,
                        float* D_projData, unsigned int projPitch,
                        unsigned int angle, float outputScale)
 {
+	// NB: No fProjectorScale here, as that it is cancelled out in the SART weighting
 	if (parProjs) {
 		assert(!fanProjs);
 		return BP_SART(D_volumeData, volumePitch, D_projData, projPitch,

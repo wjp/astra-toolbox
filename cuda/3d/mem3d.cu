@@ -1,7 +1,7 @@
 /*
 -----------------------------------------------------------------------
-Copyright: 2010-2018, imec Vision Lab, University of Antwerp
-           2014-2018, CWI, Amsterdam
+Copyright: 2010-2021, imec Vision Lab, University of Antwerp
+           2014-2021, CWI, Amsterdam
 
 Contact: astra@astra-toolbox.com
 Website: http://www.astra-toolbox.com/
@@ -272,7 +272,7 @@ bool FP(const astra::CProjectionGeometry3D* pProjGeom, MemHandle3D projData, con
 	return ok;
 }
 
-bool BP(const astra::CProjectionGeometry3D* pProjGeom, MemHandle3D projData, const astra::CVolumeGeometry3D* pVolGeom, MemHandle3D volData, int iVoxelSuperSampling, bool bFDKWeighting, astra::Cuda3DProjectionKernel projKernel)
+bool BP(const astra::CProjectionGeometry3D* pProjGeom, MemHandle3D projData, const astra::CVolumeGeometry3D* pVolGeom, MemHandle3D volData, int iVoxelSuperSampling, astra::Cuda3DProjectionKernel projKernel)
 {
 	assert(!volData.d->arr);
 	SDimensions3D dims;
@@ -293,7 +293,7 @@ bool BP(const astra::CProjectionGeometry3D* pProjGeom, MemHandle3D projData, con
 	                          pParProjs, pConeProjs,
 	                          params);
 
-	params.bFDKWeighting = bFDKWeighting;
+	params.bFDKWeighting = false;
 
 	if (pParProjs) {
 		// TODO: Implement line kernel for parallel beam

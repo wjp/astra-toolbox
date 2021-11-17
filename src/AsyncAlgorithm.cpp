@@ -1,7 +1,7 @@
 /*
 -----------------------------------------------------------------------
-Copyright: 2010-2018, imec Vision Lab, University of Antwerp
-           2014-2018, CWI, Amsterdam
+Copyright: 2010-2021, imec Vision Lab, University of Antwerp
+           2014-2021, CWI, Amsterdam
 
 Contact: astra@astra-toolbox.com
 Website: http://www.astra-toolbox.com/
@@ -159,12 +159,6 @@ void CAsyncAlgorithm::runWrapped(int _iNrIterations)
 {
 	m_pAlg->run(_iNrIterations);
 	m_bDone = true;
-}
-
-void CAsyncAlgorithm::signalAbort()
-{
-	if (m_pAlg)
-		m_pAlg->signalAbort();
 }
 
 }

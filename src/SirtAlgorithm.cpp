@@ -1,7 +1,7 @@
 /*
 -----------------------------------------------------------------------
-Copyright: 2010-2018, imec Vision Lab, University of Antwerp
-           2014-2018, CWI, Amsterdam
+Copyright: 2010-2021, imec Vision Lab, University of Antwerp
+           2014-2021, CWI, Amsterdam
 
 Contact: astra@astra-toolbox.com
 Website: http://www.astra-toolbox.com/
@@ -199,8 +199,6 @@ void CSirtAlgorithm::run(int _iNrIterations)
 	// check initialized
 	ASTRA_ASSERT(m_bIsInitialized);
 
-	m_bShouldAbort = false;
-
 	int iIteration = 0;
 
 	// data projectors
@@ -290,7 +288,7 @@ void CSirtAlgorithm::run(int _iNrIterations)
 	
 
 	// iteration loop
-	for (; iIteration < _iNrIterations && !m_bShouldAbort; ++iIteration) {
+	for (; iIteration < _iNrIterations && !shouldAbort(); ++iIteration) {
 		// forward projection and difference calculation
 		pForwardProjector->project();
 

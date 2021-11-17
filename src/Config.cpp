@@ -1,7 +1,7 @@
 /*
 -----------------------------------------------------------------------
-Copyright: 2010-2018, imec Vision Lab, University of Antwerp
-           2014-2018, CWI, Amsterdam
+Copyright: 2010-2021, imec Vision Lab, University of Antwerp
+           2014-2021, CWI, Amsterdam
 
 Contact: astra@astra-toolbox.com
 Website: http://www.astra-toolbox.com/
@@ -39,8 +39,9 @@ along with the ASTRA Toolbox. If not, see <http://www.gnu.org/licenses/>.
 #include "astra/Logging.h"
 #include <sstream>
 
-using namespace astra;
 using namespace std;
+
+namespace astra {
 
 //-----------------------------------------------------------------------------
 // default constructor
@@ -180,3 +181,4 @@ template class ConfigStackCheck<CVolumeGeometry3D>;
 template class ConfigStackCheck<CProjector2D>;
 template class ConfigStackCheck<CProjector3D>;
 
+}

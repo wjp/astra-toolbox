@@ -1,7 +1,7 @@
 /*
 -----------------------------------------------------------------------
-Copyright: 2010-2018, imec Vision Lab, University of Antwerp
-           2014-2018, CWI, Amsterdam
+Copyright: 2010-2021, imec Vision Lab, University of Antwerp
+           2014-2021, CWI, Amsterdam
 
 Contact: astra@astra-toolbox.com
 Website: http://www.astra-toolbox.com/
@@ -274,13 +274,6 @@ void CCudaCglsAlgorithm3D::run(int _iNrIterations)
 
 }
 //----------------------------------------------------------------------------------------
-void CCudaCglsAlgorithm3D::signalAbort()
-{
-	if (m_bIsInitialized && m_pCgls) {
-		m_pCgls->signalAbort();
-	}
-}
-
 bool CCudaCglsAlgorithm3D::getResidualNorm(float32& _fNorm)
 {
 	if (!m_bIsInitialized || !m_pCgls)

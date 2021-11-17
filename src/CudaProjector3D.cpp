@@ -1,7 +1,7 @@
 /*
 -----------------------------------------------------------------------
-Copyright: 2010-2018, imec Vision Lab, University of Antwerp
-           2014-2018, CWI, Amsterdam
+Copyright: 2010-2021, imec Vision Lab, University of Antwerp
+           2014-2021, CWI, Amsterdam
 
 Contact: astra@astra-toolbox.com
 Website: http://www.astra-toolbox.com/
@@ -67,7 +67,6 @@ void CCudaProjector3D::_clear()
 	m_iVoxelSuperSampling = 1;
 	m_iDetectorSuperSampling = 1;
 	m_iGPUIndex = -1;
-	m_bDensityWeighting = false;
 }
 
 //----------------------------------------------------------------------------------------
@@ -133,13 +132,6 @@ bool CCudaProjector3D::initialize(const Config& _cfg)
  
 	m_iDetectorSuperSampling = (int)_cfg.self.getOptionNumerical("DetectorSuperSampling", 1);
 	CC.markOptionParsed("DetectorSuperSampling");
-
-	if (dynamic_cast<CConeProjectionGeometry3D*>(m_pProjectionGeometry) ||
-	    dynamic_cast<CConeVecProjectionGeometry3D*>(m_pProjectionGeometry))
-	{
-		m_bDensityWeighting = _cfg.self.getOptionBool("DensityWeighting", false);
-		CC.markOptionParsed("DensityWeighting");
-	}
 
 	m_iGPUIndex = (int)_cfg.self.getOptionNumerical("GPUindex", -1);
 	m_iGPUIndex = (int)_cfg.self.getOptionNumerical("GPUIndex", m_iGPUIndex);

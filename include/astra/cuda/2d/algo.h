@@ -1,7 +1,7 @@
 /*
 -----------------------------------------------------------------------
-Copyright: 2010-2018, imec Vision Lab, University of Antwerp
-           2014-2018, CWI, Amsterdam
+Copyright: 2010-2021, imec Vision Lab, University of Antwerp
+           2014-2021, CWI, Amsterdam
 
 Contact: astra@astra-toolbox.com
 Website: http://www.astra-toolbox.com/
@@ -56,7 +56,9 @@ public:
 
 	bool setSuperSampling(int raysPerDet, int raysPerPixelDim);
 
-	void signalAbort() { shouldAbort = true; }
+	// Scale the final reconstruction.
+	// May be called at any time after setGeometry and before iterate(). Multiple calls stack.
+	bool setReconstructionScale(float fScale);
 
 	virtual bool enableVolumeMask();
 	virtual bool enableSinogramMask();
@@ -90,8 +92,7 @@ public:
 	// sinogram, reconstruction, volume mask and sinogram mask in system RAM,
 	// respectively. The corresponding pitch variables give the pitches
 	// of these buffers, measured in floats.
-	// The sinogram is multiplied by fSinogramScale after uploading it.
-	virtual bool copyDataToGPU(const float* pfSinogram, unsigned int iSinogramPitch, float fSinogramScale,
+	virtual bool copyDataToGPU(const float* pfSinogram, unsigned int iSinogramPitch,
 	                           const float* pfReconstruction, unsigned int iReconstructionPitch,
 	                           const float* pfVolMask, unsigned int iVolMaskPitch,
 	                           const float* pfSinoMask, unsigned int iSinoMaskPitch);
@@ -135,9 +136,7 @@ protected:
 	SDimensions dims;
 	SParProjection* parProjs;
 	SFanProjection* fanProjs;
-	float fOutputScale;
-
-	volatile bool shouldAbort;
+	float fProjectorScale;
 
 	bool freeGPUMemory;
 

@@ -38,14 +38,30 @@ extern "C" void mexFunction() {
 }
 _ACEOF
 $CXX -fPIC -c -o conftest.o conftest.cc
-$MEX -cxx -output conftest conftest.o
-$2=""
+ASTRA_RUN_LOGOUTPUT([$MEX -cxx -output conftest conftest.o])
 for suffix in $1; do
   if test -f "conftest.$suffix"; then
     $2="$suffix"
     rm -f "conftest.$suffix"
   fi
 done
+rm -f conftest.cc conftest.o
+])
+
+dnl ASTRA_CHECK_MEX_OPTION(option, mex-suffix, action-if-supported, action-if-not-supported)
+dnl Check if an option is supported by mex.
+dnl We test if mex works by testing if it produces a mex file as output;
+dnl this is required since 'mex' is also a commonly installed LaTeX format
+AC_DEFUN([ASTRA_CHECK_MEX_OPTION],[
+cat >conftest.cc <<_ACEOF
+extern "C" void mexFunction() {
+}
+_ACEOF
+$CXX -fPIC -c -o conftest.o conftest.cc
+ASTRA_RUN_LOGOUTPUT([$MEX $1 -cxx -output conftest conftest.o])
+AS_IF([test -f "conftest.$2"],[
+  rm -f "conftest.$2"
+  $3],[$4])
 rm -f conftest.cc conftest.o
 ])
 
@@ -125,8 +141,12 @@ int main() {
   return 0;
 }
 _ACEOF
-NVCC_lastarch="none"
 NVCC_extra=""
+# Add -Wno-deprecated-gpu-targets option if supported
+ASTRA_RUN_LOGOUTPUT([$NVCC -c -o conftest.o conftest.cu -Wno-deprecated-gpu-targets $NVCCFLAGS $$2]) && {
+  NVCC_extra="-Wno-deprecated-gpu-targets"
+}
+NVCC_lastarch="none"
 NVCC_list=""
 astra_save_IFS=$IFS
 IFS=,
@@ -148,5 +168,22 @@ else
   $3="none"
 fi
 rm -f conftest.cu conftest.o conftest.nvcc.out
+])
+
+dnl ASTRA_CHECK_CUDA_BOOST(action-if-ok, action-if-not-ok)
+dnl Check for a specific incompatibility between boost and cuda version
+dnl (See https://github.com/boostorg/config/pull/175 )
+AC_DEFUN([ASTRA_CHECK_CUDA_BOOST],[
+cat >conftest.cu <<_ACEOF
+#include <boost/shared_ptr.hpp>
+int main() {
+  return 0;
+}
+_ACEOF
+ASTRA_RUN_LOGOUTPUT([$NVCC -c -o conftest.o conftest.cu $NVCCFLAGS])
+AS_IF([test $? = 0],[$1],[
+  AS_ECHO(["$as_me: failed program was:"]) >&AS_MESSAGE_LOG_FD
+  sed 's/^/| /' conftest.cu >&AS_MESSAGE_LOG_FD
+  $2])
 ])
 

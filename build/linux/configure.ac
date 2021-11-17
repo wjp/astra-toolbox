@@ -1,6 +1,6 @@
 dnl -----------------------------------------------------------------------
-dnl Copyright: 2010-2018, imec Vision Lab, University of Antwerp
-dnl            2014-2018, CWI, Amsterdam
+dnl Copyright: 2010-2021, imec Vision Lab, University of Antwerp
+dnl            2014-2021, CWI, Amsterdam
 dnl
 dnl Contact: astra@astra-toolbox.com
 dnl Website: http://www.astra-toolbox.com/
@@ -23,7 +23,7 @@ dnl along with the ASTRA Toolbox. If not, see <http://www.gnu.org/licenses/>.
 dnl
 dnl -----------------------------------------------------------------------
 
-AC_INIT(astra, 1.9.0dev)
+AC_INIT(astra, 2.0.0)
 AC_CONFIG_SRCDIR([Makefile.in])
 LT_INIT([disable-static])
 
@@ -85,7 +85,7 @@ fi
 
 # nvcc, cuda
 
-AC_ARG_WITH(cuda, [[  --with-cuda=path        path of CUDA SDK (optional)]],,)
+AC_ARG_WITH(cuda, [[  --with-cuda=path        path of CUDA (optional)]],,)
 
 if test x"$with_cuda" != xno; then
   NVCC_PATH=$PATH
@@ -120,6 +120,14 @@ if test x"$HAVECUDA" = xyes; then
   AC_MSG_CHECKING([if nvcc works])
   ASTRA_CHECK_NVCC(HAVECUDA,NVCCFLAGS_EXTRA)
   AC_MSG_RESULT($HAVECUDA)
+fi
+
+if test x"$HAVECUDA" = xyes; then
+  AC_MSG_CHECKING([if boost and CUDA versions are compatible])
+  ASTRA_CHECK_CUDA_BOOST(AC_MSG_RESULT([yes]),[
+    AC_MSG_RESULT([no])
+    AC_MSG_ERROR([Boost and CUDA versions are incompatible. You probably have to upgrade boost.])
+  ])
 fi
 
 AC_ARG_WITH(cuda_compute, [[  --with-cuda-compute=archs  comma separated list of CUDA compute models (optional)]],,)
@@ -174,7 +182,24 @@ if test x"$with_matlab" != x; then
   fi
 fi
 
+if test x"$HAVEMATLAB" = xyes; then
+  AC_MSG_CHECKING([if mex requires the -R2017b option])
+  ASTRA_CHECK_MEX_OPTION([-R2017b],[$MEXSUFFIX],[
+    MEXFLAGS="-R2017b"
+    # TODO: check if this is the best way of emulating -R2017b when using
+    # CXX directly to compile mex files.
+    CPPFLAGS_MATLAB="-DMATLAB_MEXCMD_RELEASE=700"
+    AC_MSG_RESULT([yes])
+  ],[
+    MEXFLAGS=
+    CPPFLAGS_MATLAB=
+    AC_MSG_RESULT([no])
+  ])
+fi
+
 AC_SUBST(HAVEMATLAB)
+AC_SUBST(MEXFLAGS)
+AC_SUBST(CPPFLAGS_MATLAB)
 
 # octave
 

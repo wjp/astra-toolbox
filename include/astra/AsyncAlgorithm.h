@@ -1,7 +1,7 @@
 /*
 -----------------------------------------------------------------------
-Copyright: 2010-2018, imec Vision Lab, University of Antwerp
-           2014-2018, CWI, Amsterdam
+Copyright: 2010-2021, imec Vision Lab, University of Antwerp
+           2014-2021, CWI, Amsterdam
 
 Contact: astra@astra-toolbox.com
 Website: http://www.astra-toolbox.com/
@@ -79,10 +79,6 @@ public:
 	/** Is the wrapped algorithm done. 
 	 */
 	bool isDone() const { return m_bDone; }	
-
-	/** Signal abort to the wrapped algorithm. 
-	 */
-	void signalAbort();
 
 protected:
 	//< Has this class been initialized?

@@ -1,7 +1,7 @@
 /*
 -----------------------------------------------------------------------
-Copyright: 2010-2018, imec Vision Lab, University of Antwerp
-           2014-2018, CWI, Amsterdam
+Copyright: 2010-2021, imec Vision Lab, University of Antwerp
+           2014-2021, CWI, Amsterdam
 
 Contact: astra@astra-toolbox.com
 Website: http://www.astra-toolbox.com/
@@ -38,10 +38,26 @@ _AstraExport bool hasFeature(const std::string &feature);
 
 FEATURES:
 
-cuda: is cuda support compiled in?
+cuda
+	is cuda support compiled in?
 	NB: To check if there is also actually a usable GPU, use cudaAvailable()
 
-mex_link: is there support for the matlab command astra_mex_data3d('link')?
+mex_link
+	is there support for the matlab command astra_mex_data3d('link')?
+
+projectors_scaled_as_line_integrals
+	This is set since all 2D and 3D, CPU and GPU projectors scale their outputs
+	to approximate line integrals. (Previously, some 2D projectors were scaled
+	as area integrals.)
+
+fan_cone_BP_density_weighting_by_default
+	This is set since fan beam and cone beam BP operations perform ray density
+	weighting by default to more closely approximate the true mathematical adjoint.
+	The DensityWeighting cuda3d projector option is removed.
+
+unpadded_GPULink
+	This is set since FP3D no longer silently fails with GPULink memory
+	that is not padded to a multiple of 32 pixels
 
 For future backward-incompatible changes, extra features will be added here
 

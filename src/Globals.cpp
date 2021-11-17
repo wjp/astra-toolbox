@@ -1,7 +1,7 @@
 /*
 -----------------------------------------------------------------------
-Copyright: 2010-2018, imec Vision Lab, University of Antwerp
-           2014-2018, CWI, Amsterdam
+Copyright: 2010-2021, imec Vision Lab, University of Antwerp
+           2014-2021, CWI, Amsterdam
 
 Contact: astra@astra-toolbox.com
 Website: http://www.astra-toolbox.com/
@@ -38,6 +38,20 @@ _AstraExport bool cudaAvailable() {
 #else
 	return false;
 #endif
+}
+
+
+static bool (*pShouldAbortHook)(void) = 0;
+
+_AstraExport void setShouldAbortHook(bool (*_pShouldAbortHook)(void)) {
+	pShouldAbortHook = _pShouldAbortHook;
+}
+
+_AstraExport bool shouldAbort() {
+	if (pShouldAbortHook && (*pShouldAbortHook)())
+		return true;
+
+	return false;
 }
 
 }

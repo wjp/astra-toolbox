@@ -1,7 +1,7 @@
 /*
 -----------------------------------------------------------------------
-Copyright: 2010-2018, imec Vision Lab, University of Antwerp
-           2014-2018, CWI, Amsterdam
+Copyright: 2010-2021, imec Vision Lab, University of Antwerp
+           2014-2021, CWI, Amsterdam
 
 Contact: astra@astra-toolbox.com
 Website: http://www.astra-toolbox.com/
@@ -57,10 +57,10 @@ along with the ASTRA Toolbox. If not, see <http://www.gnu.org/licenses/>.
 //----------------------------------------------------------------------------------------
 // macro's
 
-#define ASTRA_TOOLBOXVERSION_MAJOR 1
-#define ASTRA_TOOLBOXVERSION_MINOR 9
+#define ASTRA_TOOLBOXVERSION_MAJOR 2
+#define ASTRA_TOOLBOXVERSION_MINOR 0
 #define ASTRA_TOOLBOXVERSION ((ASTRA_TOOLBOXVERSION_MAJOR)*100 + (ASTRA_TOOLBOXVERSION_MINOR))
-#define ASTRA_TOOLBOXVERSION_STRING "1.9.0dev"
+#define ASTRA_TOOLBOXVERSION_STRING "2.0.0"
 
 
 #define ASTRA_ASSERT(a) assert(a)
@@ -149,6 +149,25 @@ namespace astra {
 		int m_iSliceIndex;
 	};
 }
+
+//----------------------------------------------------------------------------------------
+// functions for internal use
+
+namespace astra {
+
+/** Specify a function) to be called by shouldAbort() to check if an external
+ *  abort signal has arrived, or NULL to disable. Intended to be used by the
+ *  matlab/python interfaces to check if Ctrl-C has been pressed.
+ */
+_AstraExport void setShouldAbortHook(bool (*pShouldAbortHook)(void));
+
+/** Check if we should abort execution (due to an external signal).
+ */
+_AstraExport bool shouldAbort();
+}
+
+//----------------------------------------------------------------------------------------
+// functions for external use
 
 namespace astra {
 _AstraExport inline int getVersion() { return ASTRA_TOOLBOXVERSION; }

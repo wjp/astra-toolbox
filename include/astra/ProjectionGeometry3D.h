@@ -1,7 +1,7 @@
 /*
 -----------------------------------------------------------------------
-Copyright: 2010-2018, imec Vision Lab, University of Antwerp
-           2014-2018, CWI, Amsterdam
+Copyright: 2010-2021, imec Vision Lab, University of Antwerp
+           2014-2021, CWI, Amsterdam
 
 Contact: astra@astra-toolbox.com
 Website: http://www.astra-toolbox.com/
@@ -319,21 +319,6 @@ public:
 	virtual void projectPoint(double fX, double fY, double fZ,
 	                          int iAngleIndex,
 	                          double &fU, double &fV) const = 0;
-
-	/* Backproject a point onto a plane parallel to a coordinate plane.
-	 * The 2D point coordinates are the (unrounded) indices of the detector
-	 * column and row. The output is in 3D coordinates in units.
-	 * are in units. The output fU,fV are the (unrounded) indices of the
-	 * detector column and row.
-	 * This may fall outside of the actual detector.
-	 */
-	virtual void backprojectPointX(int iAngleIndex, double fU, double fV,
-	                               double fX, double &fY, double &fZ) const = 0;
-	virtual void backprojectPointY(int iAngleIndex, double fU, double fV,
-	                               double fY, double &fX, double &fZ) const = 0;
-	virtual void backprojectPointZ(int iAngleIndex, double fU, double fV,
-	                               double fZ, double &fX, double &fY) const = 0;
-
 
 	/** Returns true if the type of geometry defined in this class is the one specified in _sType.
 	 *

@@ -1,7 +1,7 @@
 /*
 -----------------------------------------------------------------------
-Copyright: 2010-2018, imec Vision Lab, University of Antwerp
-           2014-2018, CWI, Amsterdam
+Copyright: 2010-2021, imec Vision Lab, University of Antwerp
+           2014-2021, CWI, Amsterdam
 
 Contact: astra@astra-toolbox.com
 Website: http://www.astra-toolbox.com/
@@ -28,6 +28,7 @@ along with the ASTRA Toolbox. If not, see <http://www.gnu.org/licenses/>.
 #include "astra/GeometryUtil2D.h"
 
 #include <cmath>
+#include <cstdio>
 
 namespace astra {
 
@@ -158,14 +159,16 @@ bool getFanParameters(const SFanProjection &proj, unsigned int iProjDets, float 
 	// project origin on detector line ( == project source on detector line)
 
 	double t = (- proj.fDetSX) * proj.fDetUX + (- proj.fDetSY) * proj.fDetUY;
+	t /= (proj.fDetUX * proj.fDetUX + proj.fDetUY * proj.fDetUY);
 
 	fOffset = (float)t - 0.5*iProjDets;
 
-	// TODO: CHECKME
 	fOriginDetector = sqrt((proj.fDetSX + t * proj.fDetUX)*(proj.fDetSX + t * proj.fDetUX) + (proj.fDetSY + t * proj.fDetUY)*(proj.fDetSY + t * proj.fDetUY));
 
-	//float fAngle = atan2(proj.fDetSX + t * proj.fDetUX - proj.fSrcX, proj.fDetSY + t * proj.fDetUY); // TODO: Fix order + sign
-	fAngle = atan2(proj.fDetUY, proj.fDetUX); // TODO: Check order + sign
+	fAngle = atan2(proj.fDetUY, proj.fDetUX);
+
+	//fprintf(stderr, "getFanParams: s = (%f,%f) d = (%f,%f) u = (%f,%f)\n", proj.fSrcX, proj.fSrcY, proj.fDetSX, proj.fDetSY, proj.fDetUX, proj.fDetUY);
+	//fprintf(stderr, "getFanParams: fOS = %f, fOD = %f, detsize = %f, offset = %f (t = %f), angle = %f\n", fOriginSource, fOriginDetector, fDetSize, fOffset, t, fAngle);
 
 	return true;
 }

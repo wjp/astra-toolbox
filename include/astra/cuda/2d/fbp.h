@@ -1,7 +1,7 @@
 /*
 -----------------------------------------------------------------------
-Copyright: 2010-2018, imec Vision Lab, University of Antwerp
-           2014-2018, CWI, Amsterdam
+Copyright: 2010-2021, imec Vision Lab, University of Antwerp
+           2014-2021, CWI, Amsterdam
 
 Contact: astra@astra-toolbox.com
 Website: http://www.astra-toolbox.com/
@@ -79,6 +79,11 @@ public:
 
 	bool setShortScan(bool ss) { m_bShortScan = ss; return true; }
 
+	// Scale the final reconstruction.
+	// May be called at any time before iterate().
+	bool setReconstructionScale(float fScale);
+
+
 	virtual bool init();
 
 	virtual bool iterate(unsigned int iterations);
@@ -90,6 +95,7 @@ protected:
 
 	void* D_filter; // cufftComplex*
 	bool m_bShortScan;
+	float fReconstructionScale;
 };
 
 }

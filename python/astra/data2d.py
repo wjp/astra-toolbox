@@ -1,6 +1,6 @@
 # -----------------------------------------------------------------------
-# Copyright: 2010-2018, imec Vision Lab, University of Antwerp
-#            2013-2018, CWI, Amsterdam
+# Copyright: 2010-2021, imec Vision Lab, University of Antwerp
+#            2013-2021, CWI, Amsterdam
 #
 # Contact: astra@astra-toolbox.com
 # Website: http://www.astra-toolbox.com/
@@ -24,6 +24,8 @@
 # -----------------------------------------------------------------------
 
 from . import data2d_c as d
+from .pythonutils import checkArrayForLink
+
 import numpy as np
 
 def clear():
@@ -65,12 +67,7 @@ def link(datatype, geometry, data):
     :returns: :class:`int` -- the ID of the constructed object.
     
     """
-    if not isinstance(data,np.ndarray):
-        raise ValueError("Input should be a numpy array")
-    if not data.dtype==np.float32:
-        raise ValueError("Numpy array should be float32")
-    if not (data.flags['C_CONTIGUOUS'] and data.flags['ALIGNED']):
-        raise ValueError("Numpy array should be C_CONTIGUOUS and ALIGNED")
+    checkArrayForLink(data)
     return d.create(datatype,geometry,data,True)
 
 def store(i, data):

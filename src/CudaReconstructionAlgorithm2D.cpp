@@ -1,7 +1,7 @@
 /*
 -----------------------------------------------------------------------
-Copyright: 2010-2018, imec Vision Lab, University of Antwerp
-           2014-2018, CWI, Amsterdam
+Copyright: 2010-2021, imec Vision Lab, University of Antwerp
+           2014-2021, CWI, Amsterdam
 
 Contact: astra@astra-toolbox.com
 Website: http://www.astra-toolbox.com/
@@ -309,10 +309,7 @@ void CCudaReconstructionAlgorithm2D::run(int _iNrIterations)
 		m_bAlgoInit = true;
 	}
 
-	float fPixelSize = volgeom.getPixelLengthX();
-	float fSinogramScale = 1.0f/(fPixelSize*fPixelSize);
-
-	ok = m_pAlgo->copyDataToGPU(m_pSinogram->getDataConst(), m_pSinogram->getGeometry()->getDetectorCount(), fSinogramScale,
+	ok = m_pAlgo->copyDataToGPU(m_pSinogram->getDataConst(), m_pSinogram->getGeometry()->getDetectorCount(),
 	                            m_pReconstruction->getDataConst(), volgeom.getGridColCount(),
 	                            m_bUseReconstructionMask ? m_pReconstructionMask->getDataConst() : 0, volgeom.getGridColCount(),
 	                            m_bUseSinogramMask ? m_pSinogramMask->getDataConst() : 0, m_pSinogram->getGeometry()->getDetectorCount());
@@ -339,13 +336,6 @@ void CCudaReconstructionAlgorithm2D::run(int _iNrIterations)
 	                                 volgeom.getGridColCount());
 
 	ASTRA_ASSERT(ok);
-}
-
-void CCudaReconstructionAlgorithm2D::signalAbort()
-{
-	if (m_bIsInitialized && m_pAlgo) {
-		m_pAlgo->signalAbort();
-	}
 }
 
 bool CCudaReconstructionAlgorithm2D::getResidualNorm(float32& _fNorm)

@@ -1,7 +1,7 @@
 /*
 -----------------------------------------------------------------------
-Copyright: 2010-2018, imec Vision Lab, University of Antwerp
-           2014-2018, CWI, Amsterdam
+Copyright: 2010-2021, imec Vision Lab, University of Antwerp
+           2014-2021, CWI, Amsterdam
 
 Contact: astra@astra-toolbox.com
 Website: http://www.astra-toolbox.com/
@@ -27,11 +27,6 @@ along with the ASTRA Toolbox. If not, see <http://www.gnu.org/licenses/>.
 
 #include "astra/cuda/3d/util3d.h"
 #include "astra/cuda/3d/dims3d.h"
-
-#ifdef STANDALONE
-#include "testutil.h"
-#endif
-
 
 #include <cstdio>
 #include <cassert>
@@ -180,6 +175,8 @@ __global__ void par3D_FP_t(float* D_projData, unsigned int projPitch,
 
 
 	const int detectorU = (blockIdx.x%((dims.iProjU+g_detBlockU-1)/g_detBlockU)) * g_detBlockU + threadIdx.x;
+	if (detectorU >= dims.iProjU)
+		return;
 	const int startDetectorV = (blockIdx.x/((dims.iProjU+g_detBlockU-1)/g_detBlockU)) * g_detBlockV;
 	int endDetectorV = startDetectorV + g_detBlockV;
 	if (endDetectorV > dims.iProjV)
@@ -256,7 +253,10 @@ __global__ void par3D_FP_SS_t(float* D_projData, unsigned int projPitch,
 	const float a2 = c.c2(fRayX,fRayY,fRayZ) / c.c0(fRayX,fRayY,fRayZ);
 	const float fDistCorr = sc.scale(a1, a2);
 
+
 	const int detectorU = (blockIdx.x%((dims.iProjU+g_detBlockU-1)/g_detBlockU)) * g_detBlockU + threadIdx.x;
+	if (detectorU >= dims.iProjU)
+		return;
 	const int startDetectorV = (blockIdx.x/((dims.iProjU+g_detBlockU-1)/g_detBlockU)) * g_detBlockV;
 	int endDetectorV = startDetectorV + g_detBlockV;
 	if (endDetectorV > dims.iProjV)
@@ -364,6 +364,8 @@ __global__ void par3D_FP_SumSqW_t(float* D_projData, unsigned int projPitch,
 
 
 	const int detectorU = (blockIdx.x%((dims.iProjU+g_detBlockU-1)/g_detBlockU)) * g_detBlockU + threadIdx.x;
+	if (detectorU >= dims.iProjU)
+		return;
 	const int startDetectorV = (blockIdx.x/((dims.iProjU+g_detBlockU-1)/g_detBlockU)) * g_detBlockV;
 	int endDetectorV = startDetectorV + g_detBlockV;
 	if (endDetectorV > dims.iProjV)
@@ -506,8 +508,8 @@ bool Par3DFP_Array_internal(cudaPitchedPtr D_projData,
 				dim3 dimGrid(
 				             ((dims.iProjU+g_detBlockU-1)/g_detBlockU)*((dims.iProjV+g_detBlockV-1)/g_detBlockV),
 (blockEnd-blockStart+g_anglesPerBlock-1)/g_anglesPerBlock);
-				// TODO: check if we can't immediately
-				//       destroy the stream after use
+				// TODO: consider limiting number of handle (chaotic) geoms
+				//       with many alternating directions
 				cudaStream_t stream;
 				cudaStreamCreate(&stream);
 				streams.push_back(stream);
@@ -550,17 +552,16 @@ bool Par3DFP_Array_internal(cudaPitchedPtr D_projData,
 		}
 	}
 
-	for (std::list<cudaStream_t>::iterator iter = streams.begin(); iter != streams.end(); ++iter)
+	bool ok = true;
+
+	for (std::list<cudaStream_t>::iterator iter = streams.begin(); iter != streams.end(); ++iter) {
+		ok &= checkCuda(cudaStreamSynchronize(*iter), "par3d_fp");
 		cudaStreamDestroy(*iter);
-
-	streams.clear();
-
-	cudaTextForceKernelsCompletion();
-
+	}
 
 	// printf("%f\n", toc(t));
 
-	return true;
+	return ok;
 }
 
 bool Par3DFP(cudaPitchedPtr D_volumeData,
@@ -731,17 +732,16 @@ bool Par3DFP_SumSqW(cudaPitchedPtr D_volumeData,
 		}
 	}
 
-	for (std::list<cudaStream_t>::iterator iter = streams.begin(); iter != streams.end(); ++iter)
+	bool ok = true;
+
+	for (std::list<cudaStream_t>::iterator iter = streams.begin(); iter != streams.end(); ++iter) {
+		ok = ok &= checkCuda(cudaStreamSynchronize(*iter), "Par3DFP_SumSqW");
 		cudaStreamDestroy(*iter);
-
-	streams.clear();
-
-	cudaTextForceKernelsCompletion();
-
+	}
 
 	// printf("%f\n", toc(t));
 
-	return true;
+	return ok;
 }
 
 
@@ -751,166 +751,3 @@ bool Par3DFP_SumSqW(cudaPitchedPtr D_volumeData,
 
 
 }
-
-#ifdef STANDALONE
-
-using namespace astraCUDA3d;
-
-int main()
-{
-	cudaSetDevice(1);
-
-
-	SDimensions3D dims;
-	dims.iVolX = 500;
-	dims.iVolY = 500;
-	dims.iVolZ = 81;
-	dims.iProjAngles = 241;
-	dims.iProjU = 600;
-	dims.iProjV = 100;
-	dims.iRaysPerDet = 1;
-
-	SPar3DProjection base;
-	base.fRayX = 1.0f;
-	base.fRayY = 0.0f;
-	base.fRayZ = 0.1f;
-
-	base.fDetSX = 0.0f;
-	base.fDetSY = -300.0f;
-	base.fDetSZ = -50.0f;
-
-	base.fDetUX = 0.0f;
-	base.fDetUY = 1.0f;
-	base.fDetUZ = 0.0f;
-
-	base.fDetVX = 0.0f;
-	base.fDetVY = 0.0f;
-	base.fDetVZ = 1.0f;
-
-	SPar3DProjection angle[dims.iProjAngles];
-
-	cudaPitchedPtr volData; // pitch, ptr, xsize, ysize
-
-	volData = allocateVolumeData(dims);
-
-	cudaPitchedPtr projData; // pitch, ptr, xsize, ysize
-
-	projData = allocateProjectionData(dims);
-
-	unsigned int ix = 500,iy = 500;
-
-	float* buf = new float[dims.iProjU*dims.iProjV];
-
-	float* slice = new float[dims.iVolX*dims.iVolY];
-	for (int i = 0; i < dims.iVolX*dims.iVolY; ++i)
-		slice[i] = 1.0f;
-
-	for (unsigned int a = 0; a < 241; a += dims.iProjAngles) {
-
-		zeroProjectionData(projData, dims);
-
-		for (int y = 0; y < iy; y += dims.iVolY) {
-			for (int x = 0; x < ix; x += dims.iVolX) { 
-
-				timeval st;
-				tic(st);
-
-				for (int z = 0; z < dims.iVolZ; ++z) {
-//					char sfn[256];
-//					sprintf(sfn, "/home/wpalenst/projects/cone_simulation/phantom_4096/mouse_fem_phantom_%04d.png", 30+z);
-//					float* slice = loadSubImage(sfn, x, y, dims.iVolX, dims.iVolY);
-
-					cudaPitchedPtr ptr;
-					ptr.ptr = slice;
-					ptr.pitch = dims.iVolX*sizeof(float);
-					ptr.xsize = dims.iVolX*sizeof(float);
-					ptr.ysize = dims.iVolY;
-					cudaExtent extentS;
-					extentS.width = dims.iVolX*sizeof(float);
-					extentS.height = dims.iVolY;
-					extentS.depth = 1;
-
-					cudaPos sp = { 0, 0, 0 };
-					cudaPos dp = { 0, 0, z };
-					cudaMemcpy3DParms p;
-					p.srcArray = 0;
-					p.srcPos = sp;
-					p.srcPtr = ptr;
-					p.dstArray = 0;
-					p.dstPos = dp;
-					p.dstPtr = volData;
-					p.extent = extentS;
-					p.kind = cudaMemcpyHostToDevice;
-					cudaError err = cudaMemcpy3D(&p);
-					assert(!err);
-//					delete[] slice;
-				}
-
-				printf("Load: %f\n", toc(st));
-
-#if 0
-
-	cudaPos zp = { 0, 0, 0 };
-
-	cudaPitchedPtr t;
-	t.ptr = new float[1024*1024];
-	t.pitch = 1024*4;
-	t.xsize = 1024*4;
-	t.ysize = 1024;
-
-	cudaMemcpy3DParms p;
-	p.srcArray = 0;
-	p.srcPos = zp;
-	p.srcPtr = volData;
-	p.extent = extentS;
-	p.dstArray = 0;
-	p.dstPtr = t;
-	p.dstPos = zp;
-	p.kind = cudaMemcpyDeviceToHost;
-	cudaError err = cudaMemcpy3D(&p);
-	assert(!err);
-
-	char fn[32];
-	sprintf(fn, "t%d%d.png", x / dims.iVolX, y / dims.iVolY);
-	saveImage(fn, 1024, 1024, (float*)t.ptr);
-	saveImage("s.png", 4096, 4096, slice);
-	delete[] (float*)t.ptr;
-#endif
-
-
-#define ROTATE0(name,i,alpha) do { angle[i].f##name##X = base.f##name##X * cos(alpha) - base.f##name##Y * sin(alpha); angle[i].f##name##Y = base.f##name##X * sin(alpha) + base.f##name##Y * cos(alpha); angle[i].f##name##Z = base.f##name##Z; } while(0)
-#define SHIFT(name,i,x,y) do { angle[i].f##name##X += x; angle[i].f##name##Y += y; } while(0)
-				for (int i = 0; i < dims.iProjAngles; ++i) {
-					ROTATE0(Ray, i, (a+i)*.8*M_PI/180);
-					ROTATE0(DetS, i, (a+i)*.8*M_PI/180);
-					ROTATE0(DetU, i, (a+i)*.8*M_PI/180);
-					ROTATE0(DetV, i, (a+i)*.8*M_PI/180);
-
-
-//					SHIFT(Src, i, (-x+1536), (-y+1536));
-//					SHIFT(DetS, i, (-x+1536), (-y+1536));
-				}
-#undef ROTATE0
-#undef SHIFT
-				tic(st);
-
-				astraCUDA3d::Par3DFP(volData, projData, dims, angle, 1.0f);
-
-				printf("FP: %f\n", toc(st));
-
-			}
-		}
-		for (unsigned int aa = 0; aa < dims.iProjAngles; ++aa) {
-			for (unsigned int v = 0; v < dims.iProjV; ++v)
-				cudaMemcpy(buf+v*dims.iProjU, ((float*)projData.ptr)+(v*dims.iProjAngles+aa)*(projData.pitch/sizeof(float)), dims.iProjU*sizeof(float), cudaMemcpyDeviceToHost);
-
-			char fname[32];
-			sprintf(fname, "proj%03d.png", a+aa);
-			saveImage(fname, dims.iProjV, dims.iProjU, buf, 0.0f, 1000.0f);
-		}
-	}
-
-	delete[] buf;
-
-}
-#endif

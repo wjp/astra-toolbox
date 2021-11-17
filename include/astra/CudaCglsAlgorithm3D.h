@@ -1,7 +1,7 @@
 /*
 -----------------------------------------------------------------------
-Copyright: 2010-2018, imec Vision Lab, University of Antwerp
-           2014-2018, CWI, Amsterdam
+Copyright: 2010-2021, imec Vision Lab, University of Antwerp
+           2014-2021, CWI, Amsterdam
 
 Contact: astra@astra-toolbox.com
 Website: http://www.astra-toolbox.com/
@@ -140,9 +140,6 @@ public:
 	 * @param _iGPUIndex New GPU index.
 	 */
 	void setGPUIndex(int _iGPUIndex) { m_iGPUIndex = _iGPUIndex; }
-
-
-	virtual void signalAbort();
 
 	/** Get the norm of the residual image.
 	 *  Only a few algorithms support this method.
