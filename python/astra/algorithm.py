@@ -24,6 +24,7 @@
 # -----------------------------------------------------------------------
 
 from . import algorithm_c as a
+from .wrap import _unwrap, AstraIDWrapper, _unwrap_ref
 
 def create(config):
     """Create algorithm object.
@@ -33,7 +34,7 @@ def create(config):
     :returns: :class:`int` -- the ID of the constructed object.
     
     """
-    return a.create(config)
+    return a.create(_unwrap(config))
 
 def run(i, iterations=1):
     """Run an algorithm.
@@ -44,7 +45,7 @@ def run(i, iterations=1):
     :type iterations: :class:`int`
     
     """
-    return a.run(i,iterations)
+    return a.run(_unwrap(i),iterations)
 
 def get_res_norm(i):
     """Get residual norm of algorithm.
@@ -55,7 +56,7 @@ def get_res_norm(i):
     
     """
     
-    return a.get_res_norm(i)
+    return a.get_res_norm(_unwrap(i))
     
 def delete(ids):
     """Delete a matrix object.
@@ -64,7 +65,7 @@ def delete(ids):
     :type ids: :class:`int` or :class:`list`
     
     """
-    return a.delete(ids)
+    return a.delete(_unwrap(ids))
 
 def get_plugin_object(i):
     """Return the Python object instance of a plugin algorithm.
@@ -74,7 +75,7 @@ def get_plugin_object(i):
     :returns: The Python object instance of the plugin algorithm.
 
     """
-    return a.get_plugin_object(i)
+    return a.get_plugin_object(_unwrap(i))
 
 
 def clear():
@@ -84,3 +85,20 @@ def clear():
 def info():
     """Print info on matrix objects in memory."""
     return a.info()
+
+class Algorithm(AstraIDWrapper):
+    def __init__(self, config):
+        config, refs = _unwrap_ref(config)
+        self.ID = a.create(config)
+        self.REFS = refs
+
+    def __del__(self):
+        self.delete()
+
+    def delete(self):
+        self.REFS = [ ]
+        delete(self.ID)
+
+    run = run
+    get_plugin_object = get_plugin_object
+    get_res_norm = get_res_norm

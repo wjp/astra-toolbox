@@ -24,7 +24,7 @@
 # -----------------------------------------------------------------------
 
 from . import matlab as m
-from .creators import astra_dict,create_vol_geom, create_proj_geom, create_backprojection, create_sino, create_reconstruction, create_projector,create_sino3d_gpu, create_backprojection3d_gpu
+from .creators import astra_dict,create_vol_geom, create_proj_geom, create_backprojection, create_sino, create_reconstruction, create_projector,create_sino3d_gpu, create_backprojection3d_gpu, create_Sino, create_Projector
 from .functions import data_op, add_noise_to_sino, clear, move_vol_geom, geom_size, geom_2vec, geom_postalignment
 from .extrautils import clipCircle
 from .astra import set_gpu_index, get_gpu_info, use_cuda, has_feature
@@ -40,6 +40,9 @@ from . import plugins
 from . import log
 from .optomo import OpTomo
 from .tests import test, test_noCUDA, test_CUDA
+from .data2d import Data2d
+from .projector import Projector
+from .algorithm import Algorithm
 
 __version__ = '2.0.0'
 

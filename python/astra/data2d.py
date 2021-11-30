@@ -25,6 +25,7 @@
 
 from . import data2d_c as d
 from .pythonutils import checkArrayForLink
+from .wrap import _unwrap, AstraIDWrapper
 
 import numpy as np
 
@@ -39,7 +40,7 @@ def delete(ids):
     :type ids: :class:`int` or :class:`list`
     
     """
-    return d.delete(ids)
+    return d.delete(_unwrap(ids))
 
 def create(datatype, geometry, data=None):
     """Create a 2D object.
@@ -79,7 +80,7 @@ def store(i, data):
     :type data: :class:`float` or :class:`numpy.ndarray`
     
     """
-    return d.store(i, data)
+    return d.store(_unwrap(i), data)
     
 def get_geometry(i):
     """Get the geometry of a 2D object.
@@ -89,7 +90,7 @@ def get_geometry(i):
     :returns: :class:`dict` -- The geometry of object with ID ``i``.
     
     """
-    return d.get_geometry(i)
+    return d.get_geometry(_unwrap(i))
 
 def change_geometry(i, geom):
     """Change the geometry of a 2D object.
@@ -100,7 +101,7 @@ def change_geometry(i, geom):
     :type geom: :class:`dict`
     
     """
-    return d.change_geometry(i, geom)
+    return d.change_geometry(_unwrap(i), geom)
     
 def get(i):
     """Get a 2D object.
@@ -110,7 +111,7 @@ def get(i):
     :returns: :class:`numpy.ndarray` -- The object data.
     
     """
-    return d.get(i)
+    return d.get(_unwrap(i))
 
 def get_shared(i):
     """Get a 2D object with memory shared between the ASTRA toolbox and numpy array.
@@ -120,7 +121,7 @@ def get_shared(i):
     :returns: :class:`numpy.ndarray` -- The object data.
     
     """
-    return d.get_shared(i)
+    return d.get_shared(_unwrap(i))
 
 
 def get_single(i):
@@ -131,8 +132,41 @@ def get_single(i):
     :returns: :class:`numpy.ndarray` -- The object data.
     
     """
-    return d.get_single(i)
+    return d.get_single(_unwrap(i))
 
 def info():
     """Print info on 2D objects in memory."""
     return d.info()
+
+class Data2d(AstraIDWrapper):
+
+    def __init__(self, *args, **kwargs):
+        def createFromID(self, ID):
+            if not isinstance(ID, int):
+                raise ValueError
+            self.ID = ID
+
+        def create(self, datatype, geometry, data=None, link=False):
+            if link:
+                checkArrayForLink(data)
+            self.ID = d.create(datatype,geometry,data,link)
+
+        try:
+            createFromID(self, *args, **kwargs)
+        except:
+            self.ID = None
+        if self.ID is None:
+            create(self, *args, **kwargs)
+
+    def __del__(self):
+        self.delete()
+
+    # TODO: Can clean up this duplication using a metaclass,
+    # This would also let us filter out the lines of the docstring about the
+    # ID argument if we want.
+    delete = delete
+    get = get
+    store = store
+    get_shared = get_shared
+    get_geometry = get_geometry
+    change_geometry = change_geometry

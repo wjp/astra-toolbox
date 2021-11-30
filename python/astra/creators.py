@@ -565,3 +565,13 @@ def create_projector(proj_type, proj_geom, vol_geom, options=None):
         return projector3d.create(cfg)
     else:
         return projector.create(cfg)
+
+def create_Projector(*args, **kwargs):
+    return projector.Projector(create_projector(*args, **kwargs))
+
+def create_Sino(data, proj_id, gpuIndex=None):
+    x = create_sino(data, proj_id, False, gpuIndex)
+    return data2d.Data2d(x)
+
+
+

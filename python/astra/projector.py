@@ -24,6 +24,7 @@
 # -----------------------------------------------------------------------
 
 from . import projector_c as p
+from .wrap import _unwrap, AstraIDWrapper
 
 def create(config):
     """Create projector object.
@@ -33,7 +34,7 @@ def create(config):
     :returns: :class:`int` -- the ID of the constructed object.
 
     """
-    return p.create(config)
+    return p.create(_unwrap(config))
 
 
 def delete(ids):
@@ -43,7 +44,7 @@ def delete(ids):
     :type ids: :class:`int` or :class:`list`
 
     """
-    return p.delete(ids)
+    return p.delete(_unwrap(ids))
 
 
 def clear():
@@ -63,7 +64,7 @@ def projection_geometry(i):
     :returns: :class:`dict` -- projection geometry
 
     """
-    return p.projection_geometry(i)
+    return p.projection_geometry(_unwrap(i))
 
 
 def volume_geometry(i):
@@ -74,19 +75,19 @@ def volume_geometry(i):
     :returns: :class:`dict` -- volume geometry
 
     """
-    return p.volume_geometry(i)
+    return p.volume_geometry(_unwrap(i))
 
 
 def weights_single_ray(i, projection_index, detector_index):
-    return p.weights_single_ray(i, projection_index, detector_index)
+    return p.weights_single_ray(_unwrap(i), projection_index, detector_index)
 
 
 def weights_projection(i, projection_index):
-    return p.weights_projection(i, projection_index)
+    return p.weights_projection(_unwrap(i), projection_index)
 
 
 def splat(i, row, col):
-    return p.splat(i, row, col)
+    return p.splat(_unwrap(i), row, col)
 
 def is_cuda(i):
     """Check whether a projector is a CUDA projector.
@@ -96,7 +97,7 @@ def is_cuda(i):
     :returns: :class:`bool` -- True if the projector is a CUDA projector.
 
     """
-    return p.is_cuda(i)
+    return p.is_cuda(_unwrap(i))
 
 
 def matrix(i):
@@ -107,4 +108,23 @@ def matrix(i):
     :returns: :class:`int` -- ID of sparse matrix.
 
     """
-    return p.matrix(i)
+    return p.matrix(_unwrap(i))
+
+class Projector(AstraIDWrapper):
+    def __init__(self, config):
+        if isinstance(config, int):
+            self.ID = config
+        else:
+            self.ID = create(config)
+
+    def __del__(self):
+        self.delete()
+
+    delete = delete
+    volume_geometry = volume_geometry
+    projection_geometry = projection_geometry
+    is_cuda = is_cuda
+    matrix = matrix
+    weights_single_ray = weights_single_ray
+    weights_projection = weights_projection
+    splat = splat
