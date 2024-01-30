@@ -284,23 +284,6 @@ bool convertAstraGeometry(const CVolumeGeometry3D* pVolGeom,
                           SConeProjection*& pConeProjs,
                           astraCUDA3d::SProjectorParams3D& params);
 
-_AstraExport bool astraCudaFP(const float* pfVolume, float* pfProjections,
-                      const CVolumeGeometry3D* pVolGeom,
-                      const CProjectionGeometry3D* pProjGeom,
-                      int iGPUIndex, int iDetectorSuperSampling,
-                      Cuda3DProjectionKernel projKernel);
-
-
-_AstraExport bool astraCudaBP(float* pfVolume, const float* pfProjections,
-                      const CVolumeGeometry3D* pVolGeom,
-                      const CProjectionGeometry3D* pProjGeom,
-                      int iGPUIndex, int iVoxelSuperSampling);
-
-_AstraExport bool astraCudaBP_SIRTWeighted(float* pfVolume, const float* pfProjections,
-                      const CVolumeGeometry3D* pVolGeom,
-                      const CProjectionGeometry3D* pProjGeom,
-                      int iGPUIndex, int iVoxelSuperSampling);
-
 _AstraExport bool uploadMultipleProjections(CFloat32ProjectionData3DGPU *proj,
                                             const float *data,
                                             unsigned int y_min,
