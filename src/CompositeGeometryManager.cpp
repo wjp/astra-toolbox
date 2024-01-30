@@ -1428,7 +1428,7 @@ static bool doJob(const CCompositeGeometryManager::TJobSet::const_iterator& iter
 		assert(j.pInput);
 
 		CCudaProjector3D *projector = dynamic_cast<CCudaProjector3D*>(j.pProjector);
-		Cuda3DProjectionKernel projKernel = ker3d_default;
+		Cuda3DProjectionKernel projKernel = astraCUDA3d::ker3d_default;
 		int detectorSuperSampling = 1;
 		int voxelSuperSampling = 1;
 		if (projector) {
@@ -1480,7 +1480,7 @@ static bool doJob(const CCompositeGeometryManager::TJobSet::const_iterator& iter
 
 			ASTRA_DEBUG("CCompositeGeometryManager::doJobs: doing BP");
 
-			ok = astraCUDA3d::BP(((CCompositeGeometryManager::CProjectionPart*)j.pInput.get())->pGeom, srcMem->hnd, ((CCompositeGeometryManager::CVolumePart*)j.pOutput.get())->pGeom, dstMem->hnd, voxelSuperSampling);
+			ok = astraCUDA3d::BP(((CCompositeGeometryManager::CProjectionPart*)j.pInput.get())->pGeom, srcMem->hnd, ((CCompositeGeometryManager::CVolumePart*)j.pOutput.get())->pGeom, dstMem->hnd, voxelSuperSampling, projKernel);
 			if (!ok) ASTRA_ERROR("Error performing sub-BP");
 			ASTRA_DEBUG("CCompositeGeometryManager::doJobs: BP done");
 		}
