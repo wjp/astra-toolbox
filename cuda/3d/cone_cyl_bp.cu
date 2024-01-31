@@ -219,7 +219,7 @@ bool transferConstants_conecylbp(const SCylConeProjection* angles, unsigned int 
 		// TODO: density weighting factor |u x v| missing!
 
 		if (i == 0) {
-			fprintf(stderr, "%f,%f,%f,%f  %f,%f,%f,%f %f,%f,%f,%f  %f,%f,%f  %f %f\n", p[i].fCa.x,p[i].fCa.y, p[i].fCa.z, p[i].fCa.w, p[i].fCb.x,p[i].fCb.y, p[i].fCb.z, p[i].fCb.w, p[i].fCc.x,p[i].fCc.y, p[i].fCc.z, p[i].fCc.w,  p[i].fSmC.x,p[i].fSmC.y, p[i].fSmC.z, p[i].fDetUT, p[i].fInvNormV);
+			//fprintf(stderr, "%f,%f,%f,%f  %f,%f,%f,%f %f,%f,%f,%f  %f,%f,%f  %f %f\n", p[i].fCa.x,p[i].fCa.y, p[i].fCa.z, p[i].fCa.w, p[i].fCb.x,p[i].fCb.y, p[i].fCb.z, p[i].fCb.w, p[i].fCc.x,p[i].fCc.y, p[i].fCc.z, p[i].fCc.w,  p[i].fSmC.x,p[i].fSmC.y, p[i].fSmC.z, p[i].fDetUT, p[i].fInvNormV);
 		}
 	}
 
