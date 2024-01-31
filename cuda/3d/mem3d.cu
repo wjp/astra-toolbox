@@ -30,6 +30,7 @@ along with the ASTRA Toolbox. If not, see <http://www.gnu.org/licenses/>.
 #include "astra/cuda/3d/astra3d.h"
 #include "astra/cuda/3d/cone_fp.h"
 #include "astra/cuda/3d/cone_bp.h"
+#include "astra/cuda/3d/cone_cyl.h"
 #include "astra/cuda/3d/par3d_fp.h"
 #include "astra/cuda/3d/par3d_bp.h"
 #include "astra/cuda/3d/fdk.h"
@@ -219,7 +220,7 @@ bool FP(const astra::CProjectionGeometry3D* pProjGeom, MemHandle3D projData, con
 	if (SPar3DProjection** pp = std::get_if<SPar3DProjection*>(&result)) {
 		SPar3DProjection* pParProjs = *pp;
 		switch (projKernel) {
-		case ker3d_default:
+		case ker3d_default: case ker3d_matched_bp:
 			ok &= Par3DFP(volData.d->ptr, projData.d->ptr, dims, pParProjs, params);
 			break;
 		case ker3d_sum_square_weights:
@@ -232,13 +233,23 @@ bool FP(const astra::CProjectionGeometry3D* pProjGeom, MemHandle3D projData, con
 	} else if (SConeProjection** pp = std::get_if<SConeProjection*>(&result)) {
 		SConeProjection* pConeProjs = *pp;
 		switch (projKernel) {
-		case ker3d_default:
+		case ker3d_default: case ker3d_matched_bp:
 			ok &= ConeFP(volData.d->ptr, projData.d->ptr, dims, pConeProjs, params);
 			break;
 		default:
 			ok = false;
 		}
 		delete[] pConeProjs;
+	} else if (SCylConeProjection** pp = std::get_if<SCylConeProjection*>(&result)) {
+		SCylConeProjection* pCylConeProjs = *pp;
+		switch (projKernel) {
+		case ker3d_default: case ker3d_matched_bp:
+			ok &= ConeCylFP(volData.d->ptr, projData.d->ptr, dims, pCylConeProjs, params);
+			break;
+		default:
+			ok = false;
+		}
+		delete[] pCylConeProjs;
 	} else
 		ok = false;
 
@@ -278,6 +289,22 @@ bool BP(const astra::CProjectionGeometry3D* pProjGeom, MemHandle3D projData, con
 		else
 			ok = ConeBP(volData.d->ptr, projData.d->ptr, dims, pConeProjs, params);
 		delete[] pConeProjs;
+	} else if (SCylConeProjection** pp = std::get_if<SCylConeProjection*>(&result)) {
+		SCylConeProjection* pCylConeProjs = *pp;
+		if (projKernel == ker3d_default) {
+			if (projData.d->arr)
+				ok = ConeCylBP_Array(volData.d->ptr, projData.d->arr, dims, pCylConeProjs, params);
+			else
+				ok = ConeCylBP(volData.d->ptr, projData.d->ptr, dims, pCylConeProjs, params);
+		} else if (projKernel == ker3d_matched_bp) {
+			if (projData.d->arr)
+				ok = ConeCylBP_Array_matched(volData.d->ptr, projData.d->arr, dims, pCylConeProjs, params);
+			else
+				ok = ConeCylBP_matched(volData.d->ptr, projData.d->ptr, dims, pCylConeProjs, params);
+		} else {
+			ok = false;
+		}
+		delete[] pCylConeProjs;
 	} else
 		ok = false;
 
@@ -307,6 +334,10 @@ bool FDK(const astra::CProjectionGeometry3D* pProjGeom, MemHandle3D projData, co
 		ok = FDK(volData.d->ptr, projData.d->ptr, pConeProjs, dims, params, bShortScan, pfFilter);
 		delete[] pConeProjs;
 		return ok;
+	} else if (SCylConeProjection** pp = std::get_if<SCylConeProjection*>(&result)) {
+		SCylConeProjection* pCylConeProjs = *pp;
+		delete[] pCylConeProjs;
+		return false;
 	} else
 		return false;
 }

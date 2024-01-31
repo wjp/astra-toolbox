@@ -48,9 +48,6 @@ class CFloat32ProjectionData3DGPU;
 class AstraSIRT3d_internal;
 
 using astraCUDA3d::Cuda3DProjectionKernel;
-using astraCUDA3d::ker3d_default;
-using astraCUDA3d::ker3d_sum_square_weights;
-
 
 class _AstraExport AstraSIRT3d {
 public:
@@ -280,7 +277,7 @@ bool convertAstraGeometry_dims(const CVolumeGeometry3D* pVolGeom,
                                const CProjectionGeometry3D* pProjGeom,
                                astraCUDA3d::SDimensions3D& dims);
 
-std::variant<SPar3DProjection*, SConeProjection*, bool>
+std::variant<SPar3DProjection*, SConeProjection*, SCylConeProjection*, bool>
 convertAstraGeometry(const CVolumeGeometry3D* pVolGeom,
                           const CProjectionGeometry3D* pProjGeom,
                           astraCUDA3d::SProjectorParams3D& params);

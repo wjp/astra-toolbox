@@ -492,6 +492,7 @@ bool ConeFP_Array_internal(cudaPitchedPtr D_projData,
 				// printf("angle block: %d to %d, %d (%dx%d, %dx%d)\n", blockStart, blockEnd, blockDirection, dimGrid.x, dimGrid.y, dimBlock.x, dimBlock.y);
 
 				switch (params.ker) {
+				case ker3d_matched_bp:
 				case ker3d_sum_square_weights:
 					// Unsupported (TODO: warn)
 					return false;

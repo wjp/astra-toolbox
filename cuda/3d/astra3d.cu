@@ -41,6 +41,7 @@ along with the ASTRA Toolbox. If not, see <http://www.gnu.org/licenses/>.
 #include "astra/ParallelVecProjectionGeometry3D.h"
 #include "astra/ConeProjectionGeometry3D.h"
 #include "astra/ConeVecProjectionGeometry3D.h"
+#include "astra/CylConeVecProjectionGeometry3D.h"
 #include "astra/VolumeGeometry3D.h"
 #include "astra/Float32ProjectionData3DGPU.h"
 #include "astra/Logging.h"
@@ -243,8 +244,29 @@ bool convertAstraGeometry(const CVolumeGeometry3D* pVolGeom,
 	return ok;
 }
 
+bool convertAstraGeometry(const CVolumeGeometry3D* pVolGeom,
+                          const CCylConeVecProjectionGeometry3D* pProjGeom,
+                          SCylConeProjection*& pProjs, SProjectorParams3D& params)
+{
+	assert(pVolGeom);
+	assert(pProjGeom);
+	assert(pProjGeom->getProjectionVectors());
 
-std::variant<SPar3DProjection*, SConeProjection*, bool>
+	int nth = pProjGeom->getProjectionCount();
+
+	pProjs = new SCylConeProjection[nth];
+	for (int i = 0; i < nth; ++i)
+		pProjs[i] = pProjGeom->getProjectionVectors()[i];
+
+	bool ok;
+
+	ok = convertAstraGeometry_unscaled_internal(pVolGeom, nth, pProjs, params);
+
+	return ok;
+}
+
+
+std::variant<SPar3DProjection*, SConeProjection*, SCylConeProjection*, bool>
 convertAstraGeometry(const CVolumeGeometry3D* pVolGeom,
                      const CProjectionGeometry3D* pProjGeom,
                      SProjectorParams3D& params)
@@ -253,6 +275,7 @@ convertAstraGeometry(const CVolumeGeometry3D* pVolGeom,
 	const CParallelProjectionGeometry3D* par3dgeom = dynamic_cast<const CParallelProjectionGeometry3D*>(pProjGeom);
 	const CParallelVecProjectionGeometry3D* parvec3dgeom = dynamic_cast<const CParallelVecProjectionGeometry3D*>(pProjGeom);
 	const CConeVecProjectionGeometry3D* conevec3dgeom = dynamic_cast<const CConeVecProjectionGeometry3D*>(pProjGeom);
+	const CCylConeVecProjectionGeometry3D* cylconevec3dgeom = dynamic_cast<const CCylConeVecProjectionGeometry3D*>(pProjGeom);
 
 	if (conegeom) {
 		SConeProjection *pConeProjs = 0;
@@ -262,6 +285,10 @@ convertAstraGeometry(const CVolumeGeometry3D* pVolGeom,
 		SConeProjection *pConeProjs = 0;
 		if (convertAstraGeometry(pVolGeom, conevec3dgeom, pConeProjs, params))
 			return pConeProjs;
+	} else if (cylconevec3dgeom) {
+		SCylConeProjection *pCylConeProjs = 0;
+		if (convertAstraGeometry(pVolGeom, cylconevec3dgeom, pCylConeProjs, params))
+			return pCylConeProjs;
 	} else if (par3dgeom) {
 		SPar3DProjection *pParProjs = 0;
 		if (convertAstraGeometry(pVolGeom, par3dgeom, pParProjs, params))
