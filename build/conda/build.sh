@@ -2,7 +2,7 @@
 
 set -e
 
-BRANCH=conda
+BRANCH=curvedconda
 URL=https://github.com/wjp/astra-toolbox
 
 echo "Cloning from ${URL}"
