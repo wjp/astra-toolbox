@@ -468,12 +468,6 @@ static bool testVolumeRange(const std::pair<double, double>& fullRange,
 
 CCompositeGeometryManager::CPart* CCompositeGeometryManager::CVolumePart::reduce(const CPart *_other)
 {
-#if 0
-	// HACK
-	const CProjectionPart *yy = dynamic_cast<const CProjectionPart *>(_other);
-	std::pair<double, double> xx = reduceProjectionVertical(pGeom, yy->pGeom);
-#endif
-
 	if (!canSplitAndReduce())
 		return clone();
 
