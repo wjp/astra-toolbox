@@ -8,9 +8,9 @@ cp build.sh $D
 V=2.1.3
 B=102
 
-podman run --rm -v $D:/out:z astra-build-deb9 /bin/bash /out/build.sh $V $B deb9 full
+#podman run --rm -v $D:/out:z astra-build-deb9 /bin/bash /out/build.sh $V $B deb9 full
 podman run --rm -v $D:/out:z astra-build-deb11 /bin/bash /out/build.sh $V $B deb11 full
-podman run --rm -v $D:/out:z astra-build-deb12 /bin/bash /out/build.sh $V $B deb12
+#podman run --rm -v $D:/out:z astra-build-deb12 /bin/bash /out/build.sh $V $B deb12
 
 rm -f $D/build.sh
 
