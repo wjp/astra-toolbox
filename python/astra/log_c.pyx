@@ -27,6 +27,7 @@
 # distutils: libraries = astra
 
 from libcpp.string cimport string
+import logging
 
 cdef extern from "astra/Logging.h" namespace "astra":
     cdef enum log_level:
@@ -40,6 +41,7 @@ cdef extern from "astra/Logging.h" namespace "astra::CLogger":
     void info(const char *sfile, int sline, const char *fmt, ...)
     void warn(const char *sfile, int sline, const char *fmt, ...)
     void error(const char *sfile, int sline, const char *fmt, ...)
+    void setOutputCallback(void (*)(int, const string &, int, const string &) noexcept)
     void setOutputScreen(int fd, log_level m_eLevel)
     void setOutputFile(const char *filename, log_level m_eLevel)
     void enable()
@@ -51,6 +53,22 @@ cdef extern from "astra/Logging.h" namespace "astra::CLogger":
     void setFormatFile(const char *fmt)
     void setFormatScreen(const char *fmt)
     string getLastErrMsg()
+
+cdef void log_callback(int level, const string &file, int line, const string &msg) noexcept:
+    strmsg = msg.decode('ascii')
+    if level == LOG_DEBUG:
+        logging.debug(strmsg)
+    elif level == LOG_INFO:
+        logging.info(strmsg)
+    elif level == LOG_WARN:
+        logging.warning(strmsg)
+    elif level == LOG_ERROR:
+        logging.error(strmsg)
+    else:
+        pass
+
+setOutputCallback(log_callback)
+disableScreen()
 
 def log_debug(sfile, sline, message):
     sfile = sfile.encode('ascii')

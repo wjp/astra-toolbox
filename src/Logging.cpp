@@ -67,71 +67,104 @@ void CLogger::disable()
 	disableFile();
 }
 
+void CLogger::setOutputCallback(callback_t cb)
+{
+	m_bEnabledCallback = true;
+	m_callback = cb;
+}
+
+void CLogger::_callCallback(log_level lvl, const char *sfile, int sline, const char *fmt, va_list ap)
+{
+	std::string msg = StringUtil::vformat(fmt, ap);
+	m_callback(lvl,sfile,sline,msg);
+}
+
+
 void CLogger::debug(const char *sfile, int sline, const char *fmt, ...)
 {
 	_assureIsInitialized();
-	va_list ap, apf;
+	va_list ap;
+	if(m_bEnabledCallback){
+		va_start(ap, fmt);
+		_callCallback(LOG_DEBUG, sfile, sline, fmt, ap);
+		va_end(ap);
+	}
 	if(m_bEnabledScreen){
 		va_start(ap, fmt);
 		clog_debug(sfile,sline,0,fmt,ap);
 		va_end(ap);
 	}
 	if(m_bEnabledFile && m_bFileProvided){
-		va_start(apf, fmt);
-		clog_debug(sfile,sline,1,fmt,apf);
-		va_end(apf);
+		va_start(ap, fmt);
+		clog_debug(sfile,sline,1,fmt,ap);
+		va_end(ap);
 	}
 }
 
 void CLogger::info(const char *sfile, int sline, const char *fmt, ...)
 {
 	_assureIsInitialized();
-	va_list ap, apf;
+	va_list ap;
+	if(m_bEnabledCallback){
+		va_start(ap, fmt);
+		_callCallback(LOG_INFO, sfile, sline, fmt, ap);
+		va_end(ap);
+	}
 	if(m_bEnabledScreen){
 		va_start(ap, fmt);
 		clog_info(sfile,sline,0,fmt,ap);
 		va_end(ap);
 	}
 	if(m_bEnabledFile && m_bFileProvided){
-		va_start(apf, fmt);
-		clog_info(sfile,sline,1,fmt,apf);
-		va_end(apf);
+		va_start(ap, fmt);
+		clog_info(sfile,sline,1,fmt,ap);
+		va_end(ap);
 	}
 }
 
 void CLogger::warn(const char *sfile, int sline, const char *fmt, ...)
 {
 	_assureIsInitialized();
-	va_list ap, apf;
+	va_list ap;
+	if(m_bEnabledCallback){
+		va_start(ap, fmt);
+		_callCallback(LOG_WARN, sfile, sline, fmt, ap);
+		va_end(ap);
+	}
 	if(m_bEnabledScreen){
 		va_start(ap, fmt);
 		clog_warn(sfile,sline,0,fmt,ap);
 		va_end(ap);
 	}
 	if(m_bEnabledFile && m_bFileProvided){
-		va_start(apf, fmt);
-		clog_warn(sfile,sline,1,fmt,apf);
-		va_end(apf);
+		va_start(ap, fmt);
+		clog_warn(sfile,sline,1,fmt,ap);
+		va_end(ap);
 	}
 }
 
 void CLogger::error(const char *sfile, int sline, const char *fmt, ...)
 {
 	_assureIsInitialized();
-	va_list ap, apf, apl;
+	va_list ap;
+	if(m_bEnabledCallback){
+		va_start(ap, fmt);
+		_callCallback(LOG_ERROR, sfile, sline, fmt, ap);
+		va_end(ap);
+	}
 	if(m_bEnabledScreen){
 		va_start(ap, fmt);
 		clog_error(sfile,sline,0,fmt,ap);
 		va_end(ap);
 	}
 	if(m_bEnabledFile && m_bFileProvided){
-		va_start(apf, fmt);
-		clog_error(sfile,sline,1,fmt,apf);
-		va_end(apf);
+		va_start(ap, fmt);
+		clog_error(sfile,sline,1,fmt,ap);
+		va_end(ap);
 	}
-	va_start(apl, fmt);
-	_setLastErrMsg(sfile,sline,fmt,apl);
-	va_end(apl);
+	va_start(ap, fmt);
+	_setLastErrMsg(sfile,sline,fmt,ap);
+	va_end(ap);
 }
 
 void CLogger::_setLevel(int id, log_level m_eLevel)
@@ -221,8 +254,10 @@ bool CLogger::setCallbackScreen(void (*cb)(const char *msg, size_t len)){
 	return clog_set_cb(0,cb)==0;
 }
 
+bool CLogger::m_bEnabledCallback = false;
 bool CLogger::m_bEnabledScreen = true;
 bool CLogger::m_bEnabledFile = true;
 bool CLogger::m_bFileProvided = false;
 bool CLogger::m_bInitialized = false;
 std::string CLogger::m_sLastErrMsg;
+CLogger::callback_t CLogger::m_callback = nullptr;
