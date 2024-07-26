@@ -35,6 +35,36 @@ namespace astra {
 
 namespace StringUtil {
 
+std::string vformat(const char *fmt, va_list ap)
+{
+	va_list apc;
+	char buf[1024];
+
+	va_copy(apc, ap);
+	int len = vsnprintf(buf, 1023, fmt, apc);
+	va_end(apc);
+
+	if (len <= 1023)
+		return buf;
+
+	char *dynbuf = new char[len + 1];
+	va_copy(apc, ap);
+	vsnprintf(dynbuf, len, fmt, apc);
+	va_end(apc);
+	std::string ret = dynbuf;
+	delete[] dynbuf;
+	return ret;
+}
+
+std::string format(const char *fmt, ...)
+{
+	va_list ap;
+	va_start(ap, fmt);
+	std::string ret = vformat(fmt, ap);
+	va_end(ap);
+	return ret;
+}
+
 int stringToInt(const std::string& s)
 {
 	int i;
