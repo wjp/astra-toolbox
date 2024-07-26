@@ -48,16 +48,22 @@ enum log_level {
 
 class _AstraExport CLogger
 {
+public:
+	typedef void (*callback_t)(int, const std::string &, int, const std::string &);
+private:
 	CLogger();
   ~CLogger();
   static bool m_bEnabledFile;
   static bool m_bEnabledScreen;
+  static bool m_bEnabledCallback;
   static bool m_bFileProvided;
   static bool m_bInitialized;
   static std::string m_sLastErrMsg;
+  static callback_t m_callback;
   static void _assureIsInitialized();
   static void _setLastErrMsg(const char *sfile, int sline, const char *fmt, va_list ap);
   static void _setLevel(int id, log_level m_eLevel);
+  static void _callCallback(log_level m_eLevel, const char *sfile, int sline, const char *fmt, va_list ap);
 
 public:
 
@@ -87,6 +93,8 @@ public:
 	  ATTRIBUTE_FORMAT(printf, 3, 4);
   static void error(const char *sfile, int sline, const char *fmt, ...)
 	  ATTRIBUTE_FORMAT(printf, 3, 4);
+
+  static void setOutputCallback(callback_t cb);
 
   /**
 	 * Sets the file to log to, with logging level.
