@@ -174,8 +174,8 @@ template class CData3DObject<CProjectionGeometry3D>;
 template class CData3DObject<CVolumeGeometry3D>;
 
 // Utility functions that create CDataMemory and Data3D objects together
-CFloat32ProjectionData3D *createCFloat32ProjectionData3DMemory(const CProjectionGeometry3D *geom);
-CFloat32VolumeData3D *createCFloat32VolumeData3DMemory(const CVolumeGeometry3D *geom);
+_AstraExport CFloat32ProjectionData3D *createCFloat32ProjectionData3DMemory(const CProjectionGeometry3D *geom);
+_AstraExport CFloat32VolumeData3D *createCFloat32VolumeData3DMemory(const CVolumeGeometry3D *geom);
 
 } // end namespace astra
 
