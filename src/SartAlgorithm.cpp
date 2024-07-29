@@ -159,6 +159,7 @@ bool CSartAlgorithm::initialize(const Config& _cfg)
 	}
 
 	if (!CR.getOptionNumerical("Relaxation", m_fLambda, 1.0f))
+		return false;
 
 	// create data objects
 	m_pTotalRayLength = new CFloat32ProjectionData2D(m_pProjector->getProjectionGeometry());
