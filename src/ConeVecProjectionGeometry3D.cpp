@@ -107,9 +107,9 @@ bool CConeVecProjectionGeometry3D::initializeAngles(const Config& _cfg)
 
 		// The backend code currently expects the corner of the detector, while
 		// the matlab interface supplies the center
-		p.fDetSX = data[12*i +  3] - 0.5f * m_iDetectorRowCount * p.fDetVX - 0.5f * m_iDetectorColCount * p.fDetUX;
-		p.fDetSY = data[12*i +  4] - 0.5f * m_iDetectorRowCount * p.fDetVY - 0.5f * m_iDetectorColCount * p.fDetUY;
-		p.fDetSZ = data[12*i +  5] - 0.5f * m_iDetectorRowCount * p.fDetVZ - 0.5f * m_iDetectorColCount * p.fDetUZ;
+		p.fDetSX = data[12*i +  3] - 0.5 * m_iDetectorRowCount * p.fDetVX - 0.5 * m_iDetectorColCount * p.fDetUX;
+		p.fDetSY = data[12*i +  4] - 0.5 * m_iDetectorRowCount * p.fDetVY - 0.5 * m_iDetectorColCount * p.fDetUY;
+		p.fDetSZ = data[12*i +  5] - 0.5 * m_iDetectorRowCount * p.fDetVZ - 0.5 * m_iDetectorColCount * p.fDetUZ;
 	}
 
 	return true;
@@ -238,8 +238,8 @@ void CConeVecProjectionGeometry3D::projectPoint(double fX, double fY, double fZ,
 
 	// The -0.5f shifts from corner to center of detector pixels
 	double fD = fDX*fX + fDY*fY + fDZ*fZ + fDC;
-	fU = (fUX*fX + fUY*fY + fUZ*fZ + fUC) / fD - 0.5f;
-	fV = (fVX*fX + fVY*fY + fVZ*fZ + fVC) / fD - 0.5f;
+	fU = (fUX*fX + fUY*fY + fUZ*fZ + fUC) / fD - 0.5;
+	fV = (fVX*fX + fVY*fY + fVZ*fZ + fVC) / fD - 0.5;
 }
 
 

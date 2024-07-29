@@ -131,8 +131,8 @@ bool CParallelVecProjectionGeometry2D::initializeAngles(const Config& _cfg)
 
 		// The backend code currently expects the corner of the detector, while
 		// the matlab interface supplies the center
-		p.fDetSX = data[6*i +  2] - 0.5f * m_iDetectorCount * p.fDetUX;
-		p.fDetSY = data[6*i +  3] - 0.5f * m_iDetectorCount * p.fDetUY;
+		p.fDetSX = data[6*i +  2] - 0.5 * m_iDetectorCount * p.fDetUX;
+		p.fDetSY = data[6*i +  3] - 0.5 * m_iDetectorCount * p.fDetUY;
 	}
 
 	return true;
