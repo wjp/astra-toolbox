@@ -22,8 +22,9 @@ astra.data3d.delete(pid)
 
 rec_single = W.reconstruct('FDK_CUDA', projdata_single)
 
-for x in ( [0,1], [0,1,2], [0,1,2,3] ):
-    astra.set_gpu_index(x)
+for m in ( 0, 100000000 ):
+  for x in ( [0,1], [0,1,2], [0,1,2,3] ):
+    astra.set_gpu_index(x, memory=m)
 
     pid, projdata_multi = astra.create_sino3d_gpu(phantom_id, pg, vg, returnData=True)
     astra.data3d.delete(pid)
