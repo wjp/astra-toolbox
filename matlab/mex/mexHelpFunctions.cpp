@@ -144,7 +144,7 @@ XMLConfig* structToConfig(string rootname, const mxArray* pStruct)
 	}
 
 	// create the document
-	XMLConfig* cfg = new Config(rootname);
+	XMLConfig* cfg = new XMLConfig(rootname);
 
 	// read the struct
 	bool ret = structToXMLNode(cfg->self, pStruct);
