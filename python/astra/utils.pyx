@@ -192,10 +192,15 @@ cdef cppclass PythonConfig(Config):
             return False
         return True
 
-    bool getSubConfig(const string& name, Config *&_cfg, string& type) const:
+    bool getSubConfig(const string& name, Config *&_cfg, string& _type) const:
         n = wrap_from_bytes(name)
-        # TODO
-        return False
+        d = m_dict[n]
+        (&_cfg)[0] = new PythonConfig(d)
+        if 'type' in d:
+            (&_type)[0] = wrap_to_bytes(d['type'])
+        else:
+            (&_type)[0] = b''
+        return True
 
     list[string] checkUnparsed(const ConfigCheckData &data) const:
         return list[string]()
