@@ -60,6 +60,7 @@ protected:
 	virtual bool has(const std::string &name) const = 0;
 	virtual bool hasOption(const std::string &name) const = 0;
 
+	// get/getOptions assume the key exists, so caller must call has/hasOption
 	virtual bool getSubConfig(const std::string &name, Config *&_cfg, std::string &type) const = 0;
 
 	virtual bool getInt(const std::string &name, int &iValue) const = 0;

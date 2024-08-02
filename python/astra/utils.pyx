@@ -58,6 +58,141 @@ cdef extern from "Python.h":
 cdef extern from *:
     XMLConfig* dynamic_cast_XMLConfig "dynamic_cast<astra::XMLConfig*>" (Config*)
 
+cdef cppclass PythonConfig(Config):
+    dict m_dict
+    dict m_options
+
+    # TODO: check what happens with python exceptions here
+    __init__(dict d):
+        this.m_dict = d
+        this.m_options = { }
+        if "option" in d:
+            m_options.update(d["option"])
+        if "options" in d:
+            m_options.update(d["options"])
+        if "Option" in d:
+            m_options.update(d["Option"])
+        if "Options" in d:
+            m_options.update(d["Options"])
+
+    bool has(const string& name) const:
+        return object(name) in m_dict
+    bool hasOption(const string& name) const:
+        return object(name) in m_options
+
+    bool getInt(const string& name, int &iValue) const:
+        n = object(name)
+        try:
+            (&iValue)[0] = m_dict[n]
+        except:
+            return False
+        return True
+
+    bool getFloat(const string& name, float &fValue) const:
+        n = object(name)
+        try:
+            (&fValue)[0] = m_dict[n]
+        except:
+            return False
+        return True
+
+    bool getString(const string& name, string &sValue) const:
+        n = object(name)
+        try:
+            (&sValue)[0] = m_dict[n]
+        except:
+            return False
+        return True
+
+    bool getDoubleArray(const string& name, vector[double] &values) const:
+        n = object(name)
+        d = m_dict[n]
+        if isinstance(d, np.ndarray):
+            d = d.reshape(-1)
+        values.clear()
+        try:
+            values.reserve(len(d))
+            for i in d:
+                values.push_back(i)
+        except:
+            return False
+        return True
+
+    bool getIntArray(const string& name, vector[int] &values) const:
+        n = object(name)
+        d = m_dict[n]
+        if isinstance(d, np.ndarray):
+            d = d.reshape(-1)
+        values.clear()
+        try:
+            values.reserve(len(d))
+            for i in d:
+                values.push_back(i)
+        except:
+            return False
+        return True
+
+    bool getOptionFloat(const string& name, float &fValue) const:
+        n = object(name)
+        try:
+            (&fValue)[0] = m_options[n]
+        except:
+            return False
+        return True
+
+    bool getOptionInt(const string& name, int &iValue) const:
+        n = object(name)
+        try:
+            (&iValue)[0] = m_options[n]
+        except:
+            return False
+        return True
+
+    bool getOptionUInt(const string& name, unsigned int &iValue) const:
+        n = object(name)
+        try:
+            (&iValue)[0] = m_options[n]
+        except:
+            return False
+        return True
+
+    bool getOptionBool(const string& name, bool &bValue) const:
+        n = object(name)
+        try:
+            (&bValue)[0] = m_options[n]
+        except:
+            return False
+        return True
+
+    bool getOptionString(const string& name, string &sValue) const:
+        n = object(name)
+        try:
+            (&sValue)[0] = m_options[n]
+        except:
+            return False
+        return True
+
+    bool getOptionIntArray(const string& name, vector[int] &values) const:
+        n = object(name)
+        d = m_options[n]
+        if isinstance(d, np.ndarray):
+            d = d.reshape(-1)
+        values.clear()
+        try:
+            values.reserve(len(d))
+            for i in d:
+                values.push_back(i)
+        except:
+            return False
+        return True
+
+
+
+
+
+
+
+
 
 
 include "config.pxi"
