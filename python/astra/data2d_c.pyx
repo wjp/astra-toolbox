@@ -78,7 +78,7 @@ def delete(ids):
 
 
 def create(datatype, geometry, data=None, link=False):
-    cdef XMLConfig *cfg
+    cdef Config *cfg
     cdef CVolumeGeometry2D * pGeometry
     cdef unique_ptr[CProjectionGeometry2D] ppGeometry
     cdef CFloat32Data2D * pDataObject2D
@@ -106,7 +106,7 @@ def create(datatype, geometry, data=None, link=False):
         del pGeometry
     elif datatype == '-sino':
         cfg = utils.dictToConfig(b'ProjectionGeometry', geometry)
-        tpe = cfg.self.getAttribute(b'type')
+        tpe = geometry['type']
         ppGeometry = constructProjectionGeometry2D(tpe)
         if not ppGeometry:
             raise ValueError("'{}' is not a valid 2D geometry type".format(tpe))
@@ -205,7 +205,7 @@ def check_compatible(i, proj_id):
         raise AstraError("Not a known data object type")
 
 def change_geometry(i, geom):
-    cdef XMLConfig *cfg
+    cdef Config *cfg
     cdef CVolumeGeometry2D * pGeometry
     cdef unique_ptr[CProjectionGeometry2D] ppGeometry
     cdef CFloat32Data2D * pDataObject = getObject(i)
@@ -214,7 +214,7 @@ def change_geometry(i, geom):
     if pDataObject.getType() == TWOPROJECTION:
         pDataObject2 = <CFloat32ProjectionData2D * >pDataObject
         cfg = utils.dictToConfig(b'ProjectionGeometry', geom)
-        tpe = cfg.self.getAttribute(b'type')
+        tpe = geom['type']
         ppGeometry = constructProjectionGeometry2D(tpe)
         if not ppGeometry:
             raise ValueError("'{}' is not a valid 2D geometry type".format(tpe))

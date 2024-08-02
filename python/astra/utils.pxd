@@ -33,7 +33,7 @@ from .PyXMLDocument cimport XMLNode
 from .PyIncludes cimport *
 
 cdef configToDict(Config *)
-cdef XMLConfig * dictToConfig(string rootname, dc) except NULL
+cdef Config * dictToConfig(string rootname, dc) except NULL
 cdef CFloat32VolumeData3D* linkVolFromGeometry(const CVolumeGeometry3D &pGeometry, data) except NULL
 cdef CFloat32ProjectionData3D* linkProjFromGeometry(const CProjectionGeometry3D &pGeometry, data) except NULL
 cdef unique_ptr[CProjectionGeometry3D] createProjectionGeometry3D(geometry) except *
