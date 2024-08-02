@@ -62,6 +62,12 @@ cdef extern from "astra/Config.h" namespace "astra":
     cdef cppclass ConfigCheckData:
         pass
 
+
+# TODO:
+# checkUnparsed
+# returning configs from C++ back to Python as dicts
+# PluginAlgorithm should be able to accept all types of Config
+
 cdef cppclass PythonConfig(Config):
     dict m_dict
     dict m_options
