@@ -216,13 +216,10 @@ cdef cppclass PythonConfig(Config):
 include "config.pxi"
 
 
-cdef XMLConfig * dictToConfig(string rootname, dc) except NULL:
-    cdef XMLConfig * cfg = new XMLConfig(rootname)
-    try:
-        readDict(cfg.self, dc)
-    except:
-        del cfg
-        raise
+cdef Config * dictToConfig(string rootname, dc) except NULL:
+    # TODO: Is it okay to drop the root name?
+    # TODO: exception handling?
+    cdef PythonConfig * cfg = new PythonConfig(dc)
     return cfg
 
 def convert_item(item):
@@ -462,11 +459,11 @@ cdef CFloat32ProjectionData3D* linkProjFromGeometry(CProjectionGeometry3D *pGeom
     return pDataObject3D
 
 cdef CProjectionGeometry3D* createProjectionGeometry3D(geometry) except NULL:
-    cdef XMLConfig *cfg
+    cdef Config *cfg
     cdef CProjectionGeometry3D * pGeometry
 
     cfg = dictToConfig(b'ProjectionGeometry', geometry)
-    tpe = wrap_from_bytes(cfg.self.getAttribute(b'type'))
+    tpe = geometry['type']
     if (tpe == "parallel3d"):
         pGeometry = <CProjectionGeometry3D*> new CParallelProjectionGeometry3D();
     elif (tpe == "parallel3d_vec"):

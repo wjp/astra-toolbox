@@ -30,7 +30,7 @@ from __future__ import print_function
 from .PyIncludes cimport *
 
 from . cimport utils
-from .utils import wrap_from_bytes
+from .utils import wrap_from_bytes, wrap_to_bytes
 from .log import AstraError
 
 from . cimport PyProjector2DFactory
@@ -56,9 +56,9 @@ IF HAVE_CUDA:
 
 
 def create(config):
-    cdef XMLConfig * cfg = utils.dictToConfig(b'Projector2D', config)
+    cdef Config * cfg = utils.dictToConfig(b'Projector2D', config)
     cdef CProjector2D * proj
-    proj = PyProjector2DFactory.getSingletonPtr().create(cfg.self.getAttribute(b'type'))
+    proj = PyProjector2DFactory.getSingletonPtr().create(wrap_to_bytes(config["type"]))
     if proj == NULL:
         del cfg
         raise AstraError("Unknown Projector2D type")
