@@ -79,7 +79,7 @@ def delete(ids):
 
 
 def create(datatype, geometry, data=None, link=False):
-    cdef XMLConfig *cfg
+    cdef Config *cfg
     cdef CVolumeGeometry2D * pGeometry
     cdef CProjectionGeometry2D * ppGeometry
     cdef CFloat32Data2D * pDataObject2D
@@ -107,7 +107,7 @@ def create(datatype, geometry, data=None, link=False):
         del pGeometry
     elif datatype == '-sino':
         cfg = utils.dictToConfig(b'ProjectionGeometry', geometry)
-        tpe = wrap_from_bytes(cfg.self.getAttribute(b'type'))
+        tpe = geometry['type']
         if (tpe == 'sparse_matrix'):
             ppGeometry = <CProjectionGeometry2D * >new CSparseMatrixProjectionGeometry2D()
         elif (tpe == 'fanflat'):
@@ -217,7 +217,7 @@ def check_compatible(i, proj_id):
         raise AstraError("Not a known data object type")
 
 def change_geometry(i, geom):
-    cdef XMLConfig *cfg
+    cdef Config *cfg
     cdef CVolumeGeometry2D * pGeometry
     cdef CProjectionGeometry2D * ppGeometry
     cdef CFloat32Data2D * pDataObject = getObject(i)
@@ -226,7 +226,7 @@ def change_geometry(i, geom):
     if pDataObject.getType() == TWOPROJECTION:
         pDataObject2 = <CFloat32ProjectionData2D * >pDataObject
         cfg = utils.dictToConfig(b'ProjectionGeometry', geom)
-        tpe = wrap_from_bytes(cfg.self.getAttribute(b'type'))
+        tpe = geom['type']
         if (tpe == 'sparse_matrix'):
             ppGeometry = <CProjectionGeometry2D * >new CSparseMatrixProjectionGeometry2D()
         elif (tpe == 'fanflat'):

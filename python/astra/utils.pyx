@@ -33,6 +33,7 @@ import builtins
 from libcpp.string cimport string
 from libcpp.vector cimport vector
 from libcpp.list cimport list
+from libcpp.set cimport set
 from cython.operator cimport dereference as deref, preincrement as inc
 
 from . cimport PyXMLDocument
@@ -53,18 +54,199 @@ cdef extern from "Python.h":
 cdef extern from *:
     XMLConfig* dynamic_cast_XMLConfig "dynamic_cast<astra::XMLConfig*>" (Config*)
 
+cdef extern from "astra/Config.h" namespace "astra":
+    cdef cppclass ConfigCheckData:
+        set[string] parsedNodes
+        set[string] parsedOptions
+
+
+# TODO:
+# returning configs from C++ back to Python as dicts
+# PluginAlgorithm should be able to accept all types of Config
+
+cdef cppclass PythonConfig(Config):
+    dict m_dict
+    dict m_options
+
+    __init__(dict d, dict options):
+        this.m_dict = d
+        this.m_options = options
+    bool has(const string& name) const:
+        n = wrap_from_bytes(name)
+        return n in m_dict
+    bool hasOption(const string& name) const:
+        n = wrap_from_bytes(name)
+        return n in m_options
+
+    bool getInt(const string& name, int &iValue) const:
+        n = wrap_from_bytes(name)
+        try:
+            (&iValue)[0] = m_dict[n]
+        except:
+            return False
+        return True
+
+    bool getFloat(const string& name, float &fValue) const:
+        n = wrap_from_bytes(name)
+        try:
+            (&fValue)[0] = m_dict[n]
+        except:
+            return False
+        return True
+
+    bool getString(const string& name, string &sValue) const:
+        n = wrap_from_bytes(name)
+        try:
+            (&sValue)[0] = m_dict[n]
+        except:
+            return False
+        return True
+
+    bool getDoubleArray(const string& name, vector[double] &values) const:
+        n = wrap_from_bytes(name)
+        try:
+            d = m_dict[n]
+            if isinstance(d, np.ndarray):
+                d = d.reshape(-1)
+            values.clear()
+            values.reserve(len(d))
+            for i in d:
+                values.push_back(i)
+        except:
+            return False
+        return True
+
+    bool getIntArray(const string& name, vector[int] &values) const:
+        n = wrap_from_bytes(name)
+        try:
+            d = m_dict[n]
+            if isinstance(d, np.ndarray):
+                d = d.reshape(-1)
+            values.clear()
+            values.reserve(len(d))
+            for i in d:
+                values.push_back(i)
+        except:
+            return False
+        return True
+
+    bool getOptionFloat(const string& name, float &fValue) const:
+        n = wrap_from_bytes(name)
+        try:
+            (&fValue)[0] = m_options[n]
+        except:
+            return False
+        return True
+
+    bool getOptionInt(const string& name, int &iValue) const:
+        n = wrap_from_bytes(name)
+        try:
+            (&iValue)[0] = m_options[n]
+        except:
+            return False
+        return True
+
+    bool getOptionUInt(const string& name, unsigned int &iValue) const:
+        n = wrap_from_bytes(name)
+        try:
+            (&iValue)[0] = m_options[n]
+        except:
+            return False
+        return True
+
+    bool getOptionBool(const string& name, bool &bValue) const:
+        n = wrap_from_bytes(name)
+        try:
+            (&bValue)[0] = m_options[n]
+        except:
+            return False
+        return True
+
+    bool getOptionString(const string& name, string &sValue) const:
+        n = wrap_from_bytes(name)
+        try:
+            (&sValue)[0] = m_options[n]
+        except:
+            return False
+        return True
+
+    bool getOptionIntArray(const string& name, vector[int] &values) const:
+        n = wrap_from_bytes(name)
+        try:
+            d = m_options[n]
+            if isinstance(d, np.ndarray):
+                d = d.reshape(-1)
+            values.clear()
+            values.reserve(len(d))
+            for i in d:
+                values.push_back(i)
+        except:
+            return False
+        return True
+
+    bool getSubConfig(const string& name, Config *&_cfg, string& _type) const:
+        n = wrap_from_bytes(name)
+        try:
+            d = m_dict[n]
+            (&_cfg)[0] = dictToConfig(name, d)
+            if 'type' in d:
+                (&_type)[0] = wrap_to_bytes(d['type'])
+            else:
+                (&_type)[0] = b''
+        except:
+            return False
+        return True
+
+    list[string] checkUnparsed(const ConfigCheckData &data) const:
+        errors = list[string]()
+
+        for key in m_dict.keys():
+            if key == 'type':
+                # We're not monitoring the type attribute
+                continue
+            if key in ['option', 'Option', 'options', 'Options']:
+                # TODO: This handles name clashes differently than reading
+                options = m_dict[key]
+                for okey in options.keys():
+                    if data.parsedOptions.find(wrap_to_bytes(okey)) == data.parsedOptions.end():
+                        errors.push_back(wrap_to_bytes(okey))
+                continue
+
+            if data.parsedNodes.find(wrap_to_bytes(key)) == data.parsedNodes.end():
+                errors.push_back(wrap_to_bytes(key))
+
+
+        return errors
+
+
+
+
+
+
+
 
 
 include "config.pxi"
 
 
-cdef XMLConfig * dictToConfig(string rootname, dc) except NULL:
-    cdef XMLConfig * cfg = new XMLConfig(rootname)
-    try:
-        readDict(cfg.self, dc)
-    except:
-        del cfg
-        raise
+cdef Config * dictToConfig(string rootname, dc) except NULL:
+    # TODO: Is it okay to drop the root name?
+    # TODO: exception handling?
+    # TODO: warn with clashing keys?
+
+    # Do the config option parsing here to avoid potential exceptions in the
+    # PythonConfig constructor.
+    options = { }
+    if "option" in dc:
+        options.update(dc["option"])
+    if "options" in dc:
+        options.update(dc["options"])
+    if "Option" in dc:
+        options.update(dc["Option"])
+    if "Options" in dc:
+        options.update(dc["Options"])
+
+    cdef PythonConfig * cfg = new PythonConfig(dc, options)
     return cfg
 
 def convert_item(item):
@@ -290,11 +472,11 @@ cdef CFloat32ProjectionData3D* linkProjFromGeometry(CProjectionGeometry3D *pGeom
     return pDataObject3D
 
 cdef CProjectionGeometry3D* createProjectionGeometry3D(geometry) except NULL:
-    cdef XMLConfig *cfg
+    cdef Config *cfg
     cdef CProjectionGeometry3D * pGeometry
 
     cfg = dictToConfig(b'ProjectionGeometry', geometry)
-    tpe = wrap_from_bytes(cfg.self.getAttribute(b'type'))
+    tpe = geometry['type']
     if (tpe == "parallel3d"):
         pGeometry = <CProjectionGeometry3D*> new CParallelProjectionGeometry3D();
     elif (tpe == "parallel3d_vec"):
