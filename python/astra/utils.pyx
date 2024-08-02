@@ -67,18 +67,9 @@ cdef cppclass PythonConfig(Config):
     dict m_options
 
     # TODO: check what happens with python exceptions here
-    __init__(dict d):
+    __init__(dict d, dict options):
         this.m_dict = d
-        this.m_options = { }
-        if "option" in d:
-            m_options.update(d["option"])
-        if "options" in d:
-            m_options.update(d["options"])
-        if "Option" in d:
-            m_options.update(d["Option"])
-        if "Options" in d:
-            m_options.update(d["Options"])
-
+        this.m_options = options
     bool has(const string& name) const:
         n = wrap_from_bytes(name)
         return n in m_dict
@@ -112,11 +103,11 @@ cdef cppclass PythonConfig(Config):
 
     bool getDoubleArray(const string& name, vector[double] &values) const:
         n = wrap_from_bytes(name)
-        d = m_dict[n]
-        if isinstance(d, np.ndarray):
-            d = d.reshape(-1)
-        values.clear()
         try:
+            d = m_dict[n]
+            if isinstance(d, np.ndarray):
+                d = d.reshape(-1)
+            values.clear()
             values.reserve(len(d))
             for i in d:
                 values.push_back(i)
@@ -126,11 +117,11 @@ cdef cppclass PythonConfig(Config):
 
     bool getIntArray(const string& name, vector[int] &values) const:
         n = wrap_from_bytes(name)
-        d = m_dict[n]
-        if isinstance(d, np.ndarray):
-            d = d.reshape(-1)
-        values.clear()
         try:
+            d = m_dict[n]
+            if isinstance(d, np.ndarray):
+                d = d.reshape(-1)
+            values.clear()
             values.reserve(len(d))
             for i in d:
                 values.push_back(i)
@@ -180,11 +171,11 @@ cdef cppclass PythonConfig(Config):
 
     bool getOptionIntArray(const string& name, vector[int] &values) const:
         n = wrap_from_bytes(name)
-        d = m_options[n]
-        if isinstance(d, np.ndarray):
-            d = d.reshape(-1)
-        values.clear()
         try:
+            d = m_options[n]
+            if isinstance(d, np.ndarray):
+                d = d.reshape(-1)
+            values.clear()
             values.reserve(len(d))
             for i in d:
                 values.push_back(i)
@@ -194,15 +185,19 @@ cdef cppclass PythonConfig(Config):
 
     bool getSubConfig(const string& name, Config *&_cfg, string& _type) const:
         n = wrap_from_bytes(name)
-        d = m_dict[n]
-        (&_cfg)[0] = new PythonConfig(d)
-        if 'type' in d:
-            (&_type)[0] = wrap_to_bytes(d['type'])
-        else:
-            (&_type)[0] = b''
+        try:
+            d = m_dict[n]
+            (&_cfg)[0] = dictToConfig(name, d)
+            if 'type' in d:
+                (&_type)[0] = wrap_to_bytes(d['type'])
+            else:
+                (&_type)[0] = b''
+        except:
+            return False
         return True
 
     list[string] checkUnparsed(const ConfigCheckData &data) const:
+        # TODO
         return list[string]()
 
 
@@ -219,7 +214,21 @@ include "config.pxi"
 cdef Config * dictToConfig(string rootname, dc) except NULL:
     # TODO: Is it okay to drop the root name?
     # TODO: exception handling?
-    cdef PythonConfig * cfg = new PythonConfig(dc)
+    # TODO: warn with clashing keys?
+
+    # Do the config option parsing here to avoid potential exceptions in the
+    # PythonConfig constructor.
+    options = { }
+    if "option" in dc:
+        options.update(dc["option"])
+    if "options" in dc:
+        options.update(dc["options"])
+    if "Option" in dc:
+        options.update(dc["Option"])
+    if "Options" in dc:
+        options.update(dc["Options"])
+
+    cdef PythonConfig * cfg = new PythonConfig(dc, options)
     return cfg
 
 def convert_item(item):
