@@ -80,14 +80,14 @@ cdef cppclass PythonConfig(Config):
             m_options.update(d["Options"])
 
     bool has(const string& name) const:
-        n = bytes(name).decode('ascii')
+        n = wrap_from_bytes(name)
         return n in m_dict
     bool hasOption(const string& name) const:
-        n = bytes(name).decode('ascii')
+        n = wrap_from_bytes(name)
         return n in m_options
 
     bool getInt(const string& name, int &iValue) const:
-        n = bytes(name).decode('ascii')
+        n = wrap_from_bytes(name)
         try:
             (&iValue)[0] = m_dict[n]
         except:
@@ -95,7 +95,7 @@ cdef cppclass PythonConfig(Config):
         return True
 
     bool getFloat(const string& name, float &fValue) const:
-        n = bytes(name).decode('ascii')
+        n = wrap_from_bytes(name)
         try:
             (&fValue)[0] = m_dict[n]
         except:
@@ -103,7 +103,7 @@ cdef cppclass PythonConfig(Config):
         return True
 
     bool getString(const string& name, string &sValue) const:
-        n = bytes(name).decode('ascii')
+        n = wrap_from_bytes(name)
         try:
             (&sValue)[0] = m_dict[n]
         except:
@@ -111,7 +111,7 @@ cdef cppclass PythonConfig(Config):
         return True
 
     bool getDoubleArray(const string& name, vector[double] &values) const:
-        n = bytes(name).decode('ascii')
+        n = wrap_from_bytes(name)
         d = m_dict[n]
         if isinstance(d, np.ndarray):
             d = d.reshape(-1)
@@ -125,7 +125,7 @@ cdef cppclass PythonConfig(Config):
         return True
 
     bool getIntArray(const string& name, vector[int] &values) const:
-        n = bytes(name).decode('ascii')
+        n = wrap_from_bytes(name)
         d = m_dict[n]
         if isinstance(d, np.ndarray):
             d = d.reshape(-1)
@@ -139,7 +139,7 @@ cdef cppclass PythonConfig(Config):
         return True
 
     bool getOptionFloat(const string& name, float &fValue) const:
-        n = bytes(name).decode('ascii')
+        n = wrap_from_bytes(name)
         try:
             (&fValue)[0] = m_options[n]
         except:
@@ -147,7 +147,7 @@ cdef cppclass PythonConfig(Config):
         return True
 
     bool getOptionInt(const string& name, int &iValue) const:
-        n = bytes(name).decode('ascii')
+        n = wrap_from_bytes(name)
         try:
             (&iValue)[0] = m_options[n]
         except:
@@ -155,7 +155,7 @@ cdef cppclass PythonConfig(Config):
         return True
 
     bool getOptionUInt(const string& name, unsigned int &iValue) const:
-        n = bytes(name).decode('ascii')
+        n = wrap_from_bytes(name)
         try:
             (&iValue)[0] = m_options[n]
         except:
@@ -163,7 +163,7 @@ cdef cppclass PythonConfig(Config):
         return True
 
     bool getOptionBool(const string& name, bool &bValue) const:
-        n = bytes(name).decode('ascii')
+        n = wrap_from_bytes(name)
         try:
             (&bValue)[0] = m_options[n]
         except:
@@ -171,7 +171,7 @@ cdef cppclass PythonConfig(Config):
         return True
 
     bool getOptionString(const string& name, string &sValue) const:
-        n = bytes(name).decode('ascii')
+        n = wrap_from_bytes(name)
         try:
             (&sValue)[0] = m_options[n]
         except:
@@ -179,7 +179,7 @@ cdef cppclass PythonConfig(Config):
         return True
 
     bool getOptionIntArray(const string& name, vector[int] &values) const:
-        n = bytes(name).decode('ascii')
+        n = wrap_from_bytes(name)
         d = m_options[n]
         if isinstance(d, np.ndarray):
             d = d.reshape(-1)
@@ -193,7 +193,7 @@ cdef cppclass PythonConfig(Config):
         return True
 
     bool getSubConfig(const string& name, Config *&_cfg, string& type) const:
-        n = bytes(name).decode('ascii')
+        n = wrap_from_bytes(name)
         # TODO
         return False
 
