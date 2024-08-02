@@ -39,7 +39,7 @@ from . cimport PyXMLDocument
 from .PyXMLDocument cimport XMLDocument
 
 from . cimport utils
-from .utils import wrap_from_bytes
+from .utils import wrap_from_bytes, wrap_to_bytes
 
 from .log import AstraError
 
@@ -58,9 +58,9 @@ cdef extern from *:
 
 
 def create(config):
-    cdef XMLConfig * cfg = utils.dictToConfig(b'Algorithm', config)
+    cdef Config * cfg = utils.dictToConfig(b'Algorithm', config)
     cdef CAlgorithm * alg
-    alg = PyAlgorithmFactory.getSingletonPtr().create(cfg.self.getAttribute(b'type'))
+    alg = PyAlgorithmFactory.getSingletonPtr().create(wrap_to_bytes(config["type"]))
     if alg == NULL:
         del cfg
         raise AstraError("Unknown algorithm type")

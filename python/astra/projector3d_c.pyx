@@ -53,9 +53,9 @@ IF HAVE_CUDA:
 
 
 def create(config):
-    cdef XMLConfig * cfg = utils.dictToConfig(b'Projector3D', config)
+    cdef Config * cfg = utils.dictToConfig(b'Projector3D', config)
     cdef CProjector3D * proj
-    proj = PyProjector3DFactory.getSingletonPtr().create(cfg.self.getAttribute(b'type'))
+    proj = PyProjector3DFactory.getSingletonPtr().create(config["type"])
     if proj == NULL:
         del cfg
         raise AstraError("Unknown Projector3D type")
