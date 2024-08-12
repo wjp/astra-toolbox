@@ -30,6 +30,9 @@ along with the ASTRA Toolbox. If not, see <http://www.gnu.org/licenses/>.
 
 #include "dims3d.h"
 
+#include <variant>
+#include <vector>
+
 namespace astra {
 
 
@@ -278,11 +281,10 @@ bool convertAstraGeometry_dims(const CVolumeGeometry3D* pVolGeom,
                                const CProjectionGeometry3D* pProjGeom,
                                astraCUDA3d::SDimensions3D& dims);
 
-bool convertAstraGeometry(const CVolumeGeometry3D* pVolGeom,
-                          const CProjectionGeometry3D* pProjGeom,
-                          SPar3DProjection*& pParProjs,
-                          SConeProjection*& pConeProjs,
-                          astraCUDA3d::SProjectorParams3D& params);
+std::variant<std::monostate, std::vector<SPar3DProjection>, std::vector<SConeProjection>>
+convertAstraGeometry(const CVolumeGeometry3D* pVolGeom,
+                     const CProjectionGeometry3D* pProjGeom,
+                     astraCUDA3d::SProjectorParams3D& params);
 
 _AstraExport bool astraCudaFP(const float* pfVolume, float* pfProjections,
                       const CVolumeGeometry3D* pVolGeom,
