@@ -48,6 +48,7 @@ along with the ASTRA Toolbox. If not, see <http://www.gnu.org/licenses/>.
 #include <climits>
 #include <mutex>
 #include <thread>
+#include <atomic>
 
 
 namespace astra {
@@ -1333,10 +1334,19 @@ static bool doJob(const CCompositeGeometryManager::TJobSet::const_iterator& iter
 
 class WorkQueue {
 public:
-	WorkQueue(CCompositeGeometryManager::TJobSet &_jobs) : m_jobs(_jobs) {
+	WorkQueue(CCompositeGeometryManager::TJobSet &_jobs) : m_jobs(_jobs), failed(false) {
 		m_iter = m_jobs.begin();
 	}
+	void flag_failure() {
+		failed = true;
+	}
+	bool has_failed() const {
+		return failed;
+	}
 	bool receive(CCompositeGeometryManager::TJobSet::const_iterator &i) {
+		if (failed)
+			return false;
+
 		lock();
 
 		if (m_iter == m_jobs.end()) {
@@ -1360,6 +1370,7 @@ public:
 private:
 	CCompositeGeometryManager::TJobSet &m_jobs;
 	CCompositeGeometryManager::TJobSet::const_iterator m_iter;
+	std::atomic<bool> failed;
 	std::mutex m_mutex;
 };
 
@@ -1375,7 +1386,10 @@ void runEntries(WorkThreadInfo* info)
 	while (info->m_queue->receive(i)) {
 		ASTRA_DEBUG("Running block on GPU %d", info->m_iGPU);
 		astraCUDA3d::setGPUIndex(info->m_iGPU);
-		doJob(i);
+		if (!doJob(i)) {
+			ASTRA_DEBUG("Thread on GPU %d reporting failure", info->m_iGPU);
+			info->m_queue->flag_failure();
+		}
 	}
 	ASTRA_DEBUG("Finishing thread on GPU %d", info->m_iGPU);
 }
@@ -1458,7 +1472,10 @@ bool CCompositeGeometryManager::doJobs(TJobList &jobs)
 			astraCUDA3d::setGPUIndex(m_GPUIndices[0]);
 
 		for (TJobSet::const_iterator iter = split.begin(); iter != split.end(); ++iter) {
-			doJob(iter);
+			if (!doJob(iter)) {
+				ASTRA_DEBUG("doJob failed, aborting");
+				return false;
+			}
 		}
 
 	} else {
@@ -1468,6 +1485,9 @@ bool CCompositeGeometryManager::doJobs(TJobList &jobs)
 		WorkQueue wq(split);
 
 		runWorkQueue(wq, m_GPUIndices);
+
+		if (wq.has_failed())
+			return false;
 
 	}
 
