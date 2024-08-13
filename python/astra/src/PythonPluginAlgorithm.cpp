@@ -117,8 +117,8 @@ bool CPluginAlgorithm::initialize(const Config& _cfg){
     return m_bIsInitialized;
 }
 
-void CPluginAlgorithm::run(int _iNrIterations){
-    if(instance==NULL) return;
+bool CPluginAlgorithm::run(int _iNrIterations){
+    if(instance==NULL) return false;
     PyGILState_STATE state = PyGILState_Ensure();
     PyObject *retVal = PyObject_CallMethod(instance, "run", "i",_iNrIterations);
     if(retVal==NULL){
@@ -127,6 +127,8 @@ void CPluginAlgorithm::run(int _iNrIterations){
         Py_DECREF(retVal);
     }
     PyGILState_Release(state);
+#warning TODO Check interaction between exceptions here and in algorithm_c
+    return true;
 }
 
 PyObject *CPluginAlgorithm::getInstance() const {

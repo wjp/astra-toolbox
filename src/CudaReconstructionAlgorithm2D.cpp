@@ -228,8 +228,9 @@ void CCudaReconstructionAlgorithm2D::initCUDAAlgorithm()
 
 //----------------------------------------------------------------------------------------
 // Iterate
-void CCudaReconstructionAlgorithm2D::run(int _iNrIterations)
+bool CCudaReconstructionAlgorithm2D::run(int _iNrIterations)
 {
+#warning TODO Handle memory in case of failure
 	// check initialized
 	ASTRA_ASSERT(m_bIsInitialized);
 
@@ -268,6 +269,8 @@ void CCudaReconstructionAlgorithm2D::run(int _iNrIterations)
 	                                 volgeom.getGridColCount());
 
 	ASTRA_ASSERT(ok);
+
+	return ok;
 }
 
 bool CCudaReconstructionAlgorithm2D::getResidualNorm(float32& _fNorm)

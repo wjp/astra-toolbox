@@ -181,8 +181,9 @@ bool CCudaSirtAlgorithm3D::initialize(CProjector3D* _pProjector,
 
 //----------------------------------------------------------------------------------------
 // Iterate
-void CCudaSirtAlgorithm3D::run(int _iNrIterations)
+bool CCudaSirtAlgorithm3D::run(int _iNrIterations)
 {
+#warning TODO Handle memory in case of failure
 	// check initialized
 	ASTRA_ASSERT(m_bIsInitialized);
 
@@ -249,7 +250,7 @@ void CCudaSirtAlgorithm3D::run(int _iNrIterations)
 	                                 volgeom.getGridColCount());
 	ASTRA_ASSERT(ok);
 
-
+	return ok;
 }
 //----------------------------------------------------------------------------------------
 bool CCudaSirtAlgorithm3D::getResidualNorm(float32& _fNorm)
