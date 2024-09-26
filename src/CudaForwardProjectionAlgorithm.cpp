@@ -170,7 +170,6 @@ void CCudaForwardProjectionAlgorithm::setGPUIndex(int _iGPUIndex)
 // Run
 bool CCudaForwardProjectionAlgorithm::run(int)
 {
-#warning TODO Handle memory in case of failure
 	// check initialized
 	assert(m_bIsInitialized);
 

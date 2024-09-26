@@ -183,7 +183,6 @@ bool CCudaSirtAlgorithm3D::initialize(CProjector3D* _pProjector,
 // Iterate
 bool CCudaSirtAlgorithm3D::run(int _iNrIterations)
 {
-#warning TODO Handle memory in case of failure
 	// check initialized
 	ASTRA_ASSERT(m_bIsInitialized);
 

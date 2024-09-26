@@ -230,7 +230,6 @@ void CCudaReconstructionAlgorithm2D::initCUDAAlgorithm()
 // Iterate
 bool CCudaReconstructionAlgorithm2D::run(int _iNrIterations)
 {
-#warning TODO Handle memory in case of failure
 	// check initialized
 	ASTRA_ASSERT(m_bIsInitialized);
 

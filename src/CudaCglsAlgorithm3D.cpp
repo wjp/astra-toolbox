@@ -179,7 +179,6 @@ bool CCudaCglsAlgorithm3D::initialize(CProjector3D* _pProjector,
 // Iterate
 bool CCudaCglsAlgorithm3D::run(int _iNrIterations)
 {
-#warning TODO Handle memory in case of failure
 	// check initialized
 	ASTRA_ASSERT(m_bIsInitialized);
 
