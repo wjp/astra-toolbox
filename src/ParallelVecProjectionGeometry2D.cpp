@@ -206,7 +206,7 @@ void CParallelVecProjectionGeometry2D::getConfiguration(Config &cfg) const
 		vectors[6*i + 4] = p.fDetUX;
 		vectors[6*i + 5] = p.fDetUY;
 	}
-	CW.addNumericalMatrix("Vectors", &vectors[0], m_iProjectionAngleCount, 6);
+	CW.addNumericalMatrix("Vectors", vectors, m_iProjectionAngleCount, 6);
 }
 //----------------------------------------------------------------------------------------
 

@@ -218,10 +218,18 @@ cdef cppclass PythonConfig(Config):
 
         return errors
 
-
-
-
-
+    void setType(const string &type):
+        pass
+    void setInt(const string &name, int iValue):
+        pass
+    void setDouble(const string &name, double fValue):
+        pass
+    void setFloatArray(const string &name, const float *pfValues, unsigned int iCount):
+        pass
+    void setDoubleMatrix(const string &name, const vector[double] &fValues, unsigned int iHeight, unsigned int iWidth):
+        pass
+    void setOptionDouble(const string &name, double fValue):
+        pass
 
 
 

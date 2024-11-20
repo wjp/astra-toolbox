@@ -219,7 +219,7 @@ void CParallelVecProjectionGeometry3D::getConfiguration(Config &cfg) const
 		vectors[12*i + 10] = p.fDetVY;
 		vectors[12*i + 11] = p.fDetVZ;
 	}
-	CW.addNumericalMatrix("Vectors", &vectors[0], m_iProjectionAngleCount, 12);
+	CW.addNumericalMatrix("Vectors", vectors, m_iProjectionAngleCount, 12);
 }
 //----------------------------------------------------------------------------------------
 
