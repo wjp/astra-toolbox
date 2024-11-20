@@ -39,3 +39,4 @@ cdef CFloat32ProjectionData3D* linkProjFromGeometry(const CProjectionGeometry3D 
 cdef unique_ptr[CProjectionGeometry3D] createProjectionGeometry3D(geometry) except *
 cdef unique_ptr[CVolumeGeometry3D] createVolumeGeometry3D(geometry) except *
 
+cdef createPythonConfig(Config **)

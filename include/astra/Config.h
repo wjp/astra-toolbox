@@ -79,7 +79,8 @@ protected:
 	virtual std::list<std::string> checkUnparsed(const ConfigCheckData &data) const = 0;
 
 	// Bare-bones collection of setters. These only implement the types
-	// that are used by the geometry classes.
+	// that are used by the geometry classes, and do not do (or need)
+	// any error handling.
 	virtual void setType(const std::string &type) = 0;
 	virtual void setInt(const std::string &name, int iValue) = 0;
 	virtual void setDouble(const std::string &name, double fValue) = 0;
