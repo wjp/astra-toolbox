@@ -39,8 +39,6 @@ along with the ASTRA Toolbox. If not, see <http://www.gnu.org/licenses/>.
 namespace astra
 {
 
-class XMLNode;
-
 /**
  * This class defines the interface for each 3D projection geometry. 
  * It has a number of data fields, such as width and height of detector
@@ -186,11 +184,9 @@ public:
 	 */
 	virtual bool isEqual(const CProjectionGeometry3D *) const = 0;
 
-	/** Get all settings in a Config object.
-	 *
-	 * @return Configuration Object.
+	/** Store all geometry parameters in a caller-provided Config object.
 	 */
-	virtual Config* getConfiguration() const = 0;
+	virtual void getConfiguration(Config &cfg) const = 0;
 
 	/** Get the number of projections.
 	 *

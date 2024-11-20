@@ -74,11 +74,9 @@ public:
 
 class _AstraExport ConfigWriter {
 public:
-	ConfigWriter(const std::string &name);
-	ConfigWriter(const std::string &name, const std::string &type);
+	ConfigWriter(Config *cfg);
+	ConfigWriter(Config *cfg, const std::string &type);
 	~ConfigWriter();
-
-	Config* getConfig();
 
 	void addInt(const std::string &name, int iValue);
 	void addNumerical(const std::string &name, double fValue);

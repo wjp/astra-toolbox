@@ -493,7 +493,7 @@ cdef CFloat32ProjectionData3D* linkProjFromGeometry(const CProjectionGeometry3D 
     raise TypeError("Data should be an array with DLPack support, or a GPULink object")
 
 cdef unique_ptr[CProjectionGeometry3D] createProjectionGeometry3D(geometry) except *:
-    cdef XMLConfig *cfg
+    cdef Config *cfg
     cdef unique_ptr[CProjectionGeometry3D] pGeometry
 
     cfg = dictToConfig(b'ProjectionGeometry', geometry)
@@ -511,7 +511,7 @@ cdef unique_ptr[CProjectionGeometry3D] createProjectionGeometry3D(geometry) exce
     return move(pGeometry)
 
 cdef unique_ptr[CVolumeGeometry3D] createVolumeGeometry3D(geometry) except *:
-    cdef XMLConfig *cfg
+    cdef Config *cfg
     cdef CVolumeGeometry3D * pGeometry
     cfg = dictToConfig(b'VolumeGeometry', geometry)
     pGeometry = new CVolumeGeometry3D()

@@ -190,9 +190,9 @@ bool CCylConeVecProjectionGeometry3D::isOfType(const std::string& _sType) const
 
 //----------------------------------------------------------------------------------------
 // Get the configuration object
-Config* CCylConeVecProjectionGeometry3D::getConfiguration() const 
+void CCylConeVecProjectionGeometry3D::getConfiguration(Config &cfg) const 
 {
-	ConfigWriter CW("ProjectionGeometry3D", "cyl_cone_vec");
+	ConfigWriter CW(&cfg, "cyl_cone_vec");
 
 	CW.addInt("DetectorRowCount", m_iDetectorRowCount);
 	CW.addInt("DetectorColCount", m_iDetectorColCount);
@@ -217,8 +217,6 @@ Config* CCylConeVecProjectionGeometry3D::getConfiguration() const
 		vectors[13*i + 12] = p.fDetR;
 	}
 	CW.addNumericalMatrix("Vectors", &vectors[0], m_iProjectionAngleCount, 13);
-
-	return CW.getConfig();
 }
 //----------------------------------------------------------------------------------------
 

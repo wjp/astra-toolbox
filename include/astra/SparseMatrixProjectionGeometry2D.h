@@ -126,11 +126,9 @@ public:
 	 */
 	 virtual bool isOfType(const std::string& _sType);
 
-	/** Get all settings in a Config object.
-	 *
-	 * @return Configuration Object.
+	/** Store all geometry parameters in a caller-provided Config object.
 	 */
-	virtual Config* getConfiguration() const;
+	virtual void getConfiguration(Config &cfg) const override;
 
 protected:
 

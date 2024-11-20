@@ -130,11 +130,9 @@ public:
 	 */
 	virtual bool isEqual(const CProjectionGeometry2D &) const override;
 
-	/** Get all settings in a Config object.
-	 *
-	 * @return Configuration Object.
+	/** Store all geometry parameters in a caller-provided Config object.
 	 */
-	virtual Config* getConfiguration() const;
+	virtual void getConfiguration(Config &cfg) const override;
 
 	const SFanProjection* getProjectionVectors() const { return m_pProjectionAngles; }
 protected:

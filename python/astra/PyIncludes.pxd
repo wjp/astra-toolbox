@@ -65,7 +65,7 @@ cdef extern from "astra/VolumeGeometry2D.h" namespace "astra":
         float32 getWindowMinY()
         float32 getWindowMaxX()
         float32 getWindowMaxY()
-        Config* getConfiguration()
+        void getConfiguration(Config&)
         bool isEqual(const CVolumeGeometry2D&)
 
 cdef extern from "astra/Float32Data2D.h" namespace "astra":
@@ -82,9 +82,6 @@ cdef extern from "astra/Float32VolumeData2D.h" namespace "astra":
         int getWidth()
         int getHeight()
         void changeGeometry(const CVolumeGeometry2D&)
-        Config* getConfiguration()
-
-
 
 cdef extern from "astra/ProjectionGeometry2D.h" namespace "astra":
     cdef cppclass CProjectionGeometry2D:
@@ -95,7 +92,7 @@ cdef extern from "astra/ProjectionGeometry2D.h" namespace "astra":
         bool isOfType(string)
         float32 getProjectionAngle(int)
         float32 getDetectorWidth()
-        Config* getConfiguration()
+        void getConfiguration(Config&)
         bool isEqual(const CProjectionGeometry2D&)
 
 cdef extern from "astra/ProjectionGeometry2DFactory.h" namespace "astra":
@@ -210,7 +207,7 @@ cdef extern from "astra/VolumeGeometry3D.h" namespace "astra":
     cdef cppclass CVolumeGeometry3D:
         CVolumeGeometry3D()
         bool initialize(Config)
-        Config * getConfiguration()
+        void getConfiguration(Config&)
         int getGridColCount()
         int getGridRowCount()
         int getGridSliceCount()
@@ -219,7 +216,7 @@ cdef extern from "astra/ProjectionGeometry3D.h" namespace "astra":
     cdef cppclass CProjectionGeometry3D:
         CProjectionGeometry3D()
         bool initialize(Config)
-        Config * getConfiguration()
+        void getConfiguration(Config&)
         int getProjectionCount()
         int getDetectorColCount()
         int getDetectorRowCount()
