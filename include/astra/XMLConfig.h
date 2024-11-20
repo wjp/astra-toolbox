@@ -63,6 +63,13 @@ private:
 	virtual bool getOptionIntArray(const std::string &name, std::vector<int> &values) const;
 
 	virtual std::list<std::string> checkUnparsed(const ConfigCheckData &data) const;
+
+	virtual void setType(const std::string &type) override;
+	virtual void setInt(const std::string &name, int iValue) override;
+	virtual void setDouble(const std::string &name, double fValue) override;
+	virtual void setFloatArray(const std::string &name, const float *pfValues, unsigned int iCount) override;
+	virtual void setDoubleMatrix(const std::string &name, const std::vector<double> &fValues, unsigned int iHeight, unsigned int iWidth) override;
+	virtual void setOptionDouble(const std::string &name, double fValue) override;
 private:
 	friend class ConfigWriter;
 	XMLDocument *_doc;
@@ -81,13 +88,13 @@ public:
 	void addInt(const std::string &name, int iValue);
 	void addNumerical(const std::string &name, double fValue);
 	void addNumericalArray(const std::string &name, const float *pfValues, int iCount);
-	void addNumericalMatrix(const std::string &name, const double *pfValues, int iHeight, int iWidth);
+	void addNumericalMatrix(const std::string &name, const std::vector<double> &fValues, int iHeight, int iWidth);
 	void addID(const std::string &name, int iValue);
 
 	void addOptionNumerical(const std::string &name, double fValue);
 
 private:
-	XMLConfig *cfg;
+	Config *cfg;
 };
 
 

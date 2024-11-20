@@ -216,7 +216,7 @@ void CCylConeVecProjectionGeometry3D::getConfiguration(Config &cfg) const
 		vectors[13*i + 11] = p.fDetVZ;
 		vectors[13*i + 12] = p.fDetR;
 	}
-	CW.addNumericalMatrix("Vectors", &vectors[0], m_iProjectionAngleCount, 13);
+	CW.addNumericalMatrix("Vectors", vectors, m_iProjectionAngleCount, 13);
 }
 //----------------------------------------------------------------------------------------
 

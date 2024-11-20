@@ -248,20 +248,52 @@ std::list<std::string> XMLConfig::checkUnparsed(const ConfigCheckData &data) con
 	return errors;
 }
 
+//-----------------------------------------------------------------------------
+
+void XMLConfig::setType(const std::string &type)
+{
+	self.addAttribute("type", type);
+}
+
+void XMLConfig::setInt(const std::string &name, int iValue)
+{
+	self.addChildNode(name, iValue);
+}
+
+void XMLConfig::setDouble(const std::string &name, double fValue)
+{
+	self.addChildNode(name, fValue);
+}
+
+void XMLConfig::setFloatArray(const std::string &name, const float *pfValues, unsigned int iCount)
+{
+	XMLNode res = self.addChildNode(name);
+	res.setContent(pfValues, iCount);
+}
+
+void XMLConfig::setDoubleMatrix(const std::string &name, const std::vector<double> &fValues, unsigned int iHeight, unsigned int iWidth)
+{
+	XMLNode res = self.addChildNode(name);
+	res.setContent(&fValues[0], iWidth, iHeight, false);
+}
+
+void XMLConfig::setOptionDouble(const std::string &name, double fValue)
+{
+	self.addOption(name, fValue);
+}
+
 
 //-----------------------------------------------------------------------------
 
-ConfigWriter::ConfigWriter(Config *_cfg)
+ConfigWriter::ConfigWriter(Config *_cfg) : cfg(_cfg)
 {
-	// TODO: Support any Config type, instead of just XMLConfig
-	cfg = dynamic_cast<XMLConfig*>(_cfg);
-	assert(cfg);
+
 }
 
 ConfigWriter::ConfigWriter(Config *_cfg, const std::string &type)
 	: ConfigWriter(_cfg)
 {
-	cfg->self.addAttribute("type", type);
+	cfg->setType(type);
 }
 
 
@@ -272,34 +304,32 @@ ConfigWriter::~ConfigWriter()
 
 void ConfigWriter::addInt(const std::string &name, int iValue)
 {
-	cfg->self.addChildNode(name, iValue);
+	cfg->setInt(name, iValue);
 }
 
 void ConfigWriter::addNumerical(const std::string &name, double fValue)
 {
-	cfg->self.addChildNode(name, fValue);
+	cfg->setDouble(name, fValue);
 }
 
 void ConfigWriter::addNumericalArray(const std::string &name, const float* pfValues, int iCount)
 {
-	XMLNode res = cfg->self.addChildNode(name);
-	res.setContent(pfValues, iCount);
+	cfg->setFloatArray(name, pfValues, iCount);
 }
 
-void ConfigWriter::addNumericalMatrix(const std::string &name, const double* pfValues, int iHeight, int iWidth)
+void ConfigWriter::addNumericalMatrix(const std::string &name, const std::vector<double> &fValues, int iHeight, int iWidth)
 {
-	XMLNode res = cfg->self.addChildNode(name);
-	res.setContent(pfValues, iWidth, iHeight, false);
+	cfg->setDoubleMatrix(name, fValues, iHeight, iWidth);
 }
 
 void ConfigWriter::addID(const std::string &name, int iValue)
 {
-	cfg->self.addChildNode(name, iValue);
+	cfg->setInt(name, iValue);
 }
 
 void ConfigWriter::addOptionNumerical(const std::string &name, double fValue)
 {
-	cfg->self.addOption(name, fValue);
+	cfg->setOptionDouble(name, fValue);
 }
 
 

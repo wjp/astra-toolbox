@@ -77,6 +77,15 @@ protected:
 	virtual bool getOptionIntArray(const std::string &name, std::vector<int> &values) const = 0;
 
 	virtual std::list<std::string> checkUnparsed(const ConfigCheckData &data) const = 0;
+
+	// Bare-bones collection of setters. These only implement the types
+	// that are used by the geometry classes.
+	virtual void setType(const std::string &type) = 0;
+	virtual void setInt(const std::string &name, int iValue) = 0;
+	virtual void setDouble(const std::string &name, double fValue) = 0;
+	virtual void setFloatArray(const std::string &name, const float *pfValues, unsigned int iCount) = 0;
+	virtual void setDoubleMatrix(const std::string &name, const std::vector<double> &fValues, unsigned int iHeight, unsigned int iWidth) = 0;
+	virtual void setOptionDouble(const std::string &name, double fValue) = 0;
 };
 
 
