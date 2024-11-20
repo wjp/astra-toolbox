@@ -251,13 +251,15 @@ std::list<std::string> XMLConfig::checkUnparsed(const ConfigCheckData &data) con
 
 //-----------------------------------------------------------------------------
 
-ConfigWriter::ConfigWriter(const std::string &name)
+ConfigWriter::ConfigWriter(Config *_cfg)
 {
-	cfg = new XMLConfig(name);
+	// TODO: Support any Config type, instead of just XMLConfig
+	cfg = dynamic_cast<XMLConfig*>(_cfg);
+	assert(cfg);
 }
 
-ConfigWriter::ConfigWriter(const std::string &name, const std::string &type)
-	: ConfigWriter(name)
+ConfigWriter::ConfigWriter(Config *_cfg, const std::string &type)
+	: ConfigWriter(_cfg)
 {
 	cfg->self.addAttribute("type", type);
 }
@@ -265,15 +267,7 @@ ConfigWriter::ConfigWriter(const std::string &name, const std::string &type)
 
 ConfigWriter::~ConfigWriter()
 {
-	delete cfg;
-}
 
-Config* ConfigWriter::getConfig()
-{
-	Config *ret = cfg;
-	cfg = nullptr;
-
-	return ret;
 }
 
 void ConfigWriter::addInt(const std::string &name, int iValue)

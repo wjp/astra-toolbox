@@ -29,6 +29,7 @@
 from __future__ import print_function
 
 cimport cython
+from cython.operator cimport dereference as deref
 
 from . cimport PyData3DManager
 from .PyData3DManager cimport CData3DManager
@@ -108,12 +109,19 @@ def get_geometry(i):
     cdef CData3D * pDataObject = getObject(i)
     cdef CFloat32ProjectionData3D * pDataObject2
     cdef CFloat32VolumeData3D * pDataObject3
+    cdef XMLConfig *cfg
     if pDataObject.getType() == THREEPROJECTION:
         pDataObject2 = <CFloat32ProjectionData3D * >pDataObject
-        geom = utils.configToDict(pDataObject2.getGeometry().getConfiguration())
+        cfg = new XMLConfig(b"ProjectionGeometry3D")
+        pDataObject2.getGeometry().getConfiguration(deref(cfg))
+        geom = utils.configToDict(cfg)
+        del cfg
     elif pDataObject.getType() == THREEVOLUME:
         pDataObject3 = <CFloat32VolumeData3D * >pDataObject
-        geom = utils.configToDict(pDataObject3.getGeometry().getConfiguration())
+        cfg = new XMLConfig(b"VolumeGeometry3D")
+        pDataObject3.getGeometry().getConfiguration(deref(cfg))
+        geom = utils.configToDict(cfg)
+        del cfg
     else:
         raise AstraError("Not a known data object")
     return geom

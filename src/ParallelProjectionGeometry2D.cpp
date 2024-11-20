@@ -168,15 +168,13 @@ bool CParallelProjectionGeometry2D::isOfType(const std::string& _sType)
 
 //----------------------------------------------------------------------------------------
 // Get the configuration object
-Config* CParallelProjectionGeometry2D::getConfiguration() const 
+void CParallelProjectionGeometry2D::getConfiguration(Config &cfg) const
 {
-	ConfigWriter CW("ProjectionGeometry2D", "parallel");
+	ConfigWriter CW(&cfg, "parallel");
 
 	CW.addInt("DetectorCount", getDetectorCount());
 	CW.addNumerical("DetectorWidth", getDetectorWidth());
 	CW.addNumericalArray("ProjectionAngles", m_pfProjectionAngles, m_iProjectionAngleCount);
-
-	return CW.getConfig();
 }
 
 //----------------------------------------------------------------------------------------

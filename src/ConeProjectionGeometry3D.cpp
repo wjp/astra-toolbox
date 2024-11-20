@@ -183,9 +183,9 @@ bool CConeProjectionGeometry3D::isOfType(const std::string& _sType) const
 
 //----------------------------------------------------------------------------------------
 // Get the configuration object
-Config* CConeProjectionGeometry3D::getConfiguration() const 
+void CConeProjectionGeometry3D::getConfiguration(Config &cfg) const
 {
-	ConfigWriter CW("ProjectionGeometry3D", "cone");
+	ConfigWriter CW(&cfg, "cone");
 
 	CW.addInt("DetectorRowCount", m_iDetectorRowCount);
 	CW.addInt("DetectorColCount", m_iDetectorColCount);
@@ -194,8 +194,6 @@ Config* CConeProjectionGeometry3D::getConfiguration() const
 	CW.addNumerical("DistanceOriginDetector", m_fOriginDetectorDistance);
 	CW.addNumerical("DistanceOriginSource", m_fOriginSourceDistance);
 	CW.addNumericalArray("ProjectionAngles", m_pfProjectionAngles, m_iProjectionAngleCount);
-
-	return CW.getConfig();
 }
 
 //----------------------------------------------------------------------------------------

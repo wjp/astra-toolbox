@@ -271,9 +271,9 @@ bool CVolumeGeometry2D::isEqual(CVolumeGeometry2D* _pGeom2) const
 
 //----------------------------------------------------------------------------------------
 // Get the configuration object
-Config* CVolumeGeometry2D::getConfiguration() const 
+void CVolumeGeometry2D::getConfiguration(Config &cfg) const
 {
-	ConfigWriter CW("VolumeGeometry2D");
+	ConfigWriter CW(&cfg);
 
 	CW.addInt("GridColCount", m_iGridColCount);
 	CW.addInt("GridRowCount", m_iGridRowCount);
@@ -281,8 +281,6 @@ Config* CVolumeGeometry2D::getConfiguration() const
 	CW.addOptionNumerical("WindowMaxX", m_fWindowMaxX);
 	CW.addOptionNumerical("WindowMinY", m_fWindowMinY);
 	CW.addOptionNumerical("WindowMaxY", m_fWindowMaxY);
-
-	return CW.getConfig();
 }
 //----------------------------------------------------------------------------------------
 

@@ -27,6 +27,9 @@
 # distutils: libraries = astra
 from __future__ import print_function
 
+cimport cython
+from cython.operator cimport dereference as deref
+
 from .PyIncludes cimport *
 
 from . cimport utils
@@ -92,7 +95,8 @@ cdef CProjector3D * getObject(i) except NULL:
 
 def projection_geometry(i):
     cdef CProjector3D * proj = getObject(i)
-    cdef Config * cfg = proj.getProjectionGeometry().getConfiguration()
+    cdef XMLConfig * cfg = new XMLConfig(b"ProjectionGeometry3D")
+    proj.getProjectionGeometry().getConfiguration(deref(cfg))
     dct = utils.configToDict(cfg)
     del cfg
     return dct
@@ -100,7 +104,8 @@ def projection_geometry(i):
 
 def volume_geometry(i):
     cdef CProjector3D * proj = getObject(i)
-    cdef Config * cfg = proj.getVolumeGeometry().getConfiguration()
+    cdef XMLConfig * cfg = new XMLConfig(b"VolumeGeometry3D")
+    proj.getVolumeGeometry().getConfiguration(deref(cfg))
     dct = utils.configToDict(cfg)
     del cfg
     return dct

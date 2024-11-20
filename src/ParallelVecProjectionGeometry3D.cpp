@@ -193,9 +193,9 @@ bool CParallelVecProjectionGeometry3D::isOfType(const std::string& _sType) const
 
 //----------------------------------------------------------------------------------------
 // Get the configuration object
-Config* CParallelVecProjectionGeometry3D::getConfiguration() const 
+void CParallelVecProjectionGeometry3D::getConfiguration(Config &cfg) const
 {
-	ConfigWriter CW("ProjectionGeometry3D", "parallel3d_vec");
+	ConfigWriter CW(&cfg, "parallel3d_vec");
 
 	CW.addInt("DetectorRowCount", m_iDetectorRowCount);
 	CW.addInt("DetectorColCount", m_iDetectorColCount);
@@ -220,8 +220,6 @@ Config* CParallelVecProjectionGeometry3D::getConfiguration() const
 		vectors[12*i + 11] = p.fDetVZ;
 	}
 	CW.addNumericalMatrix("Vectors", &vectors[0], m_iProjectionAngleCount, 12);
-
-	return CW.getConfig();
 }
 //----------------------------------------------------------------------------------------
 

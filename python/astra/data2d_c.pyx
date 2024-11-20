@@ -30,6 +30,7 @@ from __future__ import print_function
 
 cimport cython
 from cython cimport view
+from cython.operator cimport dereference as deref
 
 from . cimport PyData2DManager
 from .PyData2DManager cimport CData2DManager
@@ -184,12 +185,19 @@ def get_geometry(i):
     cdef CFloat32Data2D * pDataObject = getObject(i)
     cdef CFloat32ProjectionData2D * pDataObject2
     cdef CFloat32VolumeData2D * pDataObject3
+    cdef XMLConfig *cfg
     if pDataObject.getType() == TWOPROJECTION:
         pDataObject2 = <CFloat32ProjectionData2D * >pDataObject
-        geom = utils.configToDict(pDataObject2.getGeometry().getConfiguration())
+        cfg = new XMLConfig(b"ProjectionGeometry2D")
+        pDataObject2.getGeometry().getConfiguration(deref(cfg))
+        geom = utils.configToDict(cfg)
+        del cfg
     elif pDataObject.getType() == TWOVOLUME:
         pDataObject3 = <CFloat32VolumeData2D * >pDataObject
-        geom = utils.configToDict(pDataObject3.getGeometry().getConfiguration())
+        cfg = new XMLConfig(b"VolumeGeometry2D")
+        pDataObject3.getGeometry().getConfiguration(deref(cfg))
+        geom = utils.configToDict(cfg)
+        del cfg
     else:
         raise AstraError("Not a known data object")
     return geom

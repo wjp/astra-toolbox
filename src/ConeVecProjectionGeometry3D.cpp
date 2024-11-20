@@ -192,9 +192,9 @@ bool CConeVecProjectionGeometry3D::isOfType(const std::string& _sType) const
 
 //----------------------------------------------------------------------------------------
 // Get the configuration object
-Config* CConeVecProjectionGeometry3D::getConfiguration() const 
+void CConeVecProjectionGeometry3D::getConfiguration(Config &cfg) const
 {
-	ConfigWriter CW("ProjectionGeometry3D", "cone_vec");
+	ConfigWriter CW(&cfg, "cone_vec");
 
 	CW.addInt("DetectorRowCount", m_iDetectorRowCount);
 	CW.addInt("DetectorColCount", m_iDetectorColCount);
@@ -219,8 +219,6 @@ Config* CConeVecProjectionGeometry3D::getConfiguration() const
 		vectors[12*i + 11] = p.fDetVZ;
 	}
 	CW.addNumericalMatrix("Vectors", &vectors[0], m_iProjectionAngleCount, 12);
-
-	return CW.getConfig();
 }
 //----------------------------------------------------------------------------------------
 

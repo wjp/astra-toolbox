@@ -363,9 +363,9 @@ CVolumeGeometry2D * CVolumeGeometry3D::createVolumeGeometry2D() const
 
 //----------------------------------------------------------------------------------------
 // Get the configuration object
-Config* CVolumeGeometry3D::getConfiguration() const 
+void CVolumeGeometry3D::getConfiguration(Config &cfg) const
 {
-	ConfigWriter CW("VolumeGeometry3D", "parallel");
+	ConfigWriter CW(&cfg, "parallel");
 
 	CW.addInt("GridColCount", m_iGridColCount);
 	CW.addInt("GridRowCount", m_iGridRowCount);
@@ -376,8 +376,6 @@ Config* CVolumeGeometry3D::getConfiguration() const
 	CW.addOptionNumerical("WindowMaxY", m_fWindowMaxY);
 	CW.addOptionNumerical("WindowMinZ", m_fWindowMinZ);
 	CW.addOptionNumerical("WindowMaxZ", m_fWindowMaxZ);
-
-	return CW.getConfig();
 }
 //----------------------------------------------------------------------------------------
 

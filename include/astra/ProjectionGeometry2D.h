@@ -150,11 +150,9 @@ public:
 	 */
 	virtual bool isEqual(CProjectionGeometry2D*) const = 0;
 
-	/** Get all settings in a Config object.
-	 *
-	 * @return Configuration Object.
+	/** Store all geometry parameters in a caller-provided Config object.
 	 */
-	virtual Config* getConfiguration() const = 0;
+	virtual void getConfiguration(Config &cfg) const = 0;
 
 	/** Get the number of projection angles.
 	 *

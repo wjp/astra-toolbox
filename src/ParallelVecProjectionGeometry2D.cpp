@@ -188,9 +188,9 @@ bool CParallelVecProjectionGeometry2D::_check()
 
 //----------------------------------------------------------------------------------------
 // Get the configuration object
-Config* CParallelVecProjectionGeometry2D::getConfiguration() const 
+void CParallelVecProjectionGeometry2D::getConfiguration(Config &cfg) const
 {
-	ConfigWriter CW("ProjectionGeometry2D", "parallel_vec");
+	ConfigWriter CW(&cfg, "parallel_vec");
 
 	CW.addInt("DetectorCount", getDetectorCount());
 
@@ -207,8 +207,6 @@ Config* CParallelVecProjectionGeometry2D::getConfiguration() const
 		vectors[6*i + 5] = p.fDetUY;
 	}
 	CW.addNumericalMatrix("Vectors", &vectors[0], m_iProjectionAngleCount, 6);
-
-	return CW.getConfig();
 }
 //----------------------------------------------------------------------------------------
 

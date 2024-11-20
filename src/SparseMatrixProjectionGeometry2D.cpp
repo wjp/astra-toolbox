@@ -190,16 +190,14 @@ bool CSparseMatrixProjectionGeometry2D::isOfType(const std::string& _sType)
 }
 //----------------------------------------------------------------------------------------
 // Get the configuration object
-Config* CSparseMatrixProjectionGeometry2D::getConfiguration() const 
+void CSparseMatrixProjectionGeometry2D::getConfiguration(Config &cfg) const
 {
-	ConfigWriter CW("ProjectionGeometry2D", "sparse matrix");
+	ConfigWriter CW(&cfg, "sparse matrix");
 
 	CW.addInt("DetectorCount", getDetectorCount());
 	CW.addNumerical("DetectorWidth", getDetectorWidth());
 	CW.addNumericalArray("ProjectionAngles", m_pfProjectionAngles, m_iProjectionAngleCount);
 	CW.addID("MatrixID", CMatrixManager::getSingleton().getIndex(m_pMatrix));
-
-	return CW.getConfig();
 }
 
 } // end namespace astra
