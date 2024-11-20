@@ -375,6 +375,9 @@ cdef bool readOptions(XMLNode node, dc) except False:
     return True
 
 cdef configToDict(Config *cfg):
+    # TODO: Accept both XMLConfig and PythonConfig
+    # (Need to add function to extract dictionary from PythonConfig)
+    # Then call this function from PythonPluginAlgorithm
     cdef XMLConfig* xmlcfg;
     xmlcfg = dynamic_cast_XMLConfig(cfg);
     if not xmlcfg:
