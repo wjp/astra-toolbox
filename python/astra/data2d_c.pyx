@@ -51,6 +51,7 @@ from .PyIncludes cimport *
 from . cimport utils
 from .utils import wrap_from_bytes
 from .log import AstraError
+from .utils cimport createPythonConfig
 
 from .pythonutils import geom_size
 
@@ -185,22 +186,19 @@ def get_geometry(i):
     cdef CFloat32Data2D * pDataObject = getObject(i)
     cdef CFloat32ProjectionData2D * pDataObject2
     cdef CFloat32VolumeData2D * pDataObject3
-    cdef XMLConfig *cfg
+    cdef Config *cfg
+    d = createPythonConfig(&cfg)
     if pDataObject.getType() == TWOPROJECTION:
         pDataObject2 = <CFloat32ProjectionData2D * >pDataObject
-        cfg = new XMLConfig(b"ProjectionGeometry2D")
         pDataObject2.getGeometry().getConfiguration(deref(cfg))
-        geom = utils.configToDict(cfg)
         del cfg
     elif pDataObject.getType() == TWOVOLUME:
         pDataObject3 = <CFloat32VolumeData2D * >pDataObject
-        cfg = new XMLConfig(b"VolumeGeometry2D")
         pDataObject3.getGeometry().getConfiguration(deref(cfg))
-        geom = utils.configToDict(cfg)
         del cfg
     else:
         raise AstraError("Not a known data object")
-    return geom
+    return d
 
 cdef CProjector2D * getProjector(i) except NULL:
     cdef CProjector2D * proj = manProj.get(i)

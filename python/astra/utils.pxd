@@ -38,3 +38,4 @@ cdef CFloat32ProjectionData3D* linkProjFromGeometry(CProjectionGeometry3D *pGeom
 cdef CProjectionGeometry3D* createProjectionGeometry3D(geometry) except NULL
 cdef CVolumeGeometry3D* createVolumeGeometry3D(geometry) except NULL
 
+cdef createPythonConfig(Config **)

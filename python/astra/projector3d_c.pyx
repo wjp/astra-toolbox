@@ -34,6 +34,7 @@ from .PyIncludes cimport *
 
 from . cimport utils
 from .utils import wrap_from_bytes, wrap_to_bytes
+from .utils cimport createPythonConfig
 from .log import AstraError
 
 from . cimport PyProjector3DFactory
@@ -95,20 +96,20 @@ cdef CProjector3D * getObject(i) except NULL:
 
 def projection_geometry(i):
     cdef CProjector3D * proj = getObject(i)
-    cdef XMLConfig * cfg = new XMLConfig(b"ProjectionGeometry3D")
+    cdef Config *cfg
+    d = createPythonConfig(&cfg)
     proj.getProjectionGeometry().getConfiguration(deref(cfg))
-    dct = utils.configToDict(cfg)
     del cfg
-    return dct
+    return d
 
 
 def volume_geometry(i):
     cdef CProjector3D * proj = getObject(i)
-    cdef XMLConfig * cfg = new XMLConfig(b"VolumeGeometry3D")
+    cdef Config *cfg
+    d = createPythonConfig(&cfg)
     proj.getVolumeGeometry().getConfiguration(deref(cfg))
-    dct = utils.configToDict(cfg)
     del cfg
-    return dct
+    return d
 
 
 def weights_single_ray(i, projection_index, detector_index):

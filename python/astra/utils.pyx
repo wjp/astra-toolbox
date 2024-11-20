@@ -218,21 +218,45 @@ cdef cppclass PythonConfig(Config):
 
         return errors
 
-    void setType(const string &type):
-        pass
+    void setType(const string &tpe):
+        t = wrap_from_bytes(tpe)
+        m_dict["type"] = t
+
     void setInt(const string &name, int iValue):
-        pass
+        n = wrap_from_bytes(name)
+        m_dict[n] = iValue
+
     void setDouble(const string &name, double fValue):
-        pass
+        n = wrap_from_bytes(name)
+        m_dict[n] = fValue
+
     void setFloatArray(const string &name, const float *pfValues, unsigned int iCount):
-        pass
+        n = wrap_from_bytes(name)
+        outArr = np.empty((iCount,), dtype=np.float32, order='C')
+        cdef float [:] mView = outArr
+        cdef const float [:] cView = <const float[:iCount]> pfValues
+        mView[:] = cView
+        m_dict[n] = outArr
+
     void setDoubleMatrix(const string &name, const vector[double] &fValues, unsigned int iHeight, unsigned int iWidth):
-        pass
+        n = wrap_from_bytes(name)
+        outArr = np.empty((iHeight,iWidth), dtype=np.float64, order='C')
+        cdef double[:,::1] mView = outArr
+        cdef const double * t = &fValues[0]
+        cdef const double[:,::1] cView = <const double[:iHeight, :iWidth]> t
+        mView[:] = cView
+        m_dict[n] = outArr
+
     void setOptionDouble(const string &name, double fValue):
-        pass
+        n = wrap_from_bytes(name)
+        m_options[n] = fValue
 
-
-
+cdef createPythonConfig(Config **_cfg):
+    cdef Config *cfg
+    d = { "option": {} }
+    cfg = new PythonConfig(d, d["option"])
+    _cfg[0] = cfg
+    return d
 
 include "config.pxi"
 

@@ -45,7 +45,7 @@ from .PyXMLDocument cimport XMLDocument
 
 from . cimport utils
 from .utils import wrap_from_bytes
-from .utils cimport linkVolFromGeometry, linkProjFromGeometry, createProjectionGeometry3D, createVolumeGeometry3D
+from .utils cimport linkVolFromGeometry, linkProjFromGeometry, createProjectionGeometry3D, createVolumeGeometry3D, createPythonConfig
 from .log import AstraError
 
 from .pythonutils import geom_size, GPULink
@@ -109,22 +109,19 @@ def get_geometry(i):
     cdef CData3D * pDataObject = getObject(i)
     cdef CFloat32ProjectionData3D * pDataObject2
     cdef CFloat32VolumeData3D * pDataObject3
-    cdef XMLConfig *cfg
+    cdef Config *cfg
+    d = createPythonConfig(&cfg)
     if pDataObject.getType() == THREEPROJECTION:
         pDataObject2 = <CFloat32ProjectionData3D * >pDataObject
-        cfg = new XMLConfig(b"ProjectionGeometry3D")
         pDataObject2.getGeometry().getConfiguration(deref(cfg))
-        geom = utils.configToDict(cfg)
         del cfg
     elif pDataObject.getType() == THREEVOLUME:
         pDataObject3 = <CFloat32VolumeData3D * >pDataObject
-        cfg = new XMLConfig(b"VolumeGeometry3D")
         pDataObject3.getGeometry().getConfiguration(deref(cfg))
-        geom = utils.configToDict(cfg)
         del cfg
     else:
         raise AstraError("Not a known data object")
-    return geom
+    return d
 
 def change_geometry(i, geom):
     cdef CData3D * pDataObject = getObject(i)
