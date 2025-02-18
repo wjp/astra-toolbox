@@ -2,8 +2,8 @@
 
 set -e
 
-BRANCH=master
-URL=https://github.com/astra-toolbox/astra-toolbox
+BRANCH=conda
+URL=https://github.com/wjp/astra-toolbox
 
 echo "Cloning from ${URL}"
 echo "        branch: ${BRANCH}"
