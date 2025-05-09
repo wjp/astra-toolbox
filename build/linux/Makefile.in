@@ -445,7 +445,7 @@ python-wheel-stamp: python-staging-stamp
 	$(MKDIR) python/staging/wheel
 	$(MKDIR) python/dist
 	# TODO: Determine value of ASTRA_CONFIG dynamically
-	cd python/staging; $(PYBUILDERENV) $(PYTHON) -m pip wheel --no-build-isolation --no-deps --no-cache-dir --wheel-dir wheel .
+	cd python/staging; $(PYBUILDERENV) $(PYTHON) -m pip wheel --no-build-isolation --no-deps --no-cache-dir --wheel-dir wheel -v .
 	mv python/staging/wheel/* python/dist/
 	@touch "$@"
 
