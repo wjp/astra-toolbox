@@ -92,7 +92,8 @@ PYLIBDIR := $(shell $(PYTHON) -c 'import sysconfig; print(sysconfig.get_config_v
 PYLIBVER = `basename $(PYINCDIR)`
 CPPFLAGS += -DASTRA_PYTHON -I$(PYINCDIR)
 PYCPPFLAGS  := $(CPPFLAGS)
-PYCPPFLAGS  += -I../include -I../lib/include
+# TODO: Fix these paths
+PYCPPFLAGS  += -I../../../../include -I../../../../lib/include
 PYCXXFLAGS  := $(CXXFLAGS)
 
 # copy the current MODLDFLAGS to PYLDFLAGS, and then add flags for matlab/octave
@@ -101,11 +102,12 @@ MODLDFLAGS += -L$(PYLIBDIR)
 
 MODPYLIBS=-l$(PYLIBVER)
 
-PYBUILDERENV=CXX="${CXX}" CC="${CXX}" CPPFLAGS="${PYCPPFLAGS}" LDFLAGS='${PYLDFLAGS}' CXXFLAGS="${PYCXXFLAGS}" CFLAGS="${PYCXXFLAGS}"
+# TODO: Fix ASTRA_CONFIG value
+ASTRA_CONFIG = linux_module_cuda
+
+PYBUILDERENV=CXX="${CXX}" CC="${CXX}" CPPFLAGS="${PYCPPFLAGS}" LDFLAGS='${PYLDFLAGS}' CXXFLAGS="${PYCXXFLAGS}" CFLAGS="${PYCXXFLAGS}" ASTRA_CONFIG="${ASTRA_CONFIG}"
 PYBUILDERFLAGS=--astra_build_config_dir $(abs_top_builddir)/python/config --astra_build_cython_dir $(abs_top_builddir)/python/cython
 PYBUILDER_BUILD_FLAGS=--build-base=$(abs_top_builddir)/python/build
-
-PYTHON_WHEEL_PLATFORM = @PYTHON_WHEEL_PLATFORM@
 endif
 
 # This is below where PYCPPFLAGS copies CPPFLAGS.  The python code is built
@@ -316,6 +318,68 @@ OCTAVE_MEX+=matlab/mex/astra_mex_plugin_c.mex
 endif
 
 
+PYTHON_PY=\
+	astra/__init__.py \
+	astra/algorithm.py \
+	astra/astra.py \
+	astra/creators.py \
+	astra/data2d.py \
+	astra/data3d.py \
+	astra/functions.py \
+	astra/log.py \
+	astra/matlab.py \
+	astra/matrix.py \
+	astra/optomo.py \
+	astra/plugin.py \
+	astra/projector3d.py \
+	astra/projector.py \
+	astra/pythonutils.py \
+	astra/tests.py
+
+PYTHON_PY_PLUGINS=\
+	astra/plugins/__init__.py \
+	astra/plugins/cgls.py \
+	astra/plugins/sirt.py
+
+PYTHON_PYX=\
+	astra/algorithm_c.pyx \
+	astra/astra_c.pyx \
+	astra/data2d_c.pyx \
+	astra/data3d_c.pyx \
+	astra/experimental.pyx \
+	astra/extrautils.pyx \
+	astra/log_c.pyx \
+	astra/matrix_c.pyx \
+	astra/plugin_c.pyx \
+	astra/projector3d_c.pyx \
+	astra/projector_c.pyx \
+	astra/utils.pyx
+
+PYTHON_OTHER=\
+	astra/PyAlgorithmFactory.pxd \
+	astra/PyAlgorithmManager.pxd \
+	astra/PyData2DManager.pxd \
+	astra/PyData3DManager.pxd \
+	astra/PyIncludes.pxd \
+	astra/PyIndexManager.pxd \
+	astra/PyMatrixManager.pxd \
+	astra/PyProjector2DFactory.pxd \
+	astra/PyProjector2DManager.pxd \
+	astra/PyProjector3DFactory.pxd \
+	astra/PyProjector3DManager.pxd \
+	astra/PyXMLDocument.pxd \
+	astra/utils.pxd \
+	astra/CFloat32CustomPython.h
+
+PYTHON_OTHER_SRC=\
+	astra/src/dlpack.cpp \
+	astra/src/dlpack.h \
+	astra/src/PythonPluginAlgorithm.cpp \
+	astra/src/PythonPluginAlgorithmFactory.cpp \
+	astra/src/PythonPluginAlgorithmFactory.h \
+	astra/src/PythonPluginAlgorithm.h
+
+
 OBJECT_DIRS = src/ tests/ cuda/2d/ cuda/3d/ matlab/mex/ ./
 DEPDIRS = $(addsuffix $(DEPDIR),$(OBJECT_DIRS))
 -include $(wildcard $(addsuffix /*.d,$(DEPDIRS)))
@@ -344,14 +408,7 @@ endif
 endif
 
 ifeq ($(python),yes)
-py: libastra.la
-	$(MKDIR) python/build
-	$(MKDIR) python/config
-# Note: setting CC to CXX is intentional. Python uses CC for compilation even if input is C++.
-	cd $(srcdir)/../../python; $(PYBUILDERENV) \
-	$(PYTHON) builder.py $(PYBUILDERFLAGS) \
-	build $(PYBUILDER_BUILD_FLAGS) \
-	$(patsubst %,add_extra_lib --file=%,$(PYPKGDATA))
+py: python-wheel-stamp
 endif
 
 
@@ -366,6 +423,31 @@ matlab/mex/astra_mex_plugin_c.mex: matlab/mex/astra_mex_plugin_c.o $(MATLAB_CXX_
 	mkoctfile --mex $(OCTFLAGS) $(OCTLDFLAGS) $(LIBS) $(MODPYLIBS) -lastra --output matlab/mex/astra_mex_plugin_c $< $(MATLAB_CXX_OBJECTS) $(OCTAVE_CXX_OBJECTS)
 endif
 endif
+
+
+python-staging-stamp: $(addprefix python/,$(PYTHON_PY) $(PYTHON_PY_PLUGINS) $(PYTHON_PYX) $(PYTHON_OTHER) $(PYTHON_OTHER_SRC)) python/README.md python/pyproject.toml python/setup.py libastra.la
+	@$(MKDIR) python/staging/astra/plugins
+	@$(MKDIR) python/staging/astra/src
+	cp -f $(addprefix $(srcdir)/../../python/,$(PYTHON_PY)) python/staging/astra
+	cp -f $(addprefix $(srcdir)/../../python/,$(PYTHON_PY_PLUGINS)) python/staging/astra/plugins
+	cp -f $(addprefix $(srcdir)/../../python/,$(PYTHON_PYX)) python/staging/astra
+	cp -f $(addprefix $(srcdir)/../../python/,$(PYTHON_OTHER)) python/staging/astra
+	cp -f $(addprefix $(srcdir)/../../python/,$(PYTHON_OTHER_SRC)) python/staging/astra/src
+	cp -f $(srcdir)/../../python/README.md python/staging
+	cp -f $(srcdir)/../../python/pyproject.toml python/staging
+	cp -f $(srcdir)/../../python/setup.py python/staging
+	@# TODO: We probably need variants with and without the .so
+	cp -f ".libs/$(SONAME)" python/staging/astra/
+	@touch "$@"
+
+python-wheel-stamp: python-staging-stamp
+	rm -rf python/staging/wheel
+	$(MKDIR) python/staging/wheel
+	$(MKDIR) python/dist
+	# TODO: Determine value of ASTRA_CONFIG dynamically
+	cd python/staging; $(PYBUILDERENV) $(PYTHON) -m pip wheel --no-build-isolation --no-deps --no-cache-dir --wheel-dir wheel .
+	mv python/staging/wheel/* python/dist/
+	@touch "$@"
 
 libastra.la: $(ALL_OBJECTS)
 	./libtool --mode=link --tag=CXX $(LD) -rpath $(libdir) -o $@ $(LDFLAGS) $(LIBS) $+
@@ -437,6 +519,7 @@ clean:
 	rm -f $(addsuffix /*,$(LIBDIRS))
 	rm -f $(TEST_OBJECTS) test.bin
 	rm -fr python/
+	rm -f *-stamp
 
 distclean: clean
 	rm -f $(srcdir)/config.guess $(srcdir)/config.sub $(srcdir)/ltmain.sh libtool $(srcdir)/install-sh
@@ -510,23 +593,8 @@ install-python: py
 # TODO: docs
 
 install-python-site-packages: py
-# Note: setting CC to CXX is intentional. Python uses CC for compilation even if input is C++.
-	cd $(srcdir)/../../python; $(PYBUILDERENV) \
-	$(PYTHON) builder.py $(PYBUILDERFLAGS) \
-	set_dist_dir --dist-dir=$(abs_top_builddir)/python/dist \
-	build $(PYBUILDER_BUILD_FLAGS) \
-	egg_info --egg-base=$(abs_top_builddir)/python \
-	$(patsubst %,add_extra_lib --file=%,$(PYPKGDATA)) \
-	install $(patsubst %,--root=% --single-version-externally-managed,$(DESTDIR))
-python-wheel: py
-# Note: setting CC to CXX is intentional. Python uses CC for compilation even if input is C++.
-	cd $(srcdir)/../../python; $(PYBUILDERENV) \
-	$(PYTHON) builder.py $(PYBUILDERFLAGS) --astra_cuda_dependencies \
-	set_dist_dir --dist-dir=$(abs_top_builddir)/python/dist \
-	build $(PYBUILDER_BUILD_FLAGS) \
-	egg_info --egg-base=$(abs_top_builddir)/python \
-	$(patsubst %,add_extra_lib --file=%,$(PYPKGDATA)) \
-	bdist_wheel $(patsubst %,--plat-name %,$(PYTHON_WHEEL_PLATFORM))
+	$(PYTHON) -m pip uninstall -y astra-toolbox
+	cd python/staging/wheel; $(PYTHON) -m pip install --no-deps *.whl
 else
 install-python-site-packages:
 install-python:
@@ -605,7 +673,7 @@ $(srcdir)/configure: $(srcdir)/configure.ac $(srcdir)/acinclude.m4
 	@echo "configure.ac has been changed. Regenerating configure script"
 	cd $(srcdir) && $(SHELL) ./autogen.sh
 
-.PHONY: all mex test clean distclean install install-libraries py install-python-site-packages install-python install-matlab install-octave install-matlab-so install-octave-so install-headers install-dev python-wheel
+.PHONY: all mex test clean distclean install install-libraries py install-python-site-packages install-python install-matlab install-octave install-matlab-so install-octave-so install-headers install-dev
 
 # don't remove intermediate files:
 .SECONDARY:
