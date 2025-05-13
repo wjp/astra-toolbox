@@ -441,12 +441,10 @@ python-staging-stamp: $(addprefix python/,$(PYTHON_PY) $(PYTHON_PY_PLUGINS) $(PY
 	@touch "$@"
 
 python-wheel-stamp: python-staging-stamp
-	rm -rf python/staging/wheel
-	$(MKDIR) python/staging/wheel
+	rm -rf python/dist
 	$(MKDIR) python/dist
 	# TODO: Determine value of ASTRA_CONFIG dynamically
-	cd python/staging; $(PYBUILDERENV) $(PYTHON) -m pip wheel --no-build-isolation --no-deps --no-cache-dir --wheel-dir wheel -v .
-	mv python/staging/wheel/* python/dist/
+	cd python/staging; $(PYBUILDERENV) $(PYTHON) -m pip wheel --no-build-isolation --no-deps --no-cache-dir --wheel-dir ../dist -v .
 	@touch "$@"
 
 libastra.la: $(ALL_OBJECTS)
@@ -542,7 +540,6 @@ ifeq ($(install_type),prefix)
 # libraries into @libdir@, python into site-packages, mex into @datadir@
 install: install-libraries install-matlab install-python-site-packages install-octave
 
-PYPKGDATA=
 MATLABBASE=@datadir@/astra/matlab
 OCTAVEBASE=@datadir@/astra/octave
 endif
@@ -551,7 +548,6 @@ ifeq ($(install_type),dir)
 # everything into @prefix@
 install: install-libraries install-matlab install-python install-octave
 
-PYPKGDATA=
 MATLABBASE=@prefix@/matlab
 OCTAVEBASE=@prefix@/octave
 PYTHONBASE=@prefix@/python
@@ -563,7 +559,6 @@ ifeq ($(install_type),module)
 # modules built with rpath=$ORIGIN
 install: install-matlab install-python-site-packages install-octave
 
-PYPKGDATA=$(abs_top_builddir)/.libs/$(SONAME)
 MATLABBASE=@prefix@/matlab
 OCTAVEBASE=@prefix@/octave
 
@@ -582,19 +577,12 @@ endif
 
 ifeq ($(python),yes)
 install-python: py
-	# Note: setting CC to CXX is intentional. Python uses CC for compilation even if input is C++.
-	cd $(srcdir)/../../python; $(PYBUILDERENV) \
-	$(PYTHON) builder.py $(PYBUILDERFLAGS) \
-	set_dist_dir --dist-dir=$(abs_top_builddir)/python/dist \
-	build $(PYBUILDER_BUILD_FLAGS) \
-	egg_info --egg-base=$(abs_top_builddir)/python \
-	$(patsubst %,add_extra_lib --file=%,$(PYPKGDATA)) \
-	install $(patsubst %,--root=%,$(DESTDIR)) --install-base=@prefix@/python --install-headers=@prefix@/python --install-purelib=@prefix@/python --install-platlib=@prefix@/python --install-scripts=@prefix@/python --install-data=@prefix@/python --old-and-unmanageable --no-compile
+	cd python/dist; $(PYTHON) -m pip install --no-deps -t $(DESTDIR)$(PYTHONBASE) *.whl
 # TODO: docs
 
 install-python-site-packages: py
 	$(PYTHON) -m pip uninstall -y astra-toolbox
-	cd python/staging/wheel; $(PYTHON) -m pip install --no-deps *.whl
+	cd python/dist; $(PYTHON) -m pip install --no-deps *.whl
 else
 install-python-site-packages:
 install-python:
