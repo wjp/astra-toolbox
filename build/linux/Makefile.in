@@ -38,6 +38,7 @@ includedir=@includedir@
 libdir=@libdir@
 
 srcdir=@srcdir@
+abs_srcdir=@abs_srcdir@
 abs_top_builddir=@abs_top_builddir@
 
 VPATH=@VPATH_SRCDIR@/../..
@@ -92,8 +93,9 @@ PYLIBDIR := $(shell $(PYTHON) -c 'import sysconfig; print(sysconfig.get_config_v
 PYLIBVER = `basename $(PYINCDIR)`
 CPPFLAGS += -DASTRA_PYTHON -I$(PYINCDIR)
 PYCPPFLAGS  := $(CPPFLAGS)
-# TODO: Fix these paths
-PYCPPFLAGS  += -I../../../../include -I../../../../lib/include
+# We need to use abs_srcdir since we will be building Python extension
+# modules from a staging directory
+PYCPPFLAGS  += -I$(abs_srcdir)/../../include -I$(abs_srcdir)/../../lib/include
 PYCXXFLAGS  := $(CXXFLAGS)
 
 # copy the current MODLDFLAGS to PYLDFLAGS, and then add flags for matlab/octave
