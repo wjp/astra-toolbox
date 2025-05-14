@@ -102,8 +102,21 @@ MODLDFLAGS += -L$(PYLIBDIR)
 
 MODPYLIBS=-l$(PYLIBVER)
 
-# TODO: Fix ASTRA_CONFIG value
+# ASTRA_CONFIG selection
+ifeq ($(install_type),module)
+ifeq ($(cuda),yes)
 ASTRA_CONFIG = linux_module_cuda
+else
+ASTRA_CONFIG = linux_module
+endif
+else
+ifeq ($(cuda),yes)
+ASTRA_CONFIG = cuda
+else
+ASTRA_CONFIG = nocuda
+endif
+endif
+
 
 PYBUILDERENV=CXX="${CXX}" CC="${CXX}" CPPFLAGS="${PYCPPFLAGS}" LDFLAGS='${PYLDFLAGS}' CXXFLAGS="${PYCXXFLAGS}" CFLAGS="${PYCXXFLAGS}" ASTRA_CONFIG="${ASTRA_CONFIG}"
 PYBUILDERFLAGS=--astra_build_config_dir $(abs_top_builddir)/python/config --astra_build_cython_dir $(abs_top_builddir)/python/cython
@@ -436,8 +449,9 @@ python-staging-stamp: $(addprefix python/,$(PYTHON_PY) $(PYTHON_PY_PLUGINS) $(PY
 	cp -f $(srcdir)/../../python/README.md python/staging
 	cp -f $(srcdir)/../../python/pyproject.toml python/staging
 	cp -f $(srcdir)/../../python/setup.py python/staging
-	@# TODO: We probably need variants with and without the .so
+ifeq ($(install_type),module)
 	cp -f ".libs/$(SONAME)" python/staging/astra/
+endif
 	@touch "$@"
 
 python-wheel-stamp: python-staging-stamp

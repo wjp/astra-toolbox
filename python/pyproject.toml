@@ -4,6 +4,12 @@
 requires = ["setuptools", "numpy", "Cython"]
 build-backend = "setuptools.build_meta"
 
+[tool.astra.nocuda]
+cuda = false
+
+[tool.astra.cuda]
+cuda = true
+
 [tool.astra.linux_module]
 extra_lib = [ 'libastra.so*' ]
 cuda = false
