@@ -582,7 +582,7 @@ install-python: py
 
 install-python-site-packages: py
 	$(PYTHON) -m pip uninstall -y astra-toolbox
-	cd python/dist; $(PYTHON) -m pip install --no-deps *.whl
+	cd python/dist; $(PYTHON) -m pip install --no-deps $(patsubst %,--root=%,$(DESTDIR)) *.whl
 else
 install-python-site-packages:
 install-python:
