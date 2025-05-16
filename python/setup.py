@@ -134,6 +134,8 @@ def prepare_ext_modules():
             sources.append(os.path.join('astra', 'src',
                                   'dlpack.cpp'))
         ext = Extension(modulename, sources=sources, libraries=["astra"])
+        assert not hasattr(ext, 'cython_directives')
+        ext.cython_directives = {'language_level': "3"}
         ext_modules.append(ext)
 
     return ext_modules
