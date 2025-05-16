@@ -41,7 +41,7 @@ import glob
 # based on the value of the ASTRA_CONFIG environment variable.
 
 extra_install_requires = []
-extra_lib = None
+extra_lib = []
 use_cuda = False
 
 # We require to be called in specific ways, so that we can find the ASTRA library and sources.
@@ -63,9 +63,14 @@ except KeyError:
     raise KeyError(f"Configuration [tool.astra.{tool_profile}] not found in pyproject.toml")
 
 if 'install_requires' in section:
-    extra_install_requires += section['install_requires']
+    deps = section['install_requires']
+    if isinstance(deps, str):
+        deps = [ deps ]
+    extra_install_requires += deps
 if 'extra_lib' in section:
     extra_lib = section['extra_lib']
+    if isinstance(extra_lib, str):
+        extra_lib = [ extra_lib ]
 if 'cuda' in section:
     use_cuda = section['cuda']
 
@@ -108,12 +113,16 @@ class AddExtraLibCommand(Command):
     def run(self):
         # TODO: We could also just copy all so/dll files from the astra/
         # directory to the right place?
+        # TODO: Or re-evaluate simply adding these to package_data
         if extra_lib:
+            import glob
+            import shutil
             build_ext = self.get_finalized_command('build_ext')
             dst = os.path.join(build_ext.build_lib, 'astra')
             for F in extra_lib:
-                src = 'astra/' + F
-                os.system(f'cp -f {src} "{dst}"')
+                for src in glob.glob(F):
+                    print("Installing", src, "to", dst)
+                    shutil.copy2(src, dst)
 
 # Prepare Cython modules
 
