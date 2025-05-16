@@ -368,9 +368,7 @@ PYTHON_PYX=\
 	astra/plugin_c.pyx \
 	astra/projector3d_c.pyx \
 	astra/projector_c.pyx \
-	astra/utils.pyx
-
-PYTHON_OTHER=\
+	astra/utils.pyx \
 	astra/PyAlgorithmFactory.pxd \
 	astra/PyAlgorithmManager.pxd \
 	astra/PyData2DManager.pxd \
@@ -383,10 +381,10 @@ PYTHON_OTHER=\
 	astra/PyProjector3DFactory.pxd \
 	astra/PyProjector3DManager.pxd \
 	astra/PyXMLDocument.pxd \
-	astra/utils.pxd \
-	astra/CFloat32CustomPython.h
+	astra/utils.pxd
 
-PYTHON_OTHER_SRC=\
+PYTHON_SRC=\
+	astra/src/CFloat32CustomPython.h \
 	astra/src/dlpack.cpp \
 	astra/src/dlpack.h \
 	astra/src/PythonPluginAlgorithm.cpp \
@@ -445,9 +443,6 @@ python/staging/astra/%.pyx: python/astra/%.pyx
 python/staging/astra/%.pxd: python/astra/%.pxd
 	@$(MKDIR) "$(@D)"
 	cp -f "$<" "$@"
-python/staging/astra/%.h: python/astra/%.h
-	@$(MKDIR) "$(@D)"
-	cp -f "$<" "$@"
 python/staging/astra/src/%.h: python/astra/src/%.h
 	@$(MKDIR) "$(@D)"
 	cp -f "$<" "$@"
@@ -459,7 +454,7 @@ ifeq ($(install_type),module)
 python-staging-stamp: libastra.la
 endif
 
-python-staging-stamp: $(addprefix python/,$(PYTHON_PY) $(PYTHON_PY_PLUGINS)) $(addprefix python/staging/,$(PYTHON_PYX) $(PYTHON_OTHER) $(PYTHON_OTHER_SRC)) python/README.md python/pyproject.toml python/setup.py
+python-staging-stamp: $(addprefix python/,$(PYTHON_PY) $(PYTHON_PY_PLUGINS)) $(addprefix python/staging/,$(PYTHON_PYX) $(PYTHON_SRC)) python/README.md python/pyproject.toml python/setup.py
 	@$(MKDIR) python/staging/astra/plugins
 	@$(MKDIR) python/staging/astra/src
 	cp -f $(addprefix $(srcdir)/../../python/,$(PYTHON_PY)) python/staging/astra
