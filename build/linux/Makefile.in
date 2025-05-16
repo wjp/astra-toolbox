@@ -439,15 +439,31 @@ matlab/mex/astra_mex_plugin_c.mex: matlab/mex/astra_mex_plugin_c.o $(MATLAB_CXX_
 endif
 endif
 
+python/staging/astra/%.pyx: python/astra/%.pyx
+	@$(MKDIR) "$(@D)"
+	cp -f "$<" "$@"
+python/staging/astra/%.pxd: python/astra/%.pxd
+	@$(MKDIR) "$(@D)"
+	cp -f "$<" "$@"
+python/staging/astra/%.h: python/astra/%.h
+	@$(MKDIR) "$(@D)"
+	cp -f "$<" "$@"
+python/staging/astra/src/%.h: python/astra/src/%.h
+	@$(MKDIR) "$(@D)"
+	cp -f "$<" "$@"
+python/staging/astra/src/%.cpp: python/astra/src/%.cpp
+	@$(MKDIR) "$(@D)"
+	cp -f "$<" "$@"
 
-python-staging-stamp: $(addprefix python/,$(PYTHON_PY) $(PYTHON_PY_PLUGINS) $(PYTHON_PYX) $(PYTHON_OTHER) $(PYTHON_OTHER_SRC)) python/README.md python/pyproject.toml python/setup.py libastra.la
+ifeq ($(install_type),module)
+python-staging-stamp: libastra.la
+endif
+
+python-staging-stamp: $(addprefix python/,$(PYTHON_PY) $(PYTHON_PY_PLUGINS)) $(addprefix python/staging/,$(PYTHON_PYX) $(PYTHON_OTHER) $(PYTHON_OTHER_SRC)) python/README.md python/pyproject.toml python/setup.py
 	@$(MKDIR) python/staging/astra/plugins
 	@$(MKDIR) python/staging/astra/src
 	cp -f $(addprefix $(srcdir)/../../python/,$(PYTHON_PY)) python/staging/astra
 	cp -f $(addprefix $(srcdir)/../../python/,$(PYTHON_PY_PLUGINS)) python/staging/astra/plugins
-	cp -f $(addprefix $(srcdir)/../../python/,$(PYTHON_PYX)) python/staging/astra
-	cp -f $(addprefix $(srcdir)/../../python/,$(PYTHON_OTHER)) python/staging/astra
-	cp -f $(addprefix $(srcdir)/../../python/,$(PYTHON_OTHER_SRC)) python/staging/astra/src
 	cp -f $(srcdir)/../../python/README.md python/staging
 	cp -f $(srcdir)/../../python/pyproject.toml python/staging
 	cp -f $(srcdir)/../../python/setup.py python/staging
