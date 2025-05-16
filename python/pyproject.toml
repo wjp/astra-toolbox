@@ -1,4 +1,5 @@
 # TODO: Move more metadata here from setup.py
+# (And figure out how to not make that ship every single file)
 
 [build-system]
 requires = ["setuptools", "numpy", "Cython"]
