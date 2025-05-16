@@ -31,7 +31,6 @@ from setuptools import Command, Extension, setup
 from setuptools.command.build import build
 
 from Cython.Distutils import build_ext
-from Cython.Build import cythonize
 
 import argparse
 import sys
