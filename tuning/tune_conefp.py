@@ -102,9 +102,9 @@ float tunable()
 
         std::vector<float> angles(1024);
         for (int i = 0; i < 1024; ++i) {
-            //angles[i] = i * (2*M_PI)/1024;
+            angles[i] = i * (2*M_PI)/1024;
             //angles[i] = i * (0.5*M_PI)/1024;
-            angles[i] = (i * (0.25*M_PI) + 0.5*M_PI)/1024;
+            //angles[i] = (i * (0.25*M_PI) + 0.5*M_PI)/1024;
         }
 
         std::vector<SConeProjection> projs = genConeProjections(1024, 1024, 256, 2500, 0, 1.0, 1.0, &angles[0]);
