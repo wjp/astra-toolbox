@@ -35,12 +35,23 @@ along with the ASTRA Toolbox. If not, see <http://www.gnu.org/licenses/>.
 
 namespace astraCUDA3d {
 
+#ifdef kernel_tuner
+
+static const unsigned int g_anglesPerBlock = block_size_y;
+// thickness of the slices we're splitting the volume up into
+static const unsigned int g_blockSlices = block_slices;
+static const unsigned int g_detBlockU = block_size_x;
+static const unsigned int g_detBlockV = det_block_v;
+
+#else
+
 static const unsigned int g_anglesPerBlock = 4;
 
 // thickness of the slices we're splitting the volume up into
 static const unsigned int g_blockSlices = 4;
 static const unsigned int g_detBlockU = 32;
 static const unsigned int g_detBlockV = 32;
+#endif
 
 static const unsigned g_MaxAngles = 1024;
 __constant__ float gC_SrcX[g_MaxAngles];
