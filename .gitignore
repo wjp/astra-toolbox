@@ -45,3 +45,6 @@ __pycache__
 # MSVC build output
 /build/msvc/bin/
 /build/msvc/release/
+
+# Kernel tuner temp files
+/tuning/temp*
