@@ -1,7 +1,12 @@
 import kernel_tuner
 import logging
 
-kernel_string = ""
+kernel_string = """
+#define ASTRA_CUDA
+#define ASTRA_BUILDING_HIP
+
+#include "astra/cuda/gpu_runtime_wrapper.h"
+"""
 
 with open('../cuda/3d/cone_bp.cu') as f:
     kernel_string += f.read()
@@ -36,7 +41,6 @@ private:
 
 using namespace astraCUDA3d;
 
-namespace astra {
 std::vector<SConeProjection> genConeProjections(unsigned int iProjAngles,
                                     unsigned int iProjU,
                                     unsigned int iProjV,
@@ -80,8 +84,6 @@ std::vector<SConeProjection> genConeProjections(unsigned int iProjAngles,
         return p;
 }
 
-}
-
 extern "C"
 float tunable()
 {
@@ -114,11 +116,11 @@ float tunable()
         ConeBP(D_volumeData, D_projData, dims, &projs[0], params);
         t.end();
 
-    cudaFree(D_volumeData.ptr);
-    cudaFree(D_projData.ptr);
+        cudaFree(D_volumeData.ptr);
+        cudaFree(D_projData.ptr);
 
         return t.get();
 }
 """
 
-kernel_tuner.tune_kernel("tunable", kernel_string, (512,512), [], {"block_size_x": [8, 16, 32], "block_size_y": [8, 16, 32], "z_per_thread": [2, 4, 6], "angles_per_block": [32]}, verbose=True, lang="C", compiler_options=["-I../include"])
+kernel_tuner.tune_kernel("tunable", kernel_string, (512,512), [], {"block_size_x": [8, 16, 32], "block_size_y": [8, 16, 32], "z_per_thread": [2, 4, 6], "angles_per_block": [32]}, verbose=True, lang="C", compiler="hipcc", compiler_options=["-I../include"])
