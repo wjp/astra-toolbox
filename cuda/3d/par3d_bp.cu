@@ -35,11 +35,20 @@ along with the ASTRA Toolbox. If not, see <http://www.gnu.org/licenses/>.
 
 namespace astraCUDA3d {
 
+#ifdef kernel_tuner
+static const unsigned int g_volBlockZ = z_per_thread;
+
+static const unsigned int g_anglesPerBlock = angles_per_block;
+static const unsigned int g_volBlockX = block_size_x;
+static const unsigned int g_volBlockY = block_size_y;
+
+#else
 static const unsigned int g_volBlockZ = 6;
 
 static const unsigned int g_anglesPerBlock = 32;
 static const unsigned int g_volBlockX = 16;
 static const unsigned int g_volBlockY = 32;
+#endif
 
 static const unsigned g_MaxAngles = 1024;
 
