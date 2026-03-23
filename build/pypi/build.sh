@@ -2,8 +2,8 @@
 
 set -e
 
-BRANCH=master
-URL=https://github.com/astra-toolbox/astra-toolbox
+BRANCH=autoreconf
+URL=https://github.com/wjp/astra-toolbox
 CUDA_RPATHS='$ORIGIN/../nvidia/cuda_runtime/lib:$ORIGIN/../nvidia/cufft/lib'
 
 echo "Cloning from ${URL}"
