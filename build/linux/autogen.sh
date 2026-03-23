@@ -1,32 +1,10 @@
 #!/usr/bin/env bash
 
-aclocal
-if test $? -ne 0; then
-  echo "Error running aclocal"
-  exit 1
-fi
+autoreconf --force --install --symlink
 
-autoconf
-if test $? -ne 0; then
-  echo "Error running autoconf"
-  exit 1
-fi
 
-case `uname` in
-  Darwin*)
-    test -x "`which glibtoolize 2>/dev/null`" && LIBTOOLIZEBIN=glibtoolize || LIBTOOLIZEBIN=libtoolize ;;
-  *)
-    LIBTOOLIZEBIN=libtoolize ;; esac
-
-$LIBTOOLIZEBIN --install --force > /dev/null 2>&1
-if test $? -ne 0; then
-  $LIBTOOLIZEBIN --force
-  if test $? -ne 0; then
-    echo "Error running libtoolize"
-    exit 1
-  fi
-fi
-
+# Older versions of autoreconf (and/or libtool?) fail to install these for us.
+# Broken on Debian 11.11, working on Debian 12.13
 if test ! -e config.guess; then
   ln -s config.guess.dist config.guess
 fi

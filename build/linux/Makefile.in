@@ -733,7 +733,7 @@ config.status: $(srcdir)/configure
 
 $(srcdir)/configure: $(srcdir)/configure.ac $(srcdir)/acinclude.m4
 	@echo "configure.ac has been changed. Regenerating configure script"
-	cd $(srcdir) && $(SHELL) ./autogen.sh
+	cd $(srcdir) && autoreconf
 
 .PHONY: all mex test clean distclean install install-libraries py install-python-site-packages install-python install-matlab install-octave install-matlab-so install-octave-so install-headers install-dev
 
