@@ -1,0 +1,26 @@
+name: Makefile CI
+
+on:
+  push:
+    branches: [ "fix_macos_build" ]
+
+jobs:
+  build:
+
+    runs-on: macos-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: dependencies
+      run: brew install libtool autoconf automake
+
+    - name: setup
+      run: cd build/linux; ./autogen.sh
+
+    - name: configure
+      run: cd build/linux; ./configure --with-install-type=module
+
+    - name: build
+      run: cd build/linux; make
+
